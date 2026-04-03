@@ -1,0 +1,617 @@
+/*
+ * ============================================================
+ * sections.css — Estilos de cada sección del sitio Kinara
+ * Aquí defino el layout y diseño visual de cada sección:
+ * hero, filosofía, colecciones y catálogo de productos.
+ * Cada sección tiene su propia identidad dentro de la
+ * coherencia global de la marca.
+ * ============================================================
+ */
+
+/* -------------------------------------------------------
+   HERO — Sección principal de bienvenida
+   Ocupa toda la pantalla con el logo central y partículas
+   ------------------------------------------------------- */
+#hero {
+  position: relative;
+  /* Ocupo el 100% del viewport, incluyendo el header */
+  height: 100vh;
+  min-height: 700px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* El fondo negro profundo es el lienzo de la luz */
+  background-color: var(--color-negro);
+}
+
+/* Canvas de partículas detrás de todo el contenido */
+#canvas-particulas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* No interacciona con el mouse para que el contenido sea accesible */
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Gradiente radial que simula la fuente de luz central */
+#hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Luz dorada sutil emanando desde el centro */
+  background: radial-gradient(
+    ellipse 60% 50% at 50% 50%,
+    rgba(212, 163, 115, 0.06) 0%,
+    transparent 70%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Contenido central del hero */
+.hero-contenido {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: 0 var(--padding-lateral);
+}
+
+/* Línea decorativa con rombo — símbolo de la marca */
+.hero-ornamento {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  opacity: 0;
+  animation: aparecer 1.2s ease forwards;
+}
+
+/* Líneas a los lados del rombo */
+.hero-ornamento::before,
+.hero-ornamento::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-dorado),
+    transparent
+  );
+  opacity: 0.5;
+}
+
+/* Rombo central del ornamento */
+.hero-rombo {
+  width: 6px;
+  height: 6px;
+  background-color: var(--color-dorado);
+  transform: rotate(45deg);
+  opacity: 0.8;
+}
+
+/* Título principal del hero */
+.hero-titulo {
+  font-family: var(--fuente-display);
+  /* Tamaño grande responsive con clamp */
+  font-size: clamp(4rem, 10vw, 8rem);
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  color: var(--color-blanco);
+  line-height: 1;
+  /* Animación escalonada */
+  opacity: 0;
+  animation: aparecer-arriba 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+}
+
+/* Slogan debajo del título */
+.hero-slogan {
+  font-family: var(--fuente-display);
+  font-style: italic;
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  font-weight: 300;
+  color: var(--color-dorado);
+  letter-spacing: 0.1em;
+  opacity: 0;
+  animation: aparecer 1.2s ease 0.6s forwards;
+}
+
+/* Descripción breve de la marca */
+.hero-descripcion {
+  font-size: var(--texto-base);
+  color: var(--color-blanco-dim);
+  max-width: 520px;
+  line-height: 1.8;
+  opacity: 0;
+  animation: aparecer 1.2s ease 0.9s forwards;
+}
+
+/* Grupo de botones del CTA */
+.hero-acciones {
+  display: flex;
+  gap: var(--espacio-sm);
+  margin-top: var(--espacio-xs);
+  opacity: 0;
+  animation: aparecer 1.2s ease 1.1s forwards;
+}
+
+/* Indicador de scroll al fondo del hero */
+.hero-scroll {
+  position: absolute;
+  bottom: var(--espacio-lg);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-xs);
+  opacity: 0;
+  animation: aparecer 1.2s ease 1.5s forwards;
+}
+
+/* Texto del indicador de scroll */
+.hero-scroll span {
+  font-size: var(--texto-xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-blanco-dim);
+  opacity: 0.6;
+}
+
+/* Línea animada del scroll indicator */
+.scroll-linea {
+  width: 1px;
+  height: 50px;
+  background: linear-gradient(to bottom, var(--color-dorado), transparent);
+  animation: scroll-bajar 2s ease infinite;
+}
+
+/* Animación de la línea que baja */
+@keyframes scroll-bajar {
+  0%   { transform: scaleY(0); transform-origin: top; opacity: 1; }
+  50%  { transform: scaleY(1); transform-origin: top; opacity: 1; }
+  51%  { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
+  100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+}
+
+/* -------------------------------------------------------
+   SECCIÓN FILOSOFÍA
+   Presenta los valores y la esencia de la marca
+   ------------------------------------------------------- */
+#filosofia {
+  background-color: var(--color-negro);
+  padding: var(--espacio-3xl) 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Línea decorativa vertical al lado izquierdo */
+#filosofia::before {
+  content: '';
+  position: absolute;
+  left: 5%;
+  top: 10%;
+  bottom: 10%;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--color-dorado-sombra),
+    transparent
+  );
+  opacity: 0.3;
+}
+
+/* Layout de la sección en dos columnas */
+.filosofia-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espacio-2xl);
+  align-items: center;
+}
+
+/* Columna izquierda: texto */
+.filosofia-texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+/* Cita de la filosofía en grande */
+.filosofia-cita {
+  font-family: var(--fuente-display);
+  font-style: italic;
+  font-size: var(--texto-2xl);
+  font-weight: 300;
+  line-height: 1.4;
+  color: var(--color-blanco);
+}
+
+/* Acento dorado en la cita */
+.filosofia-cita .dorado {
+  color: var(--color-dorado);
+}
+
+/* Columna derecha: valores */
+.filosofia-valores {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+/* Cada valor individual */
+.valor-item {
+  display: flex;
+  gap: var(--espacio-md);
+  align-items: flex-start;
+  padding: var(--espacio-md);
+  border-left: 1px solid var(--color-borde);
+  transition: border-color var(--transicion-normal);
+}
+
+.valor-item:hover {
+  border-left-color: var(--color-dorado);
+}
+
+/* Número del valor */
+.valor-numero {
+  font-family: var(--fuente-display);
+  font-size: var(--texto-2xl);
+  font-weight: 300;
+  color: var(--color-dorado);
+  opacity: 0.4;
+  min-width: 40px;
+  line-height: 1;
+}
+
+/* Contenido del valor */
+.valor-contenido {}
+
+.valor-nombre {
+  font-family: var(--fuente-cuerpo);
+  font-size: var(--texto-base);
+  font-weight: 500;
+  color: var(--color-blanco);
+  margin-bottom: 4px;
+}
+
+.valor-descripcion {
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+  line-height: 1.6;
+}
+
+/* -------------------------------------------------------
+   SECCIÓN COLECCIONES
+   Grid de las 5 colecciones con hover interactivo
+   ------------------------------------------------------- */
+#colecciones {
+  background-color: var(--color-grafito);
+  padding: var(--espacio-3xl) 0;
+}
+
+/* Cabecera de la sección centrada */
+.seccion-cabecera {
+  text-align: center;
+  margin-bottom: var(--espacio-2xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-xs);
+}
+
+/* Grid de 5 colecciones: las primeras 3 en la fila superior
+   y las últimas 2 centradas abajo */
+.colecciones-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--espacio-sm);
+}
+
+/* Las últimas 2 tarjetas las centro en la fila inferior */
+.coleccion-card:nth-child(4) {
+  grid-column: 1 / 2;
+  margin-left: calc(50% + var(--espacio-xs) / 2);
+}
+
+.coleccion-card:nth-child(5) {
+  grid-column: 2 / 3;
+  margin-left: 0;
+}
+
+/* Redefino el grid para las últimas 2 tarjetas centradas */
+.colecciones-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--espacio-sm);
+}
+
+/* Las primeras 3 tarjetas ocupan 2 columnas cada una */
+.coleccion-card:nth-child(1),
+.coleccion-card:nth-child(2),
+.coleccion-card:nth-child(3) {
+  grid-column: span 2;
+}
+
+/* Las últimas 2 tarjetas: las centro usando offsets */
+.coleccion-card:nth-child(4) {
+  grid-column: 2 / span 2;
+}
+
+.coleccion-card:nth-child(5) {
+  grid-column: 4 / span 2;
+}
+
+/* Tarjeta de colección */
+.coleccion-card {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background-color: var(--color-negro);
+  border: 1px solid var(--color-borde);
+  transition: transform var(--transicion-normal), border-color var(--transicion-normal);
+}
+
+.coleccion-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-dorado-sombra);
+}
+
+/* Imagen de fondo de cada colección */
+.coleccion-imagen {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.coleccion-card:hover .coleccion-imagen {
+  transform: scale(1.08);
+}
+
+/* Overlay de la tarjeta de colección */
+.coleccion-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(15, 15, 15, 0.9) 0%,
+    rgba(15, 15, 15, 0.3) 50%,
+    transparent 100%
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: var(--espacio-md);
+  transition: background var(--transicion-normal);
+}
+
+.coleccion-card:hover .coleccion-overlay {
+  background: linear-gradient(
+    to top,
+    rgba(15, 15, 15, 0.95) 0%,
+    rgba(15, 15, 15, 0.5) 60%,
+    rgba(212, 163, 115, 0.05) 100%
+  );
+}
+
+/* Filosofía de la colección (texto pequeño) */
+.coleccion-filosofia {
+  font-size: var(--texto-xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-dorado);
+  opacity: 0.8;
+  margin-bottom: 6px;
+}
+
+/* Nombre de la colección */
+.coleccion-nombre {
+  font-family: var(--fuente-display);
+  font-size: var(--texto-xl);
+  font-weight: 300;
+  color: var(--color-blanco);
+}
+
+/* Descripción breve que aparece en hover */
+.coleccion-desc {
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+  line-height: 1.5;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  margin-top: 0;
+  transition: max-height var(--transicion-normal),
+              opacity var(--transicion-normal),
+              margin-top var(--transicion-normal);
+}
+
+.coleccion-card:hover .coleccion-desc {
+  max-height: 80px;
+  opacity: 1;
+  margin-top: var(--espacio-xs);
+}
+
+/* -------------------------------------------------------
+   SECCIÓN CATÁLOGO
+   Grid de productos con filtros
+   ------------------------------------------------------- */
+#catalogo {
+  background-color: var(--color-negro);
+  padding: var(--espacio-3xl) 0;
+}
+
+/* Layout con filtros en el lateral y productos en el centro */
+.catalogo-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--espacio-2xl);
+  align-items: start;
+}
+
+/* Panel de filtros lateral */
+.catalogo-filtros {
+  position: sticky;
+  top: calc(var(--altura-header) + var(--espacio-md));
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+  padding: var(--espacio-md);
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-grafito);
+}
+
+/* Título del panel de filtros */
+.filtros-titulo {
+  font-size: var(--texto-xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-dorado);
+}
+
+/* Separador entre grupos de filtros */
+.filtros-separador {
+  height: 1px;
+  background-color: var(--color-borde);
+}
+
+/* Grupo de filtros (por colección, por precio, etc.) */
+.filtro-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+/* Etiqueta del grupo de filtros */
+.filtro-grupo-titulo {
+  font-size: var(--texto-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-blanco-dim);
+  margin-bottom: 4px;
+}
+
+/* Grid de productos */
+.catalogo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--espacio-sm);
+}
+
+/* Barra superior del catálogo: resultados y ordenamiento */
+.catalogo-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--espacio-md);
+  padding-bottom: var(--espacio-md);
+  border-bottom: 1px solid var(--color-borde);
+}
+
+/* Contador de resultados */
+.catalogo-resultados {
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+}
+
+/* Selector de ordenamiento */
+.catalogo-orden {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+}
+
+/* Select personalizado */
+.select-personalizado {
+  background-color: transparent;
+  border: 1px solid var(--color-borde);
+  color: var(--color-blanco);
+  font-family: var(--fuente-cuerpo);
+  font-size: var(--texto-sm);
+  padding: 6px 12px;
+  border-radius: var(--radio-sm);
+  outline: none;
+  transition: border-color var(--transicion-rapida);
+}
+
+.select-personalizado:focus {
+  border-color: var(--color-dorado);
+}
+
+/* Opción del select */
+.select-personalizado option {
+  background-color: var(--color-grafito);
+}
+
+/* -------------------------------------------------------
+   ANIMACIONES GLOBALES
+   ------------------------------------------------------- */
+/* Aparición simple con fade */
+@keyframes aparecer {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Aparición desde abajo */
+@keyframes aparecer-arriba {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* -------------------------------------------------------
+   RESPONSIVE
+   ------------------------------------------------------- */
+@media (max-width: 1024px) {
+  /* Catálogo en una sola columna en tablet */
+  .catalogo-layout {
+    grid-template-columns: 1fr;
+  }
+
+  /* Los filtros dejan de ser sticky */
+  .catalogo-filtros {
+    position: static;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--espacio-xs);
+  }
+
+  /* Filosofía en una sola columna */
+  .filosofia-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Colecciones en 2 columnas en móvil */
+  .colecciones-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .coleccion-card {
+    grid-column: span 1 !important;
+  }
+
+  /* Acciones del hero en columna */
+  .hero-acciones {
+    flex-direction: column;
+    align-items: center;
+  }
+}

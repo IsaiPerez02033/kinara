@@ -1,0 +1,752 @@
+/*
+ * ============================================================
+ * carrito.css — Estilos del carrito y flujo de compra Kinara
+ * Defino aquí todos los estilos del sistema de compra:
+ * drawer del carrito lateral, modal de checkout, estados
+ * de pago (cargando, éxito, error) y la página de
+ * confirmación de pedido.
+ * ============================================================
+ */
+
+/* -------------------------------------------------------
+   DRAWER DEL CARRITO
+   Panel lateral que se desliza desde la derecha cuando
+   el usuario hace clic en el icono del carrito.
+   ------------------------------------------------------- */
+
+/* Overlay oscuro detrás del drawer */
+#carrito-overlay {
+  position: fixed;
+  inset: 0;
+  /* Fondo semitransparente que bloquea el contenido */
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 1500;
+  /* Inicio invisible */
+  opacity: 0;
+  /* Transición suave de entrada y salida */
+  transition: opacity 0.35s ease;
+  /* Desactivo el pointer mientras está oculto */
+  pointer-events: none;
+}
+
+/* Estado visible del overlay */
+#carrito-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Contenedor principal del drawer */
+#carrito-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  /* Ancho del drawer: 420px en desktop, 100% en móvil */
+  width: min(420px, 100vw);
+  background-color: var(--color-grafito);
+  border-left: 1px solid var(--color-borde);
+  z-index: 1600;
+  display: flex;
+  flex-direction: column;
+  /* Inicio fuera de pantalla hacia la derecha */
+  transform: translateX(100%);
+  /* Animación de entrada con curva de rebote suave */
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Estado abierto del drawer */
+#carrito-drawer.abierto {
+  transform: translateX(0);
+}
+
+/* Header del drawer: título y botón cerrar */
+.carrito-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--espacio-md) var(--espacio-md);
+  border-bottom: 1px solid var(--color-borde);
+  flex-shrink: 0;
+}
+
+/* Título del carrito */
+.carrito-titulo {
+  font-family: var(--fuente-display);
+  font-size: var(--texto-xl);
+  font-weight: 300;
+  color: var(--color-blanco);
+}
+
+/* Contador de piezas en el título */
+.carrito-titulo-contador {
+  font-family: var(--fuente-cuerpo);
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+  margin-left: var(--espacio-xs);
+}
+
+/* Botón de cerrar el drawer */
+.carrito-cerrar {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-blanco-dim);
+  font-size: 1.4rem;
+  transition: color var(--transicion-rapida);
+  background: none;
+  border: none;
+}
+
+.carrito-cerrar:hover {
+  color: var(--color-blanco);
+}
+
+/* -------------------------------------------------------
+   LISTA DE ITEMS DEL CARRITO
+   Área scrollable con los productos agregados.
+   ------------------------------------------------------- */
+.carrito-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--espacio-sm) 0;
+}
+
+/* Scrollbar del carrito */
+.carrito-items::-webkit-scrollbar {
+  width: 3px;
+}
+.carrito-items::-webkit-scrollbar-track {
+  background: transparent;
+}
+.carrito-items::-webkit-scrollbar-thumb {
+  background: var(--color-borde);
+  border-radius: 999px;
+}
+
+/* Estado vacío del carrito */
+.carrito-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--espacio-2xl) var(--espacio-md);
+  text-align: center;
+  height: 100%;
+}
+
+.carrito-vacio-icono {
+  width: 60px;
+  height: 60px;
+  margin-bottom: var(--espacio-md);
+  opacity: 0.2;
+}
+
+.carrito-vacio-texto {
+  font-family: var(--fuente-display);
+  font-style: italic;
+  font-size: var(--texto-xl);
+  color: var(--color-blanco-dim);
+  margin-bottom: var(--espacio-xs);
+}
+
+.carrito-vacio-subtexto {
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+  opacity: 0.5;
+}
+
+/* Item individual del carrito */
+.carrito-item {
+  display: grid;
+  /* Columnas: imagen | info | controles */
+  grid-template-columns: 72px 1fr auto;
+  gap: var(--espacio-sm);
+  align-items: center;
+  padding: var(--espacio-sm) var(--espacio-md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background var(--transicion-rapida);
+}
+
+.carrito-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Imagen del producto en el carrito */
+.carrito-item-imagen {
+  width: 72px;
+  height: 72px;
+  background-color: var(--color-negro);
+  border: 1px solid var(--color-borde);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.carrito-item-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Placeholder de imagen en el carrito */
+.carrito-item-imagen-placeholder {
+  font-family: var(--fuente-display);
+  font-style: italic;
+  font-size: 0.65rem;
+  color: rgba(212, 163, 115, 0.2);
+  text-align: center;
+  padding: 4px;
+}
+
+/* Información del item */
+.carrito-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0; /* Necesario para el text-overflow */
+}
+
+/* Colección del item */
+.carrito-item-coleccion {
+  font-size: var(--texto-xs);
+  color: var(--color-dorado);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+/* Nombre del producto en el carrito */
+.carrito-item-nombre {
+  font-family: var(--fuente-display);
+  font-size: var(--texto-lg);
+  font-weight: 300;
+  color: var(--color-blanco);
+  /* Evito que el nombre desborde */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Precio unitario */
+.carrito-item-precio {
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+}
+
+/* Columna de controles: cantidad y eliminar */
+.carrito-item-controles {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--espacio-xs);
+}
+
+/* Control de cantidad */
+.cantidad-control {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-sm);
+  overflow: hidden;
+}
+
+/* Botones de + y - */
+.cantidad-btn {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  color: var(--color-blanco-dim);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transicion-rapida);
+  border: none;
+}
+
+.cantidad-btn:hover {
+  background: rgba(212, 163, 115, 0.1);
+  color: var(--color-dorado);
+}
+
+/* Número de cantidad */
+.cantidad-numero {
+  width: 32px;
+  text-align: center;
+  font-size: var(--texto-sm);
+  color: var(--color-blanco);
+  border-left: 1px solid var(--color-borde);
+  border-right: 1px solid var(--color-borde);
+  line-height: 28px;
+}
+
+/* Botón de eliminar item */
+.carrito-item-eliminar {
+  font-size: var(--texto-xs);
+  color: var(--color-blanco-dim);
+  opacity: 0.5;
+  background: none;
+  border: none;
+  letter-spacing: 0.05em;
+  transition: all var(--transicion-rapida);
+}
+
+.carrito-item-eliminar:hover {
+  color: #C07070;
+  opacity: 1;
+}
+
+/* -------------------------------------------------------
+   PIE DEL CARRITO: resumen + botón de checkout
+   ------------------------------------------------------- */
+.carrito-footer {
+  border-top: 1px solid var(--color-borde);
+  padding: var(--espacio-md);
+  flex-shrink: 0;
+  background: var(--color-grafito);
+}
+
+/* Fila del subtotal */
+.carrito-subtotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--espacio-xs);
+}
+
+.carrito-subtotal-label {
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+  letter-spacing: 0.05em;
+}
+
+.carrito-subtotal-valor {
+  font-family: var(--fuente-display);
+  font-size: var(--texto-xl);
+  color: var(--color-blanco);
+}
+
+/* Nota de envío */
+.carrito-nota-envio {
+  font-size: var(--texto-xs);
+  color: var(--color-blanco-dim);
+  opacity: 0.5;
+  margin-bottom: var(--espacio-md);
+  text-align: center;
+}
+
+/* Botón principal de checkout */
+.btn-checkout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-xs);
+  width: 100%;
+  padding: 1rem;
+  background: var(--color-dorado);
+  color: var(--color-negro);
+  font-family: var(--fuente-cuerpo);
+  font-size: var(--texto-sm);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 0;
+  transition: all var(--transicion-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efecto shimmer en el botón de checkout */
+.btn-checkout::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.15) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+}
+
+.btn-checkout:hover::after {
+  /* Animo el shimmer en hover */
+  animation: shimmer 0.6s ease forwards;
+}
+
+@keyframes shimmer {
+  to { transform: translateX(100%); }
+}
+
+.btn-checkout:hover {
+  background: var(--color-dorado-luz);
+  transform: translateY(-1px);
+  box-shadow: var(--sombra-dorada);
+}
+
+/* Estado deshabilitado del botón de checkout */
+.btn-checkout:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* -------------------------------------------------------
+   MODAL DE CHECKOUT
+   Se muestra encima del drawer para el formulario
+   de datos de envío antes de ir a Mercado Pago.
+   ------------------------------------------------------- */
+#checkout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  padding: var(--espacio-md);
+}
+
+#checkout-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Contenedor del modal de checkout */
+.checkout-modal {
+  background: var(--color-grafito);
+  border: 1px solid var(--color-borde);
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: scale(0.96) translateY(10px);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#checkout-overlay.visible .checkout-modal {
+  transform: scale(1) translateY(0);
+}
+
+/* Header del modal */
+.checkout-modal-header {
+  padding: var(--espacio-md);
+  border-bottom: 1px solid var(--color-borde);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.checkout-modal-titulo {
+  font-family: var(--fuente-display);
+  font-size: var(--texto-xl);
+  font-weight: 300;
+}
+
+/* Cuerpo del modal */
+.checkout-modal-cuerpo {
+  padding: var(--espacio-md);
+}
+
+/* Paso del checkout con número */
+.checkout-paso-label {
+  font-size: var(--texto-xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-dorado);
+  margin-bottom: var(--espacio-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+}
+
+/* Número del paso */
+.checkout-paso-numero {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(212, 163, 115, 0.15);
+  border: 1px solid rgba(212, 163, 115, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-family: var(--fuente-cuerpo);
+  color: var(--color-dorado);
+}
+
+/* Campo de formulario en el checkout */
+.checkout-campo {
+  margin-bottom: var(--espacio-sm);
+}
+
+.checkout-label {
+  display: block;
+  font-size: var(--texto-xs);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-dorado);
+  margin-bottom: 6px;
+  opacity: 0.8;
+}
+
+/* Input del checkout */
+.checkout-input {
+  width: 100%;
+  background: rgba(15, 15, 15, 0.5);
+  border: 1px solid var(--color-borde);
+  color: var(--color-blanco);
+  font-family: var(--fuente-cuerpo);
+  font-size: var(--texto-sm);
+  padding: 0.75rem 1rem;
+  outline: none;
+  border-radius: 0;
+  transition: border-color var(--transicion-rapida);
+}
+
+.checkout-input:focus {
+  border-color: var(--color-dorado);
+}
+
+/* Error en un campo */
+.checkout-input.error {
+  border-color: #C07070;
+}
+
+.checkout-campo-error {
+  font-size: var(--texto-xs);
+  color: #C07070;
+  margin-top: 4px;
+  display: none;
+}
+
+.checkout-campo-error.visible {
+  display: block;
+}
+
+/* Grid de dos columnas para algunos campos */
+.checkout-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espacio-sm);
+}
+
+/* Resumen del pedido dentro del modal */
+.checkout-resumen {
+  background: rgba(15, 15, 15, 0.4);
+  border: 1px solid var(--color-borde);
+  padding: var(--espacio-sm);
+  margin: var(--espacio-md) 0;
+}
+
+.checkout-resumen-fila {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--texto-sm);
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--color-blanco-dim);
+}
+
+.checkout-resumen-fila:last-child {
+  border-bottom: none;
+}
+
+.checkout-resumen-total {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--fuente-display);
+  font-size: var(--texto-xl);
+  padding-top: var(--espacio-xs);
+  border-top: 1px solid var(--color-borde);
+  margin-top: var(--espacio-xs);
+  color: var(--color-blanco);
+}
+
+/* -------------------------------------------------------
+   ESTADOS DE PAGO
+   Pantallas de carga, éxito y error del proceso de pago.
+   ------------------------------------------------------- */
+
+/* Pantalla de carga mientras se crea la preferencia de MP */
+.pago-estado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--espacio-2xl) var(--espacio-md);
+  gap: var(--espacio-md);
+}
+
+/* Spinner de carga */
+.pago-spinner {
+  width: 48px;
+  height: 48px;
+  border: 2px solid rgba(212, 163, 115, 0.2);
+  border-top-color: var(--color-dorado);
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
+.pago-estado-titulo {
+  font-family: var(--fuente-display);
+  font-style: italic;
+  font-size: var(--texto-2xl);
+  font-weight: 300;
+  color: var(--color-blanco);
+}
+
+.pago-estado-subtitulo {
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+  max-width: 300px;
+}
+
+/* Ícono de éxito */
+.pago-exito-icono {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(123, 201, 154, 0.1);
+  border: 1px solid rgba(123, 201, 154, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #7BC99A;
+}
+
+/* Ícono de error */
+.pago-error-icono {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(192, 112, 112, 0.1);
+  border: 1px solid rgba(192, 112, 112, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #C07070;
+}
+
+/* -------------------------------------------------------
+   NOTIFICACIONES DE AGREGAR AL CARRITO
+   Toast pequeño que aparece al agregar un producto.
+   ------------------------------------------------------- */
+#agregar-toast {
+  position: fixed;
+  bottom: var(--espacio-md);
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--color-grafito);
+  border: 1px solid var(--color-borde);
+  border-left: 3px solid var(--color-dorado);
+  padding: 0.75rem 1.25rem;
+  font-size: var(--texto-sm);
+  color: var(--color-blanco);
+  z-index: 3000;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+#agregar-toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* -------------------------------------------------------
+   BOTÓN DEL HEADER — animación al agregar item
+   ------------------------------------------------------- */
+@keyframes pulso-carrito {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.carrito-btn-pulso {
+  animation: pulso-carrito 0.4s ease;
+}
+
+/* -------------------------------------------------------
+   PÁGINA DE CONFIRMACIÓN (confirmacion.html)
+   ------------------------------------------------------- */
+.confirmacion-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--espacio-lg);
+}
+
+.confirmacion-card {
+  max-width: 560px;
+  width: 100%;
+  border: 1px solid var(--color-borde);
+  padding: var(--espacio-2xl) var(--espacio-lg);
+  text-align: center;
+}
+
+.confirmacion-ornamento {
+  color: var(--color-dorado);
+  font-size: 2rem;
+  margin-bottom: var(--espacio-md);
+  opacity: 0.6;
+}
+
+.confirmacion-titulo {
+  font-family: var(--fuente-display);
+  font-size: var(--texto-3xl);
+  font-weight: 300;
+  margin-bottom: var(--espacio-xs);
+}
+
+.confirmacion-subtitulo {
+  color: var(--color-blanco-dim);
+  margin-bottom: var(--espacio-lg);
+}
+
+.confirmacion-id {
+  font-family: var(--fuente-cuerpo);
+  font-size: var(--texto-xs);
+  letter-spacing: 0.2em;
+  color: var(--color-dorado);
+  background: rgba(212, 163, 115, 0.08);
+  border: 1px solid rgba(212, 163, 115, 0.2);
+  padding: 0.5rem 1rem;
+  display: inline-block;
+  margin-bottom: var(--espacio-lg);
+}
+
+/* -------------------------------------------------------
+   RESPONSIVE
+   ------------------------------------------------------- */
+@media (max-width: 480px) {
+  /* El checkout ocupa toda la pantalla en móvil */
+  .checkout-modal {
+    max-width: 100%;
+    max-height: 100%;
+    border: none;
+  }
+
+  .checkout-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
