@@ -272,27 +272,6 @@ const ModuloProducto = (() => {
   return { abrirDetalle };
 })();
 
-/* --- Carrito (placeholder fase 3) --- */
-const ModuloCarrito = (() => {
-  let items = [];
-  const agregar = async (id) => {
-    const { data } = await SupabaseDB.obtenerStock(id);
-    if (!data || data.stock_actual === 0) return;
-    const p = ModuloCatalogo.obtenerProducto(id);
-    if (!p) return;
-    const ex = items.find(i=>i.id===id);
-    ex ? ex.cantidad++ : items.push({id, cantidad:1, producto:p});
-    actualizarContador();
-    console.log(`✦ "${p.nombre}" agregado al carrito`);
-  };
-  const actualizarContador = () => {
-    const total = items.reduce((s,i)=>s+i.cantidad,0);
-    const el = document.getElementById('carrito-contador');
-    if (el) { el.textContent=total; el.style.display=total>0?'flex':'none'; }
-  };
-  return { agregar, items };
-})();
-
 /* --- Formulario de contacto --- */
 const ModuloContacto = (() => {
   const enviar = async () => {
