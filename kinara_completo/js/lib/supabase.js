@@ -235,7 +235,7 @@ const SupabaseDB = (() => {
       const { data, error } = await db
         .from('colecciones')
         .select('*')
-        .eq('activa', TRUE)      // Solo las colecciones activas
+        .eq('activa', true)      // Solo las colecciones activas
         .order('nombre');         // Ordenadas alfabéticamente
 
       return { data, error };
