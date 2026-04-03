@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  index.html — Página principal de Kinara
+  Este es el documento HTML raíz del sitio web de Kinara.
+  Estructuro aquí todas las secciones de la página principal:
+  header fijo, hero, filosofía, colecciones y catálogo.
+  Cada sección está comentada con su propósito y estructura.
+  ============================================================
+-->
+<html lang="es">
+
+<head>
+  <!-- =====================================================
+       META TAGS — Información del documento para el
+       navegador y los motores de búsqueda
+       ===================================================== -->
+
+  <!-- Charset UTF-8 para soporte de caracteres especiales -->
+  <meta charset="UTF-8" />
+
+  <!-- Viewport responsivo para todos los dispositivos -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Descripción para SEO y redes sociales -->
+  <meta name="description"
+    content="Kinara — Diseño de luminarias innovadoras. Donde la luz cobra forma. Piezas únicas que fusionan tecnología, creatividad y fabricación digital." />
+
+  <!-- Palabras clave relevantes para la marca -->
+  <meta name="keywords"
+    content="luminarias, diseño, impresión 3D, iluminación decorativa, luminarias únicas, México, Kinara" />
+
+  <!-- Autor del sitio -->
+  <meta name="author" content="Kinara — Diseño de Luminarias Innovadoras" />
+
+  <!-- Open Graph para compartir en redes sociales -->
+  <meta property="og:title" content="Kinara — Donde la luz cobra forma" />
+  <meta property="og:description" content="Luminarias únicas que fusionan diseño, tecnología y creatividad." />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_MX" />
+  <meta property="og:image" content="assets/images/og-cover.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://kinara.mx" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Kinara — Donde la luz cobra forma" />
+  <meta name="twitter:description" content="Luminarias únicas que fusionan diseño, tecnología y creatividad." />
+  <meta name="twitter:image" content="assets/images/og-cover.jpg" />
+
+  <!-- Título de la pestaña del navegador -->
+  <title>Kinara — Donde la luz cobra forma</title>
+
+  <!-- Favicon: diamante dorado en SVG inline -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,
+    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>
+      <polygon points='16,2 30,16 16,30 2,16' fill='%23D4A373'/>
+    </svg>
+  " />
+
+  <!-- =====================================================
+       HOJAS DE ESTILO — Las cargo en el orden correcto:
+       primero las variables, luego base, components y sections
+       ===================================================== -->
+
+  <!-- 1. Variables de la marca (colores, tipografía, etc.) -->
+  <link rel="stylesheet" href="css/variables.css" />
+
+  <!-- 2. Reset y estilos globales -->
+  <link rel="stylesheet" href="css/base.css" />
+
+  <!-- 3. Componentes reutilizables (header, botones, tarjetas) -->
+  <link rel="stylesheet" href="css/components.css" />
+
+  <!-- 4.5. Estilos del carrito y checkout (Fase 3) -->
+  <link rel="stylesheet" href="css/carrito.css" />
+
+  <!-- 4. Estilos de cada sección del sitio -->
+  <link rel="stylesheet" href="css/sections.css" />
+
+  <!-- Precargo las fuentes de Google para mejor performance -->
+  <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png" />
+  <link rel="canonical" href="https://kinara.mx" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+</head>
+
+<body>
+
+  <!-- =====================================================
+       CURSOR PERSONALIZADO
+       Estos dos elementos forman el cursor dorado animado.
+       JavaScript (main.js) los mueve siguiendo al mouse.
+       ===================================================== -->
+  <div id="cursor-punto" aria-hidden="true"></div>
+  <div id="cursor-anillo" aria-hidden="true"></div>
+
+
+  <!-- =====================================================
+       HEADER — Barra de navegación fija
+       Comienza transparente y se vuelve sólida al hacer scroll.
+       Contiene el logo y el menú de navegación principal.
+       ===================================================== -->
+  <header id="header" role="banner">
+    <div class="header-inner">
+
+      <!-- Logo de la marca con link al inicio -->
+      <a href="#hero" class="logo" aria-label="Kinara — Ir al inicio">
+        <!-- Rombo decorativo del logo -->
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+            <polygon points="6,0 12,6 6,12 0,6" fill="#D4A373" />
+          </svg>
+          <span class="logo-nombre">KINARA</span>
+        </div>
+        <!-- Slogan de la marca -->
+        <span class="logo-slogan">Donde la luz cobra forma</span>
+      </a>
+
+      <!-- Navegación principal — solo visible en desktop -->
+      <nav class="nav-principal" role="navigation" aria-label="Navegación principal">
+        <a href="#filosofia" class="nav-link">Filosofía</a>
+        <a href="#colecciones" class="nav-link">Colecciones</a>
+        <a href="#catalogo" class="nav-link">Catálogo</a>
+        <a href="#contacto" class="nav-link">Contacto</a>
+      </nav>
+
+      <!-- Acciones del header: carrito y CTA -->
+      <div style="display: flex; align-items: center; gap: 1.5rem;">
+
+        <!-- Icono del carrito con contador de items -->
+        <button
+          id="btn-carrito" onclick="ModuloCarrito.abrirDrawer()"
+          aria-label="Ver carrito de compras"
+          style="
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--color-blanco-dim);
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            transition: color 0.2s ease;
+          "
+        >
+          <!-- Icono SVG del carrito -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 01-8 0"/>
+          </svg>
+          <!-- Contador de items en el carrito (oculto si es 0) -->
+          <span id="carrito-contador" style="
+            display: none;
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: var(--color-dorado);
+            color: var(--color-negro);
+            font-size: 0.6rem;
+            font-weight: 500;
+            align-items: center;
+            justify-content: center;
+          ">0</span>
+        </button>
+
+        <!-- Botón de contacto / CTA -->
+        <a href="#contacto" class="btn-primario" style="padding: 0.625rem 1.25rem; font-size: 0.75rem;">
+          Solicitar pieza
+        </a>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- =====================================================
+       SECCIÓN HERO — Pantalla completa de bienvenida
+       El canvas de partículas crea el campo de luz dorada.
+       La animación de entrada escalonada presenta la marca.
+       ===================================================== -->
+  <section id="hero" aria-label="Bienvenida a Kinara">
+
+    <!-- Canvas para las partículas de luz (main.js lo controla) -->
+    <canvas id="canvas-particulas" aria-hidden="true"></canvas>
+
+    <!-- Contenido central del hero -->
+    <div class="hero-contenido">
+
+      <!-- Ornamento superior con el rombo de la marca -->
+      <div class="hero-ornamento" aria-hidden="true">
+        <div class="hero-rombo"></div>
+      </div>
+
+      <!-- Título principal: nombre de la marca -->
+      <h1 class="hero-titulo">KINARA</h1>
+
+      <!-- Slogan de la marca -->
+      <p class="hero-slogan">Donde la luz cobra forma</p>
+
+      <!-- Descripción breve para contexto -->
+      <p class="hero-descripcion">
+        Luminarias únicas creadas con impresión 3D y fabricación digital avanzada.
+        Cada pieza es el resultado de un proceso creativo que transforma
+        la luz en una experiencia visual.
+      </p>
+
+      <!-- Botones de acción principales -->
+      <div class="hero-acciones">
+        <a href="#catalogo" class="btn-primario">
+          Explorar catálogo
+        </a>
+        <a href="#colecciones" class="btn-secundario">
+          Ver colecciones
+        </a>
+      </div>
+    </div>
+
+    <!-- Indicador de scroll hacia abajo -->
+    <div class="hero-scroll" aria-hidden="true">
+      <span>Scroll</span>
+      <div class="scroll-linea"></div>
+    </div>
+  </section>
+
+
+  <!-- =====================================================
+       SECCIÓN FILOSOFÍA — Esencia y valores de la marca
+       Presenta la filosofía de diseño y los 5 valores
+       fundamentales de Kinara.
+       ===================================================== -->
+  <section id="filosofia" class="seccion" aria-label="Filosofía de Kinara">
+    <div class="contenedor">
+
+      <!-- Grid de dos columnas: cita y valores -->
+      <div class="filosofia-grid">
+
+        <!-- Columna izquierda: texto filosófico -->
+        <div class="filosofia-texto">
+          <!-- Etiqueta de sección -->
+          <span class="etiqueta-seccion reveal">Nuestra filosofía</span>
+
+          <!-- Cita principal de la filosofía -->
+          <blockquote class="filosofia-cita reveal">
+            La luz no es simplemente un fenómeno físico.<br/>
+            La luz es un <span class="dorado">lenguaje</span>.
+          </blockquote>
+
+          <!-- Descripción de la filosofía -->
+          <p class="reveal" style="max-width: 460px;">
+            A través de su intensidad, su color, su dirección y su difusión, la luz
+            comunica emociones, define atmósferas y establece diálogos invisibles entre
+            los objetos y las personas que los rodean.
+          </p>
+
+          <!-- Datos estadísticos de la marca -->
+          <div style="display: flex; gap: 2.5rem; margin-top: 1rem;" class="reveal">
+            <!-- Número 1: colecciones -->
+            <div>
+              <div style="
+                font-family: 'Cormorant Garamond', serif;
+                font-size: 2.5rem;
+                font-weight: 300;
+                color: var(--color-dorado);
+                line-height: 1;
+              ">5</div>
+              <div style="font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-blanco-dim); margin-top: 4px;">
+                Colecciones
+              </div>
+            </div>
+            <!-- Número 2: piezas únicas -->
+            <div>
+              <div style="
+                font-family: 'Cormorant Garamond', serif;
+                font-size: 2.5rem;
+                font-weight: 300;
+                color: var(--color-dorado);
+                line-height: 1;
+              ">+50</div>
+              <div style="font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-blanco-dim); margin-top: 4px;">
+                Piezas únicas
+              </div>
+            </div>
+            <!-- Número 3: tecnología de fabricación -->
+            <div>
+              <div style="
+                font-family: 'Cormorant Garamond', serif;
+                font-size: 2.5rem;
+                font-weight: 300;
+                color: var(--color-dorado);
+                line-height: 1;
+              ">3D</div>
+              <div style="font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-blanco-dim); margin-top: 4px;">
+                Fabricación digital
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna derecha: los 5 valores fundamentales -->
+        <div class="filosofia-valores">
+
+          <!-- Valor 1: Innovación -->
+          <div class="valor-item reveal">
+            <span class="valor-numero">01</span>
+            <div class="valor-contenido">
+              <h3 class="valor-nombre">Innovación</h3>
+              <p class="valor-descripcion">
+                Incorporo continuamente nuevas tecnologías y procesos creativos al diseño de cada luminaria.
+              </p>
+            </div>
+          </div>
+
+          <!-- Valor 2: Autenticidad -->
+          <div class="valor-item reveal">
+            <span class="valor-numero">02</span>
+            <div class="valor-contenido">
+              <h3 class="valor-nombre">Autenticidad</h3>
+              <p class="valor-descripcion">
+                Cada pieza es genuina, concebida con propósito y construida con integridad absoluta.
+              </p>
+            </div>
+          </div>
+
+          <!-- Valor 3: Artesanía digital -->
+          <div class="valor-item reveal">
+            <span class="valor-numero">03</span>
+            <div class="valor-contenido">
+              <h3 class="valor-nombre">Artesanía digital</h3>
+              <p class="valor-descripcion">
+                La precisión tecnológica puesta al servicio de la sensibilidad artesanal.
+              </p>
+            </div>
+          </div>
+
+          <!-- Valor 4: Sostenibilidad -->
+          <div class="valor-item reveal">
+            <span class="valor-numero">04</span>
+            <div class="valor-contenido">
+              <h3 class="valor-nombre">Sostenibilidad</h3>
+              <p class="valor-descripcion">
+                Diseño con conciencia, reduciendo desperdicios y privilegiando materiales responsables.
+              </p>
+            </div>
+          </div>
+
+          <!-- Valor 5: Experiencia -->
+          <div class="valor-item reveal">
+            <span class="valor-numero">05</span>
+            <div class="valor-contenido">
+              <h3 class="valor-nombre">Experiencia</h3>
+              <p class="valor-descripcion">
+                Pongo al usuario en el centro de cada decisión de diseño.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- =====================================================
+       SECCIÓN COLECCIONES — Las 5 colecciones de la marca
+       Grid interactivo con hover que revela la descripción
+       de cada colección. El JS renderizará las imágenes.
+       ===================================================== -->
+  <section id="colecciones" class="seccion" aria-label="Colecciones de Kinara">
+    <div class="contenedor">
+
+      <!-- Cabecera de la sección -->
+      <div class="seccion-cabecera">
+        <span class="etiqueta-seccion reveal">Nuestras colecciones</span>
+        <h2 class="titulo-seccion reveal">
+          Cinco <span class="acento">universos</span> de luz
+        </h2>
+        <p class="reveal" style="max-width: 520px; color: var(--color-blanco-dim);">
+          Cada colección parte de una filosofía estética propia, explorando desde
+          el minimalismo más depurado hasta las formas más orgánicas e inspiradas
+          en la cultura mexicana.
+        </p>
+      </div>
+
+      <!-- Grid de colecciones (6 columnas para el layout asimétrico) -->
+      <div class="colecciones-grid" id="colecciones-grid">
+
+        <!-- Colección Zen -->
+        <article class="coleccion-card reveal" onclick="ModuloCatalogo.activarFiltro('Zen'); document.querySelector('#catalogo').scrollIntoView({behavior:'smooth'})">
+          <!-- Imagen de la colección -->
+          <div style="width:100%;height:100%;background:linear-gradient(135deg,#1a1a14 0%,#2a2518 100%);display:flex;align-items:center;justify-content:center;">
+            <span style="font-family:'Cormorant Garamond',serif;font-size:3rem;font-style:italic;color:rgba(212,163,115,0.15);letter-spacing:0.2em;">禅</span>
+          </div>
+          <!-- Overlay con información -->
+          <div class="coleccion-overlay">
+            <span class="coleccion-filosofia">Minimalismo japonés</span>
+            <h3 class="coleccion-nombre">Kinara Zen</h3>
+            <p class="coleccion-desc">Sobriedad como elegancia suprema. Formas que aportan serenidad.</p>
+          </div>
+        </article>
+
+        <!-- Colección Min -->
+        <article class="coleccion-card reveal" onclick="ModuloCatalogo.activarFiltro('Min'); document.querySelector('#catalogo').scrollIntoView({behavior:'smooth'})">
+          <div style="width:100%;height:100%;background:linear-gradient(135deg,#101418 0%,#1a2028 100%);display:flex;align-items:center;justify-content:center;">
+            <svg width="60" height="60" viewBox="0 0 60 60" style="opacity:0.15">
+              <rect x="5" y="5" width="50" height="50" fill="none" stroke="#D4A373" stroke-width="1"/>
+              <line x1="30" y1="5" x2="30" y2="55" stroke="#D4A373" stroke-width="0.5"/>
+              <line x1="5" y1="30" x2="55" y2="30" stroke="#D4A373" stroke-width="0.5"/>
+            </svg>
+          </div>
+          <div class="coleccion-overlay">
+            <span class="coleccion-filosofia">Diseño geométrico</span>
+            <h3 class="coleccion-nombre">Kinara Min</h3>
+            <p class="coleccion-desc">Ángulos precisos que dialogan con la arquitectura contemporánea.</p>
+          </div>
+        </article>
+
+        <!-- Colección Nova -->
+        <article class="coleccion-card reveal" onclick="ModuloCatalogo.activarFiltro('Nova'); document.querySelector('#catalogo').scrollIntoView({behavior:'smooth'})">
+          <div style="width:100%;height:100%;background:linear-gradient(135deg,#0c1018 0%,#141828 100%);display:flex;align-items:center;justify-content:center;">
+            <svg width="60" height="60" viewBox="0 0 60 60" style="opacity:0.15">
+              <circle cx="30" cy="30" r="24" fill="none" stroke="#D4A373" stroke-width="0.5"/>
+              <circle cx="30" cy="30" r="16" fill="none" stroke="#D4A373" stroke-width="0.5"/>
+              <circle cx="30" cy="30" r="8" fill="none" stroke="#D4A373" stroke-width="0.5"/>
+              <circle cx="30" cy="30" r="3" fill="#D4A373" opacity="0.3"/>
+            </svg>
+          </div>
+          <div class="coleccion-overlay">
+            <span class="coleccion-filosofia">Futurismo e innovación</span>
+            <h3 class="coleccion-nombre">Kinara Nova</h3>
+            <p class="coleccion-desc">Formas que parecen pertenecer a otro tiempo. Audacia pura.</p>
+          </div>
+        </article>
+
+        <!-- Colección Aura -->
+        <article class="coleccion-card reveal" onclick="ModuloCatalogo.activarFiltro('Aura'); document.querySelector('#catalogo').scrollIntoView({behavior:'smooth'})">
+          <div style="width:100%;height:100%;background:linear-gradient(135deg,#18130c 0%,#281e12 100%);display:flex;align-items:center;justify-content:center;">
+            <svg width="70" height="60" viewBox="0 0 70 60" style="opacity:0.15">
+              <ellipse cx="35" cy="30" rx="30" ry="20" fill="none" stroke="#D4A373" stroke-width="0.5"/>
+              <ellipse cx="35" cy="30" rx="20" ry="28" fill="none" stroke="#D4A373" stroke-width="0.5"/>
+              <ellipse cx="35" cy="30" rx="10" ry="15" fill="none" stroke="#D4A373" stroke-width="0.5"/>
+            </svg>
+          </div>
+          <div class="coleccion-overlay">
+            <span class="coleccion-filosofia">Formas orgánicas</span>
+            <h3 class="coleccion-nombre">Kinara Aura</h3>
+            <p class="coleccion-desc">Inspirada en la naturaleza: conchas, raíces y nubes vivas.</p>
+          </div>
+        </article>
+
+        <!-- Colección Raíz -->
+        <article class="coleccion-card reveal" onclick="ModuloCatalogo.activarFiltro('Raíz'); document.querySelector('#catalogo').scrollIntoView({behavior:'smooth'})">
+          <div style="width:100%;height:100%;background:linear-gradient(135deg,#1a1008 0%,#281810 100%);display:flex;align-items:center;justify-content:center;">
+            <svg width="60" height="60" viewBox="0 0 60 60" style="opacity:0.15">
+              <polygon points="30,5 55,20 55,40 30,55 5,40 5,20" fill="none" stroke="#D4A373" stroke-width="0.5"/>
+              <polygon points="30,15 45,23 45,37 30,45 15,37 15,23" fill="none" stroke="#D4A373" stroke-width="0.5"/>
+              <polygon points="30,25 38,30 38,35 30,40 22,35 22,30" fill="none" stroke="#D4A373" stroke-width="0.3"/>
+            </svg>
+          </div>
+          <div class="coleccion-overlay">
+            <span class="coleccion-filosofia">Cultura mexicana</span>
+            <h3 class="coleccion-nombre">Kinara Raíz</h3>
+            <p class="coleccion-desc">Patrones prehispánicos y populares cobran nueva vida luminosa.</p>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- =====================================================
+       SECCIÓN CATÁLOGO — Grid de productos con filtros
+       El módulo productos.js renderiza las tarjetas dinámicamente.
+       Los filtros permiten explorar por colección y ordenamiento.
+       ===================================================== -->
+  <section id="catalogo" class="seccion" aria-label="Catálogo de luminarias">
+    <div class="contenedor">
+
+      <!-- Cabecera de la sección -->
+      <div style="margin-bottom: 3rem;">
+        <span class="etiqueta-seccion reveal">Catálogo completo</span>
+        <h2 class="titulo-seccion reveal">
+          Cada pieza, <span class="acento">única</span>
+        </h2>
+      </div>
+
+      <!-- Layout: filtros lateral + grid de productos -->
+      <div class="catalogo-layout">
+
+        <!-- Panel de filtros lateral -->
+        <aside class="catalogo-filtros reveal" aria-label="Filtros del catálogo">
+
+          <!-- Título del panel -->
+          <span class="filtros-titulo">Filtrar por</span>
+
+          <!-- Divisor decorativo -->
+          <div class="filtros-separador"></div>
+
+          <!-- Grupo de filtros: por colección -->
+          <div class="filtro-grupo">
+            <span class="filtro-grupo-titulo">Colección</span>
+
+            <!-- Botón "Todos" activo por defecto -->
+            <button class="filtro-btn activo" data-coleccion="Todos">
+              Todas las colecciones
+            </button>
+            <button class="filtro-btn" data-coleccion="Zen">Kinara Zen</button>
+            <button class="filtro-btn" data-coleccion="Min">Kinara Min</button>
+            <button class="filtro-btn" data-coleccion="Nova">Kinara Nova</button>
+            <button class="filtro-btn" data-coleccion="Aura">Kinara Aura</button>
+            <button class="filtro-btn" data-coleccion="Raíz">Kinara Raíz</button>
+          </div>
+
+          <!-- Divisor -->
+          <div class="filtros-separador"></div>
+
+          <!-- Grupo de filtros: por disponibilidad -->
+          <div class="filtro-grupo">
+            <span class="filtro-grupo-titulo">Stock</span>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+
+              <!-- Leyenda de los badges de stock -->
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--color-blanco-dim);">
+                <span class="badge-stock badge-disponible" style="font-size: 0.65rem;">
+                  <span class="punto"></span>Disponible
+                </span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--color-blanco-dim);">
+                <span class="badge-stock badge-pocas" style="font-size: 0.65rem;">
+                  <span class="punto"></span>Últimas piezas
+                </span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--color-blanco-dim);">
+                <span class="badge-stock badge-agotado" style="font-size: 0.65rem;">
+                  <span class="punto"></span>Agotado
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Divisor -->
+          <div class="filtros-separador"></div>
+
+          <!-- Información de personalización -->
+          <div style="padding: 1rem; background: rgba(212,163,115,0.05); border: 1px solid rgba(212,163,115,0.15);">
+            <p style="font-size: 0.75rem; color: var(--color-blanco-dim); line-height: 1.6;">
+              ¿Buscas una pieza <strong style="color: var(--color-dorado);">personalizada</strong>?
+              También trabajo proyectos a medida para arquitectos e interioristas.
+            </p>
+            <a href="#contacto" class="btn-primario" style="display: block; text-align: center; margin-top: 12px; padding: 0.625rem; font-size: 0.7rem;">
+              Consultar
+            </a>
+          </div>
+        </aside>
+
+        <!-- Área principal del catálogo -->
+        <div>
+          <!-- Barra de resultados y ordenamiento -->
+          <div class="catalogo-barra">
+            <!-- Contador de resultados (actualizado por productos.js) -->
+            <span class="catalogo-resultados">
+              <span id="catalogo-contador">12 luminarias</span>
+            </span>
+
+            <!-- Selector de ordenamiento -->
+            <div class="catalogo-orden">
+              <span>Ordenar por:</span>
+              <select
+                id="selector-orden"
+                class="select-personalizado"
+                aria-label="Ordenar productos"
+              >
+                <option value="destacado">Destacados</option>
+                <option value="nuevo">Más recientes</option>
+                <option value="precio-asc">Precio: menor a mayor</option>
+                <option value="precio-desc">Precio: mayor a menor</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Grid donde productos.js inyecta las tarjetas -->
+          <div class="catalogo-grid" id="catalogo-grid" role="list" aria-label="Listado de luminarias">
+            <!-- Las tarjetas se generan dinámicamente con JavaScript -->
+            <!-- Ver js/productos.js → ModuloCatalogo.renderizarCatalogo() -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- =====================================================
+       SECCIÓN CONTACTO — Formulario y datos de contacto
+       ===================================================== -->
+  <section id="contacto" class="seccion" style="background-color: var(--color-grafito);" aria-label="Contacto">
+    <div class="contenedor">
+
+      <!-- Layout de dos columnas: información y formulario -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;">
+
+        <!-- Columna izquierda: información -->
+        <div>
+          <span class="etiqueta-seccion reveal">Hablemos</span>
+          <h2 class="titulo-seccion reveal">
+            ¿Tienes un <span class="acento">espacio</span><br/>que iluminar?
+          </h2>
+          <p class="reveal" style="margin-top: 1.5rem; max-width: 400px;">
+            Trabajo tanto con colecciones propias como con proyectos de diseño
+            a medida para arquitectos, interioristas y particulares que buscan
+            una solución de iluminación verdaderamente singular.
+          </p>
+
+          <!-- Datos de contacto -->
+          <div style="margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1rem;" class="reveal">
+            <div style="display: flex; gap: 1rem; align-items: center; color: var(--color-blanco-dim); font-size: 0.875rem;">
+              <span style="color: var(--color-dorado);">✦</span>
+              <span>hola@kinara.mx</span>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center; color: var(--color-blanco-dim); font-size: 0.875rem;">
+              <span style="color: var(--color-dorado);">✦</span>
+              <span>México — atención en todo el país</span>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center; color: var(--color-blanco-dim); font-size: 0.875rem;">
+              <span style="color: var(--color-dorado);">✦</span>
+              <span>Tiempo de respuesta: 24-48 horas</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna derecha: formulario -->
+        <div class="reveal">
+          <!-- Formulario de contacto básico -->
+          <!-- NOTA: En fase 2 conectaré este formulario a Supabase
+               para gestionar los leads y consultas desde el panel admin -->
+          <div style="
+            background: rgba(15,15,15,0.5);
+            border: 1px solid var(--color-borde);
+            padding: 2.5rem;
+          ">
+            <!-- Nombre -->
+            <div style="margin-bottom: 1.25rem;">
+              <label for="nombre" style="display: block; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-dorado); margin-bottom: 0.5rem;">
+                Nombre
+              </label>
+              <input
+                type="text"
+                id="nombre"
+                placeholder="Tu nombre completo"
+                style="
+                  width: 100%;
+                  background: transparent;
+                  border: 1px solid var(--color-borde);
+                  color: var(--color-blanco);
+                  font-family: var(--fuente-cuerpo);
+                  font-size: 0.875rem;
+                  padding: 0.875rem 1rem;
+                  outline: none;
+                  transition: border-color 0.2s ease;
+                "
+                onfocus="this.style.borderColor='var(--color-dorado)'"
+                onblur="this.style.borderColor='var(--color-borde)'"
+              />
+            </div>
+
+            <!-- Email -->
+            <div style="margin-bottom: 1.25rem;">
+              <label for="email" style="display: block; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-dorado); margin-bottom: 0.5rem;">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                placeholder="tu@email.com"
+                style="
+                  width: 100%;
+                  background: transparent;
+                  border: 1px solid var(--color-borde);
+                  color: var(--color-blanco);
+                  font-family: var(--fuente-cuerpo);
+                  font-size: 0.875rem;
+                  padding: 0.875rem 1rem;
+                  outline: none;
+                  transition: border-color 0.2s ease;
+                "
+                onfocus="this.style.borderColor='var(--color-dorado)'"
+                onblur="this.style.borderColor='var(--color-borde)'"
+              />
+            </div>
+
+            <!-- Tipo de consulta -->
+            <div style="margin-bottom: 1.25rem;">
+              <label for="tipo" style="display: block; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-dorado); margin-bottom: 0.5rem;">
+                Tipo de consulta
+              </label>
+              <select
+                id="tipo"
+                class="select-personalizado"
+                style="width: 100%; padding: 0.875rem 1rem; border-radius: 0;"
+              >
+                <option value="">Selecciona una opción</option>
+                <option value="producto">Consulta sobre un producto</option>
+                <option value="personalizado">Proyecto personalizado</option>
+                <option value="arquitecto">Soy arquitecto/interiorista</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+
+            <!-- Mensaje -->
+            <div style="margin-bottom: 1.5rem;">
+              <label for="mensaje" style="display: block; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-dorado); margin-bottom: 0.5rem;">
+                Mensaje
+              </label>
+              <textarea
+                id="mensaje"
+                rows="4"
+                placeholder="Cuéntame sobre tu proyecto o consulta..."
+                style="
+                  width: 100%;
+                  background: transparent;
+                  border: 1px solid var(--color-borde);
+                  color: var(--color-blanco);
+                  font-family: var(--fuente-cuerpo);
+                  font-size: 0.875rem;
+                  padding: 0.875rem 1rem;
+                  outline: none;
+                  resize: vertical;
+                  min-height: 120px;
+                  transition: border-color 0.2s ease;
+                "
+                onfocus="this.style.borderColor='var(--color-dorado)'"
+                onblur="this.style.borderColor='var(--color-borde)'"
+              ></textarea>
+            </div>
+
+            <!-- Botón de envío -->
+            <button
+              type="button"
+              class="btn-primario"
+              style="width: 100%; justify-content: center;"
+              
+            >
+              Enviar consulta
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- =====================================================
+       FOOTER — Pie de página con links y copyright
+       ===================================================== -->
+  <footer id="footer" role="contentinfo">
+    <div class="contenedor">
+
+      <!-- Grid del footer en 4 columnas -->
+      <div class="footer-grid">
+
+        <!-- Columna 1: Marca -->
+        <div class="footer-marca">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.5rem;">
+            <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true">
+              <polygon points="6,0 12,6 6,12 0,6" fill="#D4A373" />
+            </svg>
+            <span class="logo-nombre" style="font-size: 1.1rem;">KINARA</span>
+          </div>
+          <p class="footer-descripcion">
+            Diseño de luminarias innovadoras que integran tecnología, creatividad
+            y fabricación digital avanzada. Donde la luz cobra forma.
+          </p>
+        </div>
+
+        <!-- Columna 2: Colecciones -->
+        <div>
+          <h4 class="footer-titulo">Colecciones</h4>
+          <nav class="footer-links" aria-label="Colecciones">
+            <a href="#catalogo" class="footer-link" onclick="ModuloCatalogo.activarFiltro('Zen')">Kinara Zen</a>
+            <a href="#catalogo" class="footer-link" onclick="ModuloCatalogo.activarFiltro('Min')">Kinara Min</a>
+            <a href="#catalogo" class="footer-link" onclick="ModuloCatalogo.activarFiltro('Nova')">Kinara Nova</a>
+            <a href="#catalogo" class="footer-link" onclick="ModuloCatalogo.activarFiltro('Aura')">Kinara Aura</a>
+            <a href="#catalogo" class="footer-link" onclick="ModuloCatalogo.activarFiltro('Raíz')">Kinara Raíz</a>
+          </nav>
+        </div>
+
+        <!-- Columna 3: Información -->
+        <div>
+          <h4 class="footer-titulo">Información</h4>
+          <nav class="footer-links" aria-label="Información">
+            <a href="#filosofia" class="footer-link">Sobre la marca</a>
+            <a href="#" class="footer-link">Proceso de creación</a>
+            <a href="#" class="footer-link">Materiales</a>
+            <a href="#" class="footer-link">Envíos y entregas</a>
+            <a href="#" class="footer-link">Proyectos a medida</a>
+          </nav>
+        </div>
+
+        <!-- Columna 4: Contacto -->
+        <div>
+          <h4 class="footer-titulo">Contacto</h4>
+          <nav class="footer-links" aria-label="Contacto">
+            <a href="#contacto" class="footer-link">Enviar mensaje</a>
+            <a href="mailto:hola@kinara.mx" class="footer-link">hola@kinara.mx</a>
+            <a href="#" class="footer-link">Instagram</a>
+            <a href="#" class="footer-link">Pinterest</a>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Pie del footer: copyright -->
+      <div class="footer-bottom">
+        <span class="footer-copyright">
+          © 2025 Kinara — Todos los derechos reservados
+        </span>
+        <span class="footer-copyright">
+          Diseño de Luminarias Innovadoras · México
+        </span>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- =====================================================
+       SCRIPTS — Los cargo al final del body para no
+       bloquear el renderizado del HTML.
+       Orden: primero el principal, luego los módulos.
+       ===================================================== -->
+
+  <!-- SDK de Supabase (antes que nuestros scripts) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- Cliente Supabase de Kinara -->
+  <script src="js/lib/supabase.js"></script>
+
+  <!-- Script principal: cursor, header, partículas, animaciones -->
+  <script src="js/main.js"></script>
+
+  <!-- SDK de Mercado Pago -->
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
+
+  <!-- Módulo del carrito -->
+  <script src="js/carrito.js"></script>
+
+  <!-- Script del catálogo: productos, filtros y carrito -->
+  <script src="js/productos.js"></script>
+
+
+  <!-- DRAWER DEL CARRITO (Fase 3) -->
+  <div id="carrito-overlay" aria-hidden="true"></div>
+  <aside id="carrito-drawer" role="dialog" aria-modal="true" aria-label="Carrito de compras">
+    <div class="carrito-header">
+      <span class="carrito-titulo">Carrito <span class="carrito-titulo-contador" id="carrito-titulo-contador"></span></span>
+      <button class="carrito-cerrar" id="carrito-cerrar-btn" aria-label="Cerrar carrito">&#215;</button>
+    </div>
+    <div class="carrito-items" id="carrito-items-contenedor"></div>
+    <div class="carrito-footer">
+      <div class="carrito-subtotal">
+        <span class="carrito-subtotal-label">Total estimado</span>
+        <span class="carrito-subtotal-valor" id="carrito-total-valor">$0 MXN</span>
+      </div>
+      <p class="carrito-nota-envio">El costo de envio se calcula en el checkout</p>
+      <button class="btn-checkout" id="btn-checkout" disabled>Proceder al pago</button>
+    </div>
+  </aside>
+
+  <!-- MODAL DE CHECKOUT (Fase 3) -->
+  <div id="checkout-overlay" style="display:none;" role="dialog" aria-modal="true">
+    <div class="checkout-modal">
+      <div class="checkout-modal-header">
+        <h2 class="checkout-modal-titulo">Datos de envio</h2>
+        <button id="checkout-cerrar-btn" style="color:var(--color-blanco-dim);font-size:1.4rem;background:none;border:none;">&#215;</button>
+      </div>
+      <div class="checkout-modal-cuerpo" id="checkout-modal-cuerpo">
+        <div class="checkout-paso-label"><span class="checkout-paso-numero">1</span>Datos de contacto</div>
+        <div class="checkout-campo">
+          <label class="checkout-label" for="co-nombre">Nombre completo</label>
+          <input type="text" id="co-nombre" class="checkout-input" placeholder="Tu nombre completo" autocomplete="name"/>
+          <span class="checkout-campo-error" id="err-nombre"></span>
+        </div>
+        <div class="checkout-grid-2">
+          <div class="checkout-campo">
+            <label class="checkout-label" for="co-email">Email</label>
+            <input type="email" id="co-email" class="checkout-input" placeholder="tu@email.com" autocomplete="email"/>
+            <span class="checkout-campo-error" id="err-email"></span>
+          </div>
+          <div class="checkout-campo">
+            <label class="checkout-label" for="co-telefono">Telefono</label>
+            <input type="tel" id="co-telefono" class="checkout-input" placeholder="55 1234 5678" autocomplete="tel"/>
+            <span class="checkout-campo-error" id="err-telefono"></span>
+          </div>
+        </div>
+        <div class="checkout-paso-label" style="margin-top:1.25rem;"><span class="checkout-paso-numero">2</span>Direccion de envio</div>
+        <div class="checkout-campo">
+          <label class="checkout-label" for="co-direccion">Calle y numero</label>
+          <input type="text" id="co-direccion" class="checkout-input" placeholder="Av. Insurgentes Sur 1234, Col. Del Valle" autocomplete="street-address"/>
+          <span class="checkout-campo-error" id="err-direccion"></span>
+        </div>
+        <div class="checkout-grid-2">
+          <div class="checkout-campo">
+            <label class="checkout-label" for="co-ciudad">Ciudad</label>
+            <input type="text" id="co-ciudad" class="checkout-input" placeholder="Ciudad de Mexico" autocomplete="address-level2"/>
+            <span class="checkout-campo-error" id="err-ciudad"></span>
+          </div>
+          <div class="checkout-campo">
+            <label class="checkout-label" for="co-cp">Codigo postal</label>
+            <input type="text" id="co-cp" class="checkout-input" placeholder="03100" maxlength="5" autocomplete="postal-code"/>
+            <span class="checkout-campo-error" id="err-cp"></span>
+          </div>
+        </div>
+        <div class="checkout-campo">
+          <label class="checkout-label" for="co-estado">Estado</label>
+          <select id="co-estado" class="checkout-input" autocomplete="address-level1">
+            <option value="">Selecciona tu estado</option>
+            <option>Aguascalientes</option><option>Baja California</option><option>Baja California Sur</option>
+            <option>Campeche</option><option>Chiapas</option><option>Chihuahua</option>
+            <option>Ciudad de Mexico</option><option>Coahuila</option><option>Colima</option>
+            <option>Durango</option><option>Guanajuato</option><option>Guerrero</option>
+            <option>Hidalgo</option><option>Jalisco</option><option>Mexico</option>
+            <option>Michoacan</option><option>Morelos</option><option>Nayarit</option>
+            <option>Nuevo Leon</option><option>Oaxaca</option><option>Puebla</option>
+            <option>Queretaro</option><option>Quintana Roo</option><option>San Luis Potosi</option>
+            <option>Sinaloa</option><option>Sonora</option><option>Tabasco</option>
+            <option>Tamaulipas</option><option>Tlaxcala</option><option>Veracruz</option>
+            <option>Yucatan</option><option>Zacatecas</option>
+          </select>
+        </div>
+        <div class="checkout-paso-label" style="margin-top:1.25rem;"><span class="checkout-paso-numero">3</span>Resumen</div>
+        <div class="checkout-resumen">
+          <div id="checkout-resumen-items"></div>
+          <div class="checkout-resumen-total">
+            <span style="font-size:.875rem;color:var(--color-blanco-dim);">Total</span>
+            <span id="checkout-total">$0 MXN</span>
+          </div>
+        </div>
+        <p style="font-size:.75rem;color:var(--color-blanco-dim);opacity:.6;text-align:center;margin-bottom:1rem;">
+          Seras redirigido a Mercado Pago para completar el pago de forma segura.
+        </p>
+        <button id="btn-pagar" class="btn-checkout">Ir a pagar con Mercado Pago</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de agregar al carrito -->
+  <div id="agregar-toast" role="status" aria-live="polite"></div>
+
+</body>
+</html>

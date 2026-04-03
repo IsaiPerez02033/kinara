@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<!--
+  confirmacion.html — Página de confirmación de pedido
+  El cliente llega aquí después de pagar en Mercado Pago.
+  Mercado Pago envía el resultado del pago en los parámetros
+  de la URL (?status=success/failure/pending&pedido=UUID).
+  Leo esos parámetros, consulto el pedido en Supabase y
+  muestro el mensaje apropiado al cliente.
+-->
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- No indexo esta página -->
+  <meta name="robots" content="noindex" />
+  <title>Confirmación de pedido — Kinara</title>
+
+  <!-- Estilos de la marca -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/variables.css" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/components.css" />
+  <link rel="stylesheet" href="../css/carrito.css" />
+
+  <style>
+    /* Oculto el cursor personalizado en esta página de confirmación */
+    #cursor-punto, #cursor-anillo { display: none; }
+
+    /* Fondo con partículas muy sutiles */
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Ornamento dorado animado de confirmación */
+    @keyframes aparecer-icono {
+      from { transform: scale(0.5); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .confirmacion-icono {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--espacio-md);
+      animation: aparecer-icono 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Tabla de resumen del pedido */
+    .pedido-tabla {
+      width: 100%;
+      border-collapse: collapse;
+      margin: var(--espacio-md) 0;
+      text-align: left;
+    }
+
+    .pedido-tabla th {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--color-dorado);
+      padding: 8px 0;
+      border-bottom: 1px solid var(--color-borde);
+      font-weight: 400;
+    }
+
+    .pedido-tabla td {
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.875rem;
+      color: var(--color-blanco-dim);
+    }
+
+    .pedido-tabla td:last-child {
+      text-align: right;
+      color: var(--color-blanco);
+    }
+
+    /* Total del pedido */
+    .pedido-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding-top: var(--espacio-sm);
+      border-top: 1px solid var(--color-borde);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header mínimo -->
+  <header style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--color-borde);">
+    <a href="../index.html" style="
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--fuente-display); font-size: 1.3rem;
+      letter-spacing: 0.15em; color: var(--color-blanco);
+      text-decoration: none;
+    ">
+      <svg width="10" height="10" viewBox="0 0 12 12">
+        <polygon points="6,0 12,6 6,12 0,6" fill="#D4A373"/>
+      </svg>
+      KINARA
+    </a>
+  </header>
+
+  <!-- Contenido principal: se renderiza con JavaScript -->
+  <main class="confirmacion-page">
+    <div class="confirmacion-card" id="confirmacion-contenido">
+
+      <!-- Estado de carga mientras consulto Supabase -->
+      <div id="estado-cargando">
+        <div class="confirmacion-ornamento">◇</div>
+        <h1 class="confirmacion-titulo" style="font-size: 1.8rem;">
+          Verificando tu pedido…
+        </h1>
+        <div class="pago-spinner" style="margin: 1.5rem auto;"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer mínimo -->
+  <footer style="padding: 1.5rem; text-align: center; border-top: 1px solid var(--color-borde); margin-top: auto;">
+    <p style="font-size: 0.75rem; color: var(--color-blanco-dim); opacity: 0.5;">
+      © 2025 Kinara — Diseño de Luminarias Innovadoras
+    </p>
+  </footer>
+
+  <!-- SDK de Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- Cliente Supabase de Kinara -->
+  <script src="../js/lib/supabase.js"></script>
+
+  <script>
+    'use strict';
+
+    /**
+     * Leo los parámetros de la URL que Mercado Pago envía
+     * después de que el cliente completa (o falla) el pago.
+     *
+     * Mercado Pago envía estos parámetros:
+     * - status: "approved" | "failure" | "pending"
+     * - collection_status: estado del cobro
+     * - payment_id: ID del pago en MP
+     * - pedido: el external_reference que envié (UUID del pedido)
+     */
+    const params    = new URLSearchParams(window.location.search);
+    const status    = params.get('status');
+    const pedidoId  = params.get('pedido');
+    const paymentId = params.get('payment_id') || params.get('collection_id');
+
+    /**
+     * Formateo un precio en MXN.
+     */
+    const fmt = (n) =>
+      parseFloat(n).toLocaleString('es-MX', { minimumFractionDigits: 0 });
+
+    /**
+     * Formateo una fecha de forma legible.
+     */
+    const fmtFecha = (f) =>
+      new Date(f).toLocaleDateString('es-MX', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+    /**
+     * Renderizo el contenido de la página según el resultado del pago.
+     * Consulto el pedido en Supabase para mostrar los detalles reales.
+     */
+    const renderizarConfirmacion = async () => {
+      const contenedor = document.getElementById('confirmacion-contenido');
+
+      // Caso: pago aprobado (success)
+      if (status === 'success' && pedidoId) {
+        // Consulto el resumen del pedido en Supabase
+        const { data, error } = await SupabaseDB.cliente
+          .rpc('obtener_resumen_pedido', { p_pedido_id: pedidoId });
+
+        // Limpio el carrito del localStorage porque el pago fue exitoso
+        localStorage.removeItem('kinara_carrito_v1');
+        localStorage.removeItem('kinara_pedido_actual');
+
+        const pedido = data?.[0];
+
+        contenedor.innerHTML = `
+          <!-- Ícono de éxito -->
+          <div class="confirmacion-icono" style="
+            background: rgba(123,201,154,0.1);
+            border: 1px solid rgba(123,201,154,0.3);
+          ">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                 stroke="#7BC99A" stroke-width="1.5" stroke-linecap="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+
+          <!-- Ornamento Kinara -->
+          <p style="font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;
+                    color:var(--color-dorado);margin-bottom:.5rem;">Pago confirmado</p>
+
+          <!-- Título -->
+          <h1 class="confirmacion-titulo">Gracias por tu pedido</h1>
+          <p class="confirmacion-subtitulo">
+            ${pedido?.cliente_nombre ? `Hola, ${pedido.cliente_nombre.split(' ')[0]}.` : ''}
+            Tu luminaria está en camino a nuestro taller.
+          </p>
+
+          <!-- ID del pedido -->
+          <div class="confirmacion-id">
+            Pedido #${pedidoId?.substring(0,8).toUpperCase()}
+          </div>
+
+          <!-- Resumen del pedido si tenemos datos -->
+          ${pedido ? `
+            <div style="text-align:left;margin-bottom:1.5rem;">
+
+              <!-- Items del pedido -->
+              <table class="pedido-tabla">
+                <thead>
+                  <tr>
+                    <th>Luminaria</th>
+                    <th style="text-align:right;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${(typeof pedido.items === 'string' ? JSON.parse(pedido.items) : pedido.items || [])
+                    .map(item => `
+                      <tr>
+                        <td>
+                          <span style="color:var(--color-blanco);">${item.nombre}</span>
+                          <span style="display:block;font-size:.75rem;color:var(--color-dorado);opacity:.7;">${item.coleccion}</span>
+                          <span style="font-size:.75rem;">× ${item.cantidad}</span>
+                        </td>
+                        <td>$${fmt(item.subtotal)}</td>
+                      </tr>
+                    `).join('')}
+                </tbody>
+              </table>
+
+              <!-- Total -->
+              <div class="pedido-total">
+                <span style="font-size:.875rem;color:var(--color-blanco-dim);">Total pagado</span>
+                <span style="font-family:var(--fuente-display);font-size:1.5rem;">
+                  $${fmt(pedido.total)} MXN
+                </span>
+              </div>
+            </div>
+
+            <!-- Dirección de envío -->
+            ${pedido.direccion_envio ? `
+              <div style="text-align:left;padding:1rem;background:rgba(212,163,115,0.05);
+                          border:1px solid rgba(212,163,115,0.15);margin-bottom:1.5rem;">
+                <p style="font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;
+                          color:var(--color-dorado);margin-bottom:.5rem;">Dirección de envío</p>
+                <p style="font-size:.875rem;color:var(--color-blanco-dim);">${pedido.direccion_envio}</p>
+              </div>
+            ` : ''}
+          ` : ''}
+
+          <!-- Próximos pasos -->
+          <div style="text-align:left;margin-bottom:1.5rem;">
+            <p style="font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;
+                      color:var(--color-dorado);margin-bottom:.75rem;">¿Qué sigue?</p>
+            <div style="display:flex;flex-direction:column;gap:.5rem;">
+              <div style="display:flex;gap:.75rem;font-size:.875rem;color:var(--color-blanco-dim);">
+                <span style="color:var(--color-dorado);flex-shrink:0;">01</span>
+                <span>Recibirás un email de confirmación con los detalles de tu pedido</span>
+              </div>
+              <div style="display:flex;gap:.75rem;font-size:.875rem;color:var(--color-blanco-dim);">
+                <span style="color:var(--color-dorado);flex-shrink:0;">02</span>
+                <span>Nuestro equipo iniciará la producción de tu luminaria</span>
+              </div>
+              <div style="display:flex;gap:.75rem;font-size:.875rem;color:var(--color-blanco-dim);">
+                <span style="color:var(--color-dorado);flex-shrink:0;">03</span>
+                <span>Te notificaremos cuando tu pieza esté lista para envío</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Acciones -->
+          <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+            <a href="../index.html" class="btn-primario">Seguir explorando</a>
+            <a href="mailto:hola@kinara.mx" class="btn-secundario">Contactar a Kinara</a>
+          </div>
+        `;
+
+      } else if (status === 'pending') {
+        // Pago en proceso (transferencias bancarias, OXXO, etc.)
+        contenedor.innerHTML = `
+          <div class="confirmacion-icono" style="background:rgba(212,163,115,0.1);border:1px solid rgba(212,163,115,0.3);">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-dorado)" stroke-width="1.5" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+
+          <p style="font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--color-dorado);margin-bottom:.5rem;">
+            Pago en proceso
+          </p>
+
+          <h1 class="confirmacion-titulo">Tu pedido está pendiente</h1>
+          <p class="confirmacion-subtitulo">
+            Mercado Pago está procesando tu pago. Esto puede tardar algunas horas
+            dependiendo del método de pago seleccionado.
+          </p>
+
+          <div class="confirmacion-id">Pedido #${pedidoId?.substring(0,8).toUpperCase()}</div>
+
+          <div style="padding:1rem;background:rgba(212,163,115,0.05);border:1px solid rgba(212,163,115,0.15);
+                      text-align:left;margin-bottom:1.5rem;">
+            <p style="font-size:.875rem;color:var(--color-blanco-dim);line-height:1.7;">
+              Te enviaremos un email cuando el pago sea confirmado y tu pedido
+              entre a producción. Si pagaste en OXXO, presenta el ticket en
+              cualquier tienda OXXO.
+            </p>
+          </div>
+
+          <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+            <a href="../index.html" class="btn-primario">Volver al inicio</a>
+            <a href="mailto:hola@kinara.mx" class="btn-secundario">¿Tienes dudas?</a>
+          </div>
+        `;
+
+      } else {
+        // Pago fallido o cancelado
+        contenedor.innerHTML = `
+          <div class="confirmacion-icono" style="background:rgba(192,112,112,0.1);border:1px solid rgba(192,112,112,0.3);">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C07070" stroke-width="1.5" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </div>
+
+          <p style="font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:#C07070;margin-bottom:.5rem;">
+            Pago no completado
+          </p>
+
+          <h1 class="confirmacion-titulo">Algo salió mal</h1>
+          <p class="confirmacion-subtitulo">
+            El pago no pudo completarse. No se realizó ningún cargo.
+            Puedes intentarlo de nuevo con otro método de pago.
+          </p>
+
+          <div style="padding:1rem;background:rgba(192,112,112,0.05);border:1px solid rgba(192,112,112,0.15);
+                      text-align:left;margin-bottom:1.5rem;">
+            <p style="font-size:.875rem;color:var(--color-blanco-dim);line-height:1.7;">
+              Los productos que seleccionaste siguen en tu carrito.
+              Puedes volver e intentar con otro método de pago o contactarnos
+              si necesitas ayuda.
+            </p>
+          </div>
+
+          <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+            <a href="../index.html#catalogo" class="btn-primario">Volver al carrito</a>
+            <a href="mailto:hola@kinara.mx" class="btn-secundario">Pedir ayuda</a>
+          </div>
+        `;
+      }
+    };
+
+    // Inicio la renderización cuando el DOM está listo
+    document.addEventListener('DOMContentLoaded', renderizarConfirmacion);
+  </script>
+</body>
+</html>

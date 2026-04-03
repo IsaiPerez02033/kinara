@@ -1,0 +1,104 @@
+/*
+ * ============================================================
+ * variables.css — Kinara Design System
+ * Defino aquí todas las variables globales de la marca:
+ * colores, tipografía, espaciado y transiciones.
+ * Este archivo es el corazón visual de todo el proyecto.
+ * ============================================================
+ */
+
+/* --- Importo las fuentes desde Google Fonts --- */
+/* Uso Cormorant Garamond para los títulos: elegante, con serifa, atemporal */
+/* Uso DM Sans para el cuerpo: legible, moderno, limpio */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+/* -------------------------------------------------------
+   Variables raíz — aplico al documento completo con :root
+   ------------------------------------------------------- */
+:root {
+
+  /* === PALETA DE COLORES KINARA === */
+  /* Negro profundo: el fondo sobre el que la luz cobra vida */
+  --color-negro:      #0F0F0F;
+  /* Gris grafito: para superficies secundarias y elementos técnicos */
+  --color-grafito:    #2B2B2B;
+  /* Gris medio: para bordes sutiles y divisores */
+  --color-borde:      #3A3A3A;
+  /* Blanco suave: para texto principal y claridad */
+  --color-blanco:     #F5F5F5;
+  /* Blanco atenuado: para texto secundario y descripciones */
+  --color-blanco-dim: #A8A8A0;
+  /* Dorado cálido: el acento de la marca, la llama encendida */
+  --color-dorado:     #D4A373;
+  /* Dorado claro: para hover states y destellos */
+  --color-dorado-luz: #E8C99A;
+  /* Dorado oscuro: para sombras y bordes del dorado */
+  --color-dorado-sombra: #9A7250;
+
+  /* === TIPOGRAFÍA === */
+  /* Fuente de display: para títulos y elementos de marca */
+  --fuente-display: 'Cormorant Garamond', Georgia, serif;
+  /* Fuente de cuerpo: para texto corrido y UI */
+  --fuente-cuerpo:  'DM Sans', system-ui, sans-serif;
+
+  /* === TAMAÑOS TIPOGRÁFICOS === */
+  --texto-xs:   0.75rem;   /* 12px — etiquetas pequeñas */
+  --texto-sm:   0.875rem;  /* 14px — texto secundario */
+  --texto-base: 1rem;      /* 16px — texto base */
+  --texto-lg:   1.125rem;  /* 18px — texto destacado */
+  --texto-xl:   1.5rem;    /* 24px — subtítulos */
+  --texto-2xl:  2rem;      /* 32px — títulos de sección */
+  --texto-3xl:  3rem;      /* 48px — títulos grandes */
+  --texto-4xl:  4.5rem;    /* 72px — hero display */
+  --texto-5xl:  6rem;      /* 96px — super display */
+
+  /* === ESPACIADO === */
+  --espacio-xs:  0.5rem;   /* 8px */
+  --espacio-sm:  1rem;     /* 16px */
+  --espacio-md:  1.5rem;   /* 24px */
+  --espacio-lg:  2.5rem;   /* 40px */
+  --espacio-xl:  4rem;     /* 64px */
+  --espacio-2xl: 6rem;     /* 96px */
+  --espacio-3xl: 10rem;    /* 160px */
+
+  /* === BORDES Y RADIOS === */
+  --radio-sm:   4px;
+  --radio-md:   8px;
+  --radio-lg:   16px;
+  --radio-full: 999px;
+
+  /* === TRANSICIONES === */
+  /* Transición rápida para micro-interacciones */
+  --transicion-rapida: 0.2s ease;
+  /* Transición normal para hover y cambios de estado */
+  --transicion-normal: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* Transición lenta para animaciones de entrada */
+  --transicion-lenta:  0.8s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* === SOMBRAS === */
+  /* Sombra sutil para tarjetas en reposo */
+  --sombra-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  /* Sombra media para elementos elevados */
+  --sombra-md: 0 8px 32px rgba(0, 0, 0, 0.6);
+  /* Sombra grande para modales y overlays */
+  --sombra-lg: 0 24px 64px rgba(0, 0, 0, 0.8);
+  /* Sombra dorada: para resaltar elementos de marca en hover */
+  --sombra-dorada: 0 8px 32px rgba(212, 163, 115, 0.15);
+
+  /* === LAYOUT === */
+  /* Ancho máximo del contenido principal */
+  --ancho-maximo: 1400px;
+  /* Padding lateral en desktop */
+  --padding-lateral: 5%;
+  /* Altura del header fijo */
+  --altura-header: 80px;
+}
+
+/* -------------------------------------------------------
+   Breakpoints de referencia (los uso en media queries):
+   --bp-sm:  640px  — móvil grande
+   --bp-md:  768px  — tablet
+   --bp-lg:  1024px — desktop pequeño
+   --bp-xl:  1280px — desktop
+   --bp-2xl: 1536px — pantalla grande
+   ------------------------------------------------------- */

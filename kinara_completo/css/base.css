@@ -1,0 +1,229 @@
+/*
+ * ============================================================
+ * base.css — Reset y estilos globales de Kinara
+ * Establezco aquí los estilos fundamentales que aplican
+ * a todos los elementos del sitio: reset, tipografía base,
+ * scroll behavior y utilidades globales.
+ * ============================================================
+ */
+
+/* --- Importo las variables de la marca --- */
+@import './variables.css';
+
+/* -------------------------------------------------------
+   Reset moderno — elimino los estilos por defecto del
+   navegador para tener control total sobre el diseño
+   ------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  /* Incluyo padding y border en el cálculo del tamaño total */
+  box-sizing: border-box;
+  /* Elimino márgenes y paddings por defecto de todos los elementos */
+  margin: 0;
+  padding: 0;
+}
+
+/* Establezco la base tipográfica y el comportamiento del scroll */
+html {
+  /* Activo el scroll suave para navegación entre secciones */
+  scroll-behavior: smooth;
+  /* Tamaño base de fuente: 16px (uso rem en todo el sitio) */
+  font-size: 16px;
+  /* Evito overflow horizontal en móviles */
+  overflow-x: hidden;
+}
+
+/* Configuro el cuerpo del documento con los valores de marca */
+body {
+  /* Aplico el color de fondo principal de Kinara */
+  background-color: var(--color-negro);
+  /* Aplico el color de texto base */
+  color: var(--color-blanco);
+  /* Fuente de cuerpo para todo el texto base */
+  font-family: var(--fuente-cuerpo);
+  /* Peso normal por defecto */
+  font-weight: 300;
+  /* Interlineado cómodo para lectura */
+  line-height: 1.7;
+  /* Activo el antialiasing para texto más nítido */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Evito overflow horizontal */
+  overflow-x: hidden;
+  /* Cursor personalizado con el dorado de la marca */
+  cursor: none;
+}
+
+/* -------------------------------------------------------
+   Cursor personalizado — reemplaza el cursor del sistema
+   ------------------------------------------------------- */
+/* Oculto el cursor nativo en todos los elementos interactivos */
+a, button, input, select, textarea, label, [role="button"] {
+  cursor: none;
+}
+
+/* -------------------------------------------------------
+   Tipografía base
+   ------------------------------------------------------- */
+/* Encabezados con la fuente de display de la marca */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--fuente-display);
+  font-weight: 300;
+  line-height: 1.15;
+  /* Aplico el color base de los títulos */
+  color: var(--color-blanco);
+  /* Activo las ligaduras tipográficas para mayor elegancia */
+  font-feature-settings: "liga" 1, "kern" 1;
+}
+
+/* Párrafos con espaciado entre ellos */
+p {
+  color: var(--color-blanco-dim);
+  line-height: 1.8;
+}
+
+/* Anclas sin decoración por defecto */
+a {
+  text-decoration: none;
+  color: inherit;
+  /* Transición suave para cambios de color en hover */
+  transition: color var(--transicion-rapida);
+}
+
+/* Imágenes responsivas por defecto */
+img {
+  max-width: 100%;
+  display: block;
+  /* Suavizo la carga con object-fit */
+  object-fit: cover;
+}
+
+/* Listas sin estilo por defecto */
+ul, ol {
+  list-style: none;
+}
+
+/* Botones sin estilo por defecto */
+button {
+  background: none;
+  border: none;
+  font-family: inherit;
+  color: inherit;
+}
+
+/* -------------------------------------------------------
+   Utilidades de layout
+   ------------------------------------------------------- */
+/* Contenedor centrado con ancho máximo */
+.contenedor {
+  width: 100%;
+  max-width: var(--ancho-maximo);
+  margin: 0 auto;
+  padding: 0 var(--padding-lateral);
+}
+
+/* Sección con espaciado vertical estándar */
+.seccion {
+  padding: var(--espacio-3xl) 0;
+}
+
+/* -------------------------------------------------------
+   Utilidades de texto
+   ------------------------------------------------------- */
+/* Etiqueta decorativa de sección (texto pequeño con letra espaciada) */
+.etiqueta-seccion {
+  font-family: var(--fuente-cuerpo);
+  font-size: var(--texto-xs);
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-dorado);
+  /* Línea decorativa antes del texto */
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+}
+
+/* Línea decorativa de la etiqueta */
+.etiqueta-seccion::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 1px;
+  background-color: var(--color-dorado);
+  opacity: 0.6;
+}
+
+/* Título de sección con el display de la marca */
+.titulo-seccion {
+  font-family: var(--fuente-display);
+  font-size: var(--texto-3xl);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.1;
+  margin-top: var(--espacio-sm);
+  color: var(--color-blanco);
+}
+
+/* Destaco algunas palabras en dorado dentro de los títulos */
+.titulo-seccion .acento {
+  color: var(--color-dorado);
+  font-style: normal;
+}
+
+/* -------------------------------------------------------
+   Animaciones de entrada — uso la clase .reveal para
+   activar animaciones cuando los elementos entran al viewport
+   ------------------------------------------------------- */
+/* Estado inicial: invisible y desplazado hacia abajo */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity var(--transicion-lenta), transform var(--transicion-lenta);
+}
+
+/* Estado activo: visible y en posición normal */
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Aplico retrasos escalonados para grupos de elementos */
+.reveal:nth-child(1) { transition-delay: 0ms; }
+.reveal:nth-child(2) { transition-delay: 100ms; }
+.reveal:nth-child(3) { transition-delay: 200ms; }
+.reveal:nth-child(4) { transition-delay: 300ms; }
+.reveal:nth-child(5) { transition-delay: 400ms; }
+
+/* -------------------------------------------------------
+   Scrollbar personalizada
+   ------------------------------------------------------- */
+/* Estilo del scrollbar en navegadores webkit */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+/* Track (fondo) del scrollbar */
+::-webkit-scrollbar-track {
+  background: var(--color-negro);
+}
+
+/* Thumb (indicador) del scrollbar en dorado */
+::-webkit-scrollbar-thumb {
+  background: var(--color-dorado-sombra);
+  border-radius: var(--radio-full);
+}
+
+/* Thumb en hover: más brillante */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-dorado);
+}
+
+/* -------------------------------------------------------
+   Selección de texto en dorado
+   ------------------------------------------------------- */
+::selection {
+  background-color: var(--color-dorado);
+  color: var(--color-negro);
+}

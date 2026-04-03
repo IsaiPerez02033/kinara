@@ -1,0 +1,623 @@
+/*
+ * ============================================================
+ * components.css — Componentes reutilizables de Kinara
+ * Defino aquí todos los componentes del sistema de diseño:
+ * header, navegación, botones, tarjetas de producto,
+ * badges de stock y footer. Cada bloque está comentado
+ * con su propósito y comportamiento.
+ * ============================================================
+ */
+
+/* -------------------------------------------------------
+   CURSOR PERSONALIZADO
+   Creo un cursor circular dorado que sigue al mouse,
+   característico del lujo y la atención al detalle.
+   ------------------------------------------------------- */
+/* Punto pequeño que sigue exactamente al cursor */
+#cursor-punto {
+  position: fixed;
+  /* Inicio en el origen, JavaScript lo mueve con el mouse */
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-dorado);
+  /* El z-index alto lo mantiene sobre todo el contenido */
+  z-index: 9999;
+  /* Desactivo los eventos del mouse para que no interfiera */
+  pointer-events: none;
+  /* Traduzco para centrar el punto en la posición del cursor */
+  transform: translate(-50%, -50%);
+  transition: transform var(--transicion-rapida), opacity var(--transicion-rapida);
+}
+
+/* Anillo que sigue al cursor con un leve retraso */
+#cursor-anillo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 163, 115, 0.4);
+  z-index: 9998;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  /* El retraso en la transición crea el efecto de seguimiento suave */
+  transition: transform 0.15s ease, width var(--transicion-normal),
+              height var(--transicion-normal), opacity var(--transicion-rapida);
+}
+
+/* Cuando el cursor está sobre un elemento clickeable, agrando el anillo */
+body.cursor-hover #cursor-anillo {
+  width: 48px;
+  height: 48px;
+  border-color: rgba(212, 163, 115, 0.7);
+}
+
+/* -------------------------------------------------------
+   HEADER Y NAVEGACIÓN
+   ------------------------------------------------------- */
+/* Contenedor principal del header */
+#header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Uso z-index alto para que esté siempre visible */
+  z-index: 1000;
+  /* Altura definida en las variables */
+  height: var(--altura-header);
+  display: flex;
+  align-items: center;
+  /* Transición para el efecto de scroll */
+  transition: background-color var(--transicion-normal),
+              border-color var(--transicion-normal);
+}
+
+/* Estado inicial: header transparente sobre el hero */
+#header.transparente {
+  background-color: transparent;
+  border-bottom: 1px solid transparent;
+}
+
+/* Estado al hacer scroll: header con fondo oscuro */
+#header.solido {
+  background-color: rgba(15, 15, 15, 0.95);
+  border-bottom: 1px solid var(--color-borde);
+  /* Desenfoque del fondo para el efecto frosted glass */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Layout interno del header */
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: var(--ancho-maximo);
+  margin: 0 auto;
+  padding: 0 var(--padding-lateral);
+}
+
+/* Logo de la marca */
+.logo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Nombre principal del logo */
+.logo-nombre {
+  font-family: var(--fuente-display);
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  color: var(--color-blanco);
+  /* Transición para el hover del logo */
+  transition: color var(--transicion-rapida);
+}
+
+/* Slogan bajo el nombre */
+.logo-slogan {
+  font-size: var(--texto-xs);
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  color: var(--color-dorado);
+  opacity: 0.8;
+}
+
+/* Navegación principal */
+.nav-principal {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-lg);
+}
+
+/* Ítem individual del menú */
+.nav-link {
+  font-size: var(--texto-sm);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--color-blanco-dim);
+  /* Posición relativa para la línea animada */
+  position: relative;
+  transition: color var(--transicion-rapida);
+}
+
+/* Línea decorativa bajo cada ítem del menú */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: var(--color-dorado);
+  /* Animo el ancho para crear el efecto de subrayado */
+  transition: width var(--transicion-normal);
+}
+
+/* En hover: el texto se ilumina y aparece la línea */
+.nav-link:hover {
+  color: var(--color-blanco);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* -------------------------------------------------------
+   BOTONES
+   ------------------------------------------------------- */
+/* Botón primario: relleno dorado */
+.btn-primario {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+  padding: 0.875rem 2rem;
+  background-color: var(--color-dorado);
+  color: var(--color-negro);
+  font-family: var(--fuente-cuerpo);
+  font-size: var(--texto-sm);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--color-dorado);
+  border-radius: 0;
+  transition: background-color var(--transicion-normal),
+              color var(--transicion-normal),
+              transform var(--transicion-rapida),
+              box-shadow var(--transicion-normal);
+}
+
+/* Hover del botón primario: invierto colores */
+.btn-primario:hover {
+  background-color: transparent;
+  color: var(--color-dorado);
+  /* Sombra dorada para reforzar el efecto de brillo */
+  box-shadow: var(--sombra-dorada);
+  transform: translateY(-1px);
+}
+
+/* Botón secundario: solo contorno */
+.btn-secundario {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+  padding: 0.875rem 2rem;
+  background-color: transparent;
+  color: var(--color-blanco-dim);
+  font-family: var(--fuente-cuerpo);
+  font-size: var(--texto-sm);
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--color-borde);
+  border-radius: 0;
+  transition: border-color var(--transicion-normal),
+              color var(--transicion-normal),
+              transform var(--transicion-rapida);
+}
+
+/* Hover del botón secundario: borde dorado */
+.btn-secundario:hover {
+  border-color: var(--color-dorado);
+  color: var(--color-blanco);
+  transform: translateY(-1px);
+}
+
+/* -------------------------------------------------------
+   BADGE DE STOCK
+   Indicadores visuales del nivel de inventario de cada pieza
+   ------------------------------------------------------- */
+/* Contenedor base del badge */
+.badge-stock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radio-full);
+  font-size: var(--texto-xs);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+/* Punto indicador animado */
+.badge-stock .punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Estado: disponible (stock normal) */
+.badge-disponible {
+  background-color: rgba(100, 180, 120, 0.12);
+  color: #7BC99A;
+  border: 1px solid rgba(100, 180, 120, 0.2);
+}
+
+.badge-disponible .punto {
+  background-color: #7BC99A;
+  /* Pulso animado para indicar disponibilidad */
+  animation: pulso-verde 2s infinite;
+}
+
+/* Estado: pocas piezas (stock ≤ 3) */
+.badge-pocas {
+  background-color: rgba(212, 163, 115, 0.12);
+  color: var(--color-dorado);
+  border: 1px solid rgba(212, 163, 115, 0.25);
+}
+
+.badge-pocas .punto {
+  background-color: var(--color-dorado);
+  /* Pulso más urgente para las pocas piezas */
+  animation: pulso-dorado 1.5s infinite;
+}
+
+/* Estado: agotado */
+.badge-agotado {
+  background-color: rgba(180, 80, 80, 0.12);
+  color: #C07070;
+  border: 1px solid rgba(180, 80, 80, 0.2);
+}
+
+.badge-agotado .punto {
+  background-color: #C07070;
+}
+
+/* Animaciones de pulso para los puntos indicadores */
+@keyframes pulso-verde {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.8); }
+}
+
+@keyframes pulso-dorado {
+  0%, 100% { opacity: 1; transform: scale(1);   box-shadow: 0 0 0 0 rgba(212, 163, 115, 0.4); }
+  50%       { opacity: 0.8; transform: scale(1.1); box-shadow: 0 0 0 4px rgba(212, 163, 115, 0); }
+}
+
+/* -------------------------------------------------------
+   TARJETAS DE PRODUCTO
+   Componente central de la tienda: muestra cada luminaria
+   ------------------------------------------------------- */
+/* Contenedor de la tarjeta */
+.tarjeta-producto {
+  position: relative;
+  background-color: var(--color-grafito);
+  border: 1px solid var(--color-borde);
+  /* Sin radio para un look más arquitectónico */
+  border-radius: 0;
+  overflow: hidden;
+  /* Transición suave para el hover */
+  transition: transform var(--transicion-normal),
+              border-color var(--transicion-normal),
+              box-shadow var(--transicion-normal);
+  /* Inicio con el fondo oscuro del diseño */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hover de la tarjeta: eleva y brilla */
+.tarjeta-producto:hover {
+  transform: translateY(-8px);
+  border-color: var(--color-dorado-sombra);
+  box-shadow: var(--sombra-dorada), var(--sombra-md);
+}
+
+/* Área de la imagen con overlay */
+.tarjeta-imagen {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background-color: var(--color-negro);
+}
+
+/* La imagen del producto */
+.tarjeta-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Escalo la imagen en hover para el efecto zoom */
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Zoom de la imagen al hacer hover en la tarjeta */
+.tarjeta-producto:hover .tarjeta-imagen img {
+  transform: scale(1.06);
+}
+
+/* Overlay oscuro sobre la imagen para el texto */
+.tarjeta-imagen-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 30%,
+    rgba(15, 15, 15, 0.6) 100%
+  );
+  /* El overlay aparece gradualmente en hover */
+  opacity: 0.6;
+  transition: opacity var(--transicion-normal);
+}
+
+.tarjeta-producto:hover .tarjeta-imagen-overlay {
+  opacity: 1;
+}
+
+/* Badge de stock posicionado en la esquina superior */
+.tarjeta-badge {
+  position: absolute;
+  top: var(--espacio-sm);
+  left: var(--espacio-sm);
+  z-index: 2;
+}
+
+/* Botón de acción rápida (agregar al carrito) */
+.tarjeta-accion {
+  position: absolute;
+  bottom: var(--espacio-sm);
+  right: var(--espacio-sm);
+  z-index: 2;
+  /* Oculto inicialmente, aparece en hover */
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--transicion-normal), transform var(--transicion-normal);
+}
+
+.tarjeta-producto:hover .tarjeta-accion {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Botón circular de agregar al carrito */
+.btn-agregar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--color-dorado);
+  color: var(--color-negro);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 500;
+  border: none;
+  transition: transform var(--transicion-rapida), background-color var(--transicion-rapida);
+}
+
+.btn-agregar:hover {
+  transform: scale(1.1);
+  background-color: var(--color-dorado-luz);
+}
+
+/* Cuerpo de la tarjeta con la información del producto */
+.tarjeta-cuerpo {
+  padding: var(--espacio-md);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+/* Colección de la luminaria (ej: "Kinara Zen") */
+.tarjeta-coleccion {
+  font-size: var(--texto-xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-dorado);
+  opacity: 0.8;
+}
+
+/* Nombre de la luminaria */
+.tarjeta-nombre {
+  font-family: var(--fuente-display);
+  font-size: var(--texto-xl);
+  font-weight: 300;
+  color: var(--color-blanco);
+  line-height: 1.2;
+}
+
+/* Descripción breve */
+.tarjeta-descripcion {
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+  line-height: 1.6;
+  /* Limito a 2 líneas con ellipsis */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Pie de la tarjeta: precio y stock */
+.tarjeta-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--espacio-sm) var(--espacio-md);
+  border-top: 1px solid var(--color-borde);
+  margin-top: auto;
+}
+
+/* Precio del producto */
+.tarjeta-precio {
+  font-family: var(--fuente-display);
+  font-size: var(--texto-xl);
+  font-weight: 400;
+  color: var(--color-blanco);
+}
+
+/* Moneda y centavos */
+.tarjeta-precio .moneda {
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+  vertical-align: super;
+  margin-right: 2px;
+}
+
+/* -------------------------------------------------------
+   FILTROS DE COLECCIÓN
+   Botones para filtrar el catálogo por colección
+   ------------------------------------------------------- */
+.filtros-coleccion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-xs);
+  align-items: center;
+}
+
+/* Botón de filtro individual */
+.filtro-btn {
+  padding: 0.5rem 1.25rem;
+  border: 1px solid var(--color-borde);
+  background-color: transparent;
+  color: var(--color-blanco-dim);
+  font-size: var(--texto-sm);
+  letter-spacing: 0.05em;
+  border-radius: var(--radio-full);
+  transition: all var(--transicion-normal);
+}
+
+/* Estado activo del filtro */
+.filtro-btn.activo,
+.filtro-btn:hover {
+  border-color: var(--color-dorado);
+  color: var(--color-dorado);
+  background-color: rgba(212, 163, 115, 0.08);
+}
+
+/* -------------------------------------------------------
+   FOOTER
+   ------------------------------------------------------- */
+#footer {
+  background-color: var(--color-grafito);
+  border-top: 1px solid var(--color-borde);
+  padding: var(--espacio-2xl) 0 var(--espacio-lg);
+}
+
+/* Grid del footer en 4 columnas */
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: var(--espacio-2xl);
+  margin-bottom: var(--espacio-2xl);
+}
+
+/* Columna de la marca en el footer */
+.footer-marca .logo-nombre {
+  font-size: 1.3rem;
+}
+
+/* Descripción de la marca en el footer */
+.footer-descripcion {
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+  line-height: 1.8;
+  margin-top: var(--espacio-sm);
+  max-width: 280px;
+}
+
+/* Título de cada columna del footer */
+.footer-titulo {
+  font-family: var(--fuente-cuerpo);
+  font-size: var(--texto-xs);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-dorado);
+  margin-bottom: var(--espacio-sm);
+}
+
+/* Links del footer */
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+.footer-link {
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+  transition: color var(--transicion-rapida);
+}
+
+.footer-link:hover {
+  color: var(--color-blanco);
+}
+
+/* Línea divisora antes del copyright */
+.footer-bottom {
+  border-top: 1px solid var(--color-borde);
+  padding-top: var(--espacio-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Texto de copyright */
+.footer-copyright {
+  font-size: var(--texto-xs);
+  color: var(--color-blanco-dim);
+  opacity: 0.6;
+  letter-spacing: 0.05em;
+}
+
+/* -------------------------------------------------------
+   RESPONSIVE — adapto los componentes a pantallas pequeñas
+   ------------------------------------------------------- */
+@media (max-width: 1024px) {
+  /* El footer pasa a 2 columnas en tablet */
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Oculto la navegación principal en móvil */
+  .nav-principal {
+    display: none;
+  }
+
+  /* El footer pasa a 1 columna en móvil */
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: var(--espacio-lg);
+  }
+
+  /* El pie del footer en columna */
+  .footer-bottom {
+    flex-direction: column;
+    gap: var(--espacio-xs);
+    text-align: center;
+  }
+
+  /* Títulos de sección más pequeños en móvil */
+  .titulo-seccion {
+    font-size: var(--texto-2xl);
+  }
+}
