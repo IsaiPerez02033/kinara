@@ -319,7 +319,6 @@ const ModuloContacto = (() => {
 /* --- Inicialización --- */
 document.addEventListener('DOMContentLoaded', async () => {
   if (document.getElementById('catalogo-grid')) await ModuloCatalogo.iniciar();
-  if (typeof ModuloCarrito !== 'undefined') ModuloCarrito.iniciar();
   const btn = document.getElementById('btn-enviar-contacto');
   if (btn) btn.addEventListener('click', ModuloContacto.enviar);
 });
