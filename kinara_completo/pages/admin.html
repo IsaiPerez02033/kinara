@@ -31,7 +31,7 @@
   <!-- Importo la tipografía de la marca -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..700&display=swap" rel="stylesheet" />
 
   <style>
     /* -------------------------------------------------------
@@ -47,16 +47,16 @@
       --borde-2:      #453E36;
       --blanco:       #F6F1E8;
       --blanco-dim:   #B5AC9E;
-      --dorado:       #FF6A2B;
-      --dorado-dim:   rgba(255,106,43,0.15);
+      --dorado:       #F0B429;
+      --dorado-dim:   rgba(240,180,41,0.15);
       --verde:        #7BC99A;
       --verde-dim:    rgba(123,201,154,0.1);
       --rojo:         #C07070;
       --rojo-dim:     rgba(192,112,112,0.1);
       --amarillo:     #D4B96A;
       --amarillo-dim: rgba(212,185,106,0.1);
-      --fuente:       'Bricolage Grotesque', system-ui, sans-serif;
-      --fuente-d:     'Bricolage Grotesque', system-ui, sans-serif;
+      --fuente:       'Archivo', system-ui, sans-serif;
+      --fuente-d:     'Archivo', system-ui, sans-serif;
       --radio:        6px;
       --sidebar-w:    220px;
       --header-h:     56px;
@@ -326,7 +326,7 @@
       border: none;
     }
 
-    .stock-btn:hover { background: rgba(255,106,43,0.15); color: var(--dorado); }
+    .stock-btn:hover { background: rgba(240,180,41,0.15); color: var(--dorado); }
 
     /* Input del número de stock */
     .stock-input {
@@ -571,7 +571,8 @@
        ===================================================== -->
   <div id="auth-overlay">
     <form class="auth-box" id="auth-form">
-      <h2>✦ Kinara Admin</h2>
+      <img src="../assets/images/logo-kinara-marca-blanco.svg" alt="" width="56" height="56" style="display:block;margin:0 auto 0.75rem" />
+      <h2>Kinara Admin</h2>
       <p>Inicia sesión con tu cuenta de administrador</p>
       <input id="auth-email" class="auth-input" type="email" placeholder="Correo" autocomplete="username" required />
       <input id="auth-password" class="auth-input" type="password" placeholder="Contraseña" autocomplete="current-password" required />
@@ -588,9 +589,7 @@
     <!-- Logo y badge -->
     <div style="display:flex;align-items:center;gap:1rem;">
       <div class="admin-logo">
-        <svg width="10" height="10" viewBox="0 0 12 12">
-          <polygon points="6,0 12,6 6,12 0,6" fill="#FF6A2B" opacity="0.6"/>
-        </svg>
+        <img src="../assets/images/logo-kinara-marca-blanco.svg" alt="" width="26" height="26" />
         KINARA
       </div>
       <span class="admin-badge">Panel Admin</span>

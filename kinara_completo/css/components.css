@@ -22,8 +22,8 @@
 }
 
 #header.solido {
-  background-color: rgba(18, 16, 14, 0.86);
-  border-bottom-color: rgba(246, 241, 232, 0.09);
+  background-color: rgba(242, 240, 234, 0.94);
+  border-bottom-color: rgba(20, 22, 26, 0.2);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -45,18 +45,23 @@
   gap: 0.6rem;
 }
 
-.logo-rombo {
-  width: 13px;
-  height: 13px;
-  fill: var(--color-acento);
+.logo-marca {
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
+  fill: currentColor;
+  color: var(--color-blanco);
+  transition: transform 0.7s var(--curva-salida);
 }
+
+.logo:hover .logo-marca { transform: rotate(45deg); }
 
 .logo-nombre {
   font-family: var(--fuente-display);
-  font-size: 1.35rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-stretch: 115%;
+  letter-spacing: 0.1em;
   color: var(--color-blanco);
 }
 
@@ -79,7 +84,8 @@
 
 .nav-link.activo {
   color: var(--color-blanco);
-  background-color: rgba(246, 241, 232, 0.09);
+  text-decoration: underline;
+  text-underline-offset: 6px;
 }
 
 .header-acciones {
@@ -100,7 +106,7 @@
   transition: background-color var(--transicion-rapida), transform var(--transicion-rapida);
 }
 
-.btn-icono:hover { background-color: rgba(246, 241, 232, 0.1); }
+.btn-icono:hover { background-color: rgba(128, 128, 128, 0.18); }
 .btn-icono:active { transform: scale(0.94); }
 
 #carrito-contador {
@@ -111,7 +117,7 @@
   min-width: 18px;
   height: 18px;
   padding: 0 4px;
-  border-radius: var(--radio-full);
+  border-radius: 50%;
   background-color: var(--color-acento);
   color: var(--color-negro);
   font-family: var(--fuente-mono);
@@ -148,8 +154,8 @@
 
 #menu-movil a:not(.btn-primario) {
   padding: 0.4rem 0;
-  font-size: 2.4rem;
-  font-weight: 700;
+  font-size: 2.2rem;
+  font-weight: 600;
   letter-spacing: -0.025em;
   line-height: 1.15;
 }
@@ -187,20 +193,14 @@
   color: var(--color-negro);
 }
 
-.btn-primario:hover {
-  background-color: var(--color-acento-luz);
-  transform: translateY(-2px);
-}
+.btn-primario:hover { background-color: var(--color-acento-luz); }
 
 .btn-secundario {
-  border: 1px solid rgba(246, 241, 232, 0.25);
+  border: 1px solid var(--color-borde);
   color: var(--color-blanco);
 }
 
-.btn-secundario:hover {
-  border-color: var(--color-blanco);
-  transform: translateY(-2px);
-}
+.btn-secundario:hover { border-color: var(--color-blanco); }
 
 .btn-primario:active,
 .btn-secundario:active { transform: scale(0.97); }
@@ -226,8 +226,7 @@
   align-items: center;
   gap: 6px;
   padding: 3px 9px;
-  border-radius: 6px;
-  background-color: rgba(18, 16, 14, 0.82);
+  background-color: rgba(242, 240, 234, 0.92);
   font-family: var(--fuente-mono);
   font-size: 0.7rem;
   line-height: 1.5;
@@ -242,35 +241,30 @@
 }
 
 .badge-disponible { color: var(--color-exito); }
-.badge-pocas      { color: var(--filamento-lampara); }
+.badge-pocas      { color: var(--color-aviso); }
 .badge-agotado    { color: var(--color-error); }
 
 /* -------------------------------------------------------
    PIEZA ILUSTRADA
-   Mientras no haya foto, cada tarjeta muestra el dibujo de su
-   categoría en el color de su filamento, sobre una cama de
-   impresión. La máscara le da líneas de capa.
+   Mientras no haya foto, cada tarjeta muestra el dibujo técnico
+   de su categoría en tinta, sobre un tono de su color.
    ------------------------------------------------------- */
 .cama {
-  --filamento: var(--color-acento);
+  --filamento: var(--bermellon);
   position: relative;
   overflow: hidden;
-  background-color: var(--color-grafito);
-  background-image: radial-gradient(rgba(246, 241, 232, 0.1) 1px, transparent 1.4px);
-  background-size: 16px 16px;
+  background-color: color-mix(in srgb, var(--filamento) 26%, var(--hueso));
 }
 
 .pieza-svg {
   width: 100%;
   height: 100%;
-  color: var(--filamento);
-  fill: color-mix(in srgb, var(--filamento) 22%, transparent);
+  color: var(--tinta);
+  fill: none;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: 1.4;
   stroke-linecap: round;
   stroke-linejoin: round;
-  -webkit-mask-image: repeating-linear-gradient(0deg, #000 0 3px, rgba(0, 0, 0, 0.62) 3px 4.5px);
-  mask-image: repeating-linear-gradient(0deg, #000 0 3px, rgba(0, 0, 0, 0.62) 3px 4.5px);
   transition: transform 0.6s var(--curva-salida);
 }
 
@@ -287,6 +281,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  background-color: var(--color-negro);
 }
 
 .tarjeta-imagen {
@@ -294,7 +289,6 @@
   display: block;
   width: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: var(--radio-lg);
   text-align: left;
 }
 
@@ -329,7 +323,6 @@
   right: 0.75rem;
   z-index: 2;
   padding: 3px 9px;
-  border-radius: 6px;
   background-color: var(--color-acento);
   color: var(--color-negro);
   font-family: var(--fuente-mono);
@@ -343,7 +336,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  padding: 0.95rem 0.25rem 0.8rem;
+  padding: 1rem 1rem 0.8rem;
 }
 
 .tarjeta-coleccion {
@@ -353,15 +346,15 @@
 }
 
 .tarjeta-nombre {
-  font-size: 1.28rem;
-  font-weight: 650;
+  font-size: 1.22rem;
+  font-weight: 600;
   line-height: 1.15;
   letter-spacing: -0.015em;
   text-align: left;
   transition: color var(--transicion-rapida);
 }
 
-.tarjeta-nombre:hover { color: var(--color-acento-luz); }
+.tarjeta-nombre:hover { color: var(--color-acento); }
 
 .tarjeta-descripcion {
   font-size: var(--texto-sm);
@@ -393,14 +386,14 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.7rem 0.25rem 0;
+  margin: auto 1rem 0;
+  padding: 0.7rem 0 1rem;
   border-top: 1px solid var(--color-borde);
-  margin-top: auto;
 }
 
 .tarjeta-precio {
-  font-size: 1.28rem;
-  font-weight: 700;
+  font-size: 1.22rem;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
@@ -450,7 +443,7 @@
   position: fixed;
   inset: 0;
   z-index: var(--capa-overlay);
-  background: rgba(10, 7, 4, 0.7);
+  background: rgba(20, 22, 26, 0.55);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -480,7 +473,7 @@
   top: 0.75rem;
   right: 0.75rem;
   z-index: 2;
-  background-color: rgba(18, 16, 14, 0.75);
+  background-color: rgba(242, 240, 234, 0.9);
 }
 
 .detalle-imagen {
@@ -545,7 +538,7 @@
 
 .detalle-precio {
   font-size: 1.7rem;
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -564,8 +557,8 @@
   position: relative;
   overflow: hidden;
   padding: var(--espacio-2xl) 0 var(--espacio-md);
-  background-color: var(--color-negro);
-  border-top: 1px solid var(--color-borde);
+  background-color: var(--tinta);
+  color: var(--hueso);
 }
 
 .footer-grid {
@@ -605,20 +598,27 @@
 
 .footer-link:hover { color: var(--color-acento-luz); }
 
-/* Nombre gigante en capas: cierra la página como una pieza terminada */
+/* Marca a todo lo ancho: cierra la página */
 .footer-marca-grande {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(0.75rem, 2vw, 2rem);
+  padding-top: var(--espacio-lg);
+  border-top: 1px solid var(--color-borde);
   font-family: var(--fuente-display);
-  font-size: clamp(5rem, 23.5vw, 21rem);
-  font-weight: 800;
-  line-height: 0.8;
-  letter-spacing: -0.04em;
-  text-align: center;
+  font-size: clamp(3.2rem, 17vw, 16rem);
+  font-weight: 600;
+  font-stretch: 112%;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
   white-space: nowrap;
-  color: transparent;
-  background-image: repeating-linear-gradient(0deg, var(--color-grafito-2) 0 5px, var(--color-grafito) 5px 7px);
-  -webkit-background-clip: text;
-  background-clip: text;
   user-select: none;
+}
+
+.footer-marca-grande .logo-marca {
+  width: 0.86em;
+  height: 0.86em;
 }
 
 .footer-bottom {

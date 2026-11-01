@@ -1,52 +1,40 @@
 /*
  * ============================================================
  * variables.css — Sistema de diseño de Kinara
- * Defino aquí los colores, la tipografía y el espaciado.
- * La idea visual es un taller de impresión 3D: grafito cálido,
- * naranja de filamento y papel para las secciones claras.
+ * Papel hueso y tinta como base, con cinco colores profundos
+ * que se usan en bloques planos: nunca mezclados ni en degradado.
  * ============================================================
  */
 
-/* Bricolage Grotesque para títulos y texto; JetBrains Mono para datos técnicos */
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Archivo para títulos y texto; IBM Plex Mono para datos técnicos */
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 :root {
-  /* === SUPERFICIES OSCURAS === */
-  --color-negro:   #12100e;
-  --color-grafito: #1c1916;
-  --color-grafito-2: #27231f;
-  --color-borde:   #3a342e;
+  /* === COLORES DE MARCA === */
+  --hueso:     #f2f0ea;
+  --tinta:     #14161a;
+  --cobalto:   #1f36b5;
+  --bermellon: #c93814;
+  --ocre:      #f0b429;
+  --pino:      #11493d;
+  --rubor:     #eec6bc;
 
-  /* === TEXTO SOBRE OSCURO === */
-  --color-blanco:     #f6f1e8;
-  --color-blanco-dim: #b5ac9e;
-
-  /* === ACENTO: FILAMENTO NARANJA === */
-  --color-acento:        #ff6a2b;
-  --color-acento-luz:    #ff8b57;
-  --color-acento-oscuro: #b5420e;  /* Para texto sobre papel: conserva el contraste */
-
-  /* === SECCIONES CLARAS === */
-  --color-papel:     #efe8db;
-  --color-papel-2:   #e4dbca;
-  --color-tinta:     #1b1714;
-  --color-tinta-dim: #5c544a;
-
-  /* === FILAMENTOS: UN COLOR POR CATEGORÍA === */
-  --filamento-lampara:     #f2b65a;
-  --filamento-herramienta: #6fb2c9;
-  --filamento-molde:       #a7c17a;
-  --filamento-juguete:     #b49be0;
-  --filamento-figura:      #f59ab5;
+  /* === UN COLOR POR CATEGORÍA === */
+  --filamento-lampara:     var(--ocre);
+  --filamento-herramienta: var(--cobalto);
+  --filamento-molde:       var(--pino);
+  --filamento-juguete:     var(--bermellon);
+  --filamento-figura:      var(--rubor);
 
   /* === ESTADOS === */
-  --color-exito: #7bc99a;
-  --color-error: #e5806f;
+  --color-exito: #1c6e46;
+  --color-error: #a8231a;
+  --color-aviso: #80590a;
 
   /* === TIPOGRAFÍA === */
-  --fuente-display: 'Bricolage Grotesque', system-ui, sans-serif;
-  --fuente-cuerpo:  'Bricolage Grotesque', system-ui, sans-serif;
-  --fuente-mono:    'JetBrains Mono', ui-monospace, monospace;
+  --fuente-display: 'Archivo', system-ui, sans-serif;
+  --fuente-cuerpo:  'Archivo', system-ui, sans-serif;
+  --fuente-mono:    'IBM Plex Mono', ui-monospace, monospace;
 
   --texto-xs:   0.75rem;
   --texto-sm:   0.875rem;
@@ -54,8 +42,8 @@
   --texto-lg:   1.125rem;
   --texto-xl:   1.5rem;
   --texto-2xl:  clamp(1.75rem, 3vw, 2.25rem);
-  --texto-3xl:  clamp(2.25rem, 5.2vw, 4.25rem);
-  --texto-4xl:  clamp(2.75rem, 7vw, 6rem);
+  --texto-3xl:  clamp(2.1rem, 4.6vw, 3.9rem);
+  --texto-4xl:  clamp(2.6rem, 6.2vw, 5.4rem);
 
   /* === ESPACIADO === */
   --espacio-xs:  0.5rem;
@@ -64,13 +52,13 @@
   --espacio-lg:  2.5rem;
   --espacio-xl:  4rem;
   --espacio-2xl: 6rem;
-  --espacio-3xl: clamp(5rem, 11vw, 9.5rem);
+  --espacio-3xl: clamp(5rem, 10vw, 8.5rem);
 
-  /* === RADIOS: MÁS CERRADOS POR DENTRO, MÁS SUAVES POR FUERA === */
-  --radio-sm:   8px;
-  --radio-md:   14px;
-  --radio-lg:   22px;
-  --radio-full: 999px;
+  /* === RADIOS: CASI RECTOS, COMO UNA PIEZA MAQUINADA === */
+  --radio-sm:   2px;
+  --radio-md:   2px;
+  --radio-lg:   3px;
+  --radio-full: 3px;
 
   /* === TRANSICIONES === */
   --curva-salida: cubic-bezier(0.16, 1, 0.3, 1);
@@ -78,9 +66,9 @@
   --transicion-normal: 0.35s var(--curva-salida);
   --transicion-lenta:  0.8s var(--curva-salida);
 
-  /* === SOMBRAS TEÑIDAS CON EL FONDO === */
-  --sombra-md: 0 14px 40px rgba(10, 7, 4, 0.45);
-  --sombra-lg: 0 28px 80px rgba(10, 7, 4, 0.65);
+  /* === SOMBRAS TEÑIDAS CON LA TINTA === */
+  --sombra-md: 0 14px 40px rgba(20, 22, 26, 0.16);
+  --sombra-lg: 0 28px 80px rgba(20, 22, 26, 0.28);
 
   /* === CAPAS === */
   --capa-header: 100;
@@ -90,7 +78,44 @@
   --capa-toast: 300;
 
   /* === LAYOUT === */
-  --ancho-maximo: 1320px;
+  --ancho-maximo: 1360px;
   --padding-lateral: clamp(1rem, 4vw, 3rem);
-  --altura-header: 76px;
+  --altura-header: 72px;
+}
+
+/* === TEMA CLARO: LA BASE, Y LO QUE VUELVE A PAPEL DENTRO DE UN BLOQUE DE COLOR ===
+   Los nombres vienen del tema oscuro original: --color-negro es el fondo
+   y --color-blanco el texto, sea cual sea el tema. */
+:root,
+.formulario {
+  --color-negro:      var(--hueso);
+  --color-grafito:    #faf9f5;
+  --color-grafito-2:  #e8e5dc;
+  --color-borde:      #c9c5b9;
+  --color-blanco:     var(--tinta);
+  --color-blanco-dim: #54575d;
+  --color-acento:        var(--bermellon);
+  --color-acento-luz:    #a82d0f;
+  --color-acento-oscuro: var(--bermellon);
+  --acento-logo:      var(--bermellon);
+}
+
+/* === TEMA OSCURO: BLOQUES DE COLOR. EL BOTÓN PRINCIPAL PASA A HUESO === */
+#header:not(.solido),
+#hero,
+#materiales,
+#figuras,
+#contacto,
+#footer,
+.categoria-medida {
+  --color-negro:      var(--tinta);
+  --color-grafito:    #1d2026;
+  --color-grafito-2:  #282b32;
+  --color-borde:      rgba(242, 240, 234, 0.3);
+  --color-blanco:     var(--hueso);
+  --color-blanco-dim: rgba(242, 240, 234, 0.86);
+  --color-acento:     var(--hueso);
+  --color-acento-luz: #ffffff;
+  --acento-logo:      var(--ocre);
+  color: var(--color-blanco);
 }

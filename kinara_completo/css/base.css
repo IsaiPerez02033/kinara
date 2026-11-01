@@ -33,9 +33,9 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--fuente-display);
-  font-weight: 700;
-  line-height: 1.04;
-  letter-spacing: -0.025em;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.022em;
   text-wrap: balance;
 }
 
@@ -104,7 +104,7 @@ section[id] { scroll-margin-top: calc(var(--altura-header) + 8px); }
 
 .seccion { padding: var(--espacio-3xl) 0; }
 
-/* Etiqueta técnica de sección, como un dato de la impresora */
+/* Etiqueta técnica de sección */
 .etiqueta-seccion {
   display: inline-flex;
   align-items: center;
@@ -112,23 +112,23 @@ section[id] { scroll-margin-top: calc(var(--altura-header) + 8px); }
   font-family: var(--fuente-mono);
   font-size: var(--texto-xs);
   font-weight: 500;
-  color: var(--color-acento);
+  color: var(--color-blanco);
 }
 
-.etiqueta-seccion::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  background-color: currentColor;
-  transform: rotate(45deg);
+/* Numero las secciones como las hojas de una ficha técnica */
+body { counter-reset: hoja; }
+
+.seccion .etiqueta-seccion::before {
+  counter-increment: hoja;
+  content: counter(hoja, decimal-leading-zero) ' /';
 }
 
 .titulo-seccion {
   font-size: var(--texto-3xl);
+  font-stretch: 108%;
+  letter-spacing: -0.028em;
   margin-top: var(--espacio-sm);
 }
-
-.titulo-seccion .acento { color: var(--color-acento); }
 
 /* Solo oculto para animar si hay JavaScript: sin él, todo se ve */
 .js .reveal {
@@ -146,7 +146,6 @@ section[id] { scroll-margin-top: calc(var(--altura-header) + 8px); }
 ::-webkit-scrollbar-track { background: var(--color-negro); }
 ::-webkit-scrollbar-thumb {
   background: var(--color-borde);
-  border-radius: 6px;
   border: 2px solid var(--color-negro);
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-acento); }
