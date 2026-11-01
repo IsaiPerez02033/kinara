@@ -27,13 +27,16 @@ const lecturaAvance = document.getElementById('hero-avance');
 const animacionReducida = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const crearEscena = (THREE) => {
-  const movil = () => innerWidth <= 860;
+  // En horizontal hay ancho de sobra: la impresora va al lado del texto
+  const consultaMovil = matchMedia('(max-width: 860px) and (orientation: portrait)');
+  const movil = () => consultaMovil.matches;
+  const tactil = matchMedia('(pointer: coarse)').matches;
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.localClippingEnabled = true;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
-  renderer.shadowMap.enabled = !movil();
+  renderer.shadowMap.enabled = !tactil;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const escena = new THREE.Scene();
@@ -259,6 +262,16 @@ const crearEscena = (THREE) => {
   let raf = 0;
   let mouseX = 0;
   let mouseSuave = 0;
+  let anchoPrevio = 0;
+  let altoPrevio = 0;
+  let distanciaMovil = 16;
+  // Medidas aparentes de la impresora y altura visible por unidad de distancia (fov 30°)
+  const ALTO_IMPRESORA = 5.6;
+  const ANCHO_IMPRESORA = 6;
+  const TAN_VISTA = 2 * Math.tan(Math.PI / 12);
+  let tope = Math.min(devicePixelRatio, tactil ? 1.5 : 2);
+  let cuadros = 0;
+  let marcaCuadros = 0;
   const reloj = new THREE.Clock();
   const objetivo = new THREE.Vector3();
 
@@ -266,12 +279,27 @@ const crearEscena = (THREE) => {
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
     if (!w || !h) return;
-    renderer.setPixelRatio(Math.min(devicePixelRatio, movil() ? 1.5 : 2));
+    // Cambiar el tamaño borra el lienzo: solo lo hago si de verdad cambió
+    if (w === anchoPrevio && h === altoPrevio) return;
+    anchoPrevio = w;
+    altoPrevio = h;
+    renderer.setPixelRatio(tope);
     renderer.setSize(w, h, false);
     camara.aspect = w / h;
     // Desplazo la escena para dejar libre el texto: a la derecha o hacia abajo
-    if (movil()) camara.setViewOffset(w, h, 0, -h * 0.17, w, h);
-    else camara.setViewOffset(w, h, -w * 0.2, 0, w, h);
+    if (movil()) {
+      // La impresora ocupa lo que deje libre el capítulo de texto más largo
+      const textoFin = Math.max(...capitulos.map((el) => {
+        const ultimo = el.lastElementChild;
+        return ultimo.offsetTop + ultimo.offsetHeight;
+      }));
+      const reserva = 64;
+      const libre = Math.max(h * 0.3, h - textoFin - reserva);
+      distanciaMovil = Math.max(ALTO_IMPRESORA * h / (TAN_VISTA * libre), ANCHO_IMPRESORA / (TAN_VISTA * camara.aspect));
+      camara.setViewOffset(w, h, 0, h / 2 - (h - reserva - libre / 2), w, h);
+    } else {
+      camara.setViewOffset(w, h, -w * 0.2, 0, w, h);
+    }
     camara.updateProjectionMatrix();
   };
 
@@ -333,7 +361,7 @@ const crearEscena = (THREE) => {
     mouseSuave += (mouseX - mouseSuave) * 0.05;
     const angulo = -0.62 + p * 1.15 + mouseSuave * 0.1;
     // En pantallas angostas alejo la cámara para que quepa toda la impresora
-    const distancia = Math.max(12.5, Math.min(21, 9.8 / camara.aspect));
+    const distancia = movil() ? distanciaMovil : Math.max(12.5, Math.min(21, 9.8 / camara.aspect));
     camara.position.set(Math.sin(angulo) * distancia, 3.5 + mouseSuave * 0.05, Math.cos(angulo) * distancia);
     camara.lookAt(0, 1.45, 0);
 
@@ -355,16 +383,41 @@ const crearEscena = (THREE) => {
     raf = 0;
     if (!activa) return;
     dibujar();
+    vigilarRendimiento();
     if (!animacionReducida) raf = requestAnimationFrame(ciclo);
   };
 
-  addEventListener('pointermove', (e) => { mouseX = (e.clientX / innerWidth - 0.5) * 2; }, { passive: true });
+  // Si el equipo no alcanza 30 cuadros por segundo, bajo la resolución una vez
+  const vigilarRendimiento = () => {
+    if (tope <= 1) return;
+    const ahora = performance.now();
+    if (!marcaCuadros) marcaCuadros = ahora;
+    cuadros += 1;
+    if (cuadros < 60) return;
+    const lento = (ahora - marcaCuadros) / cuadros > 33;
+    cuadros = 0;
+    marcaCuadros = ahora;
+    if (!lento || document.hidden) return;
+    tope = 1;
+    anchoPrevio = 0;
+    ajustar();
+  };
+
+  if (!tactil) {
+    addEventListener('pointermove', (e) => { mouseX = (e.clientX / innerWidth - 0.5) * 2; }, { passive: true });
+  }
 
   return {
     ajustar,
     fijarAvance: (p) => { avance = p; if (animacionReducida) dibujar(); },
-    fijarActiva: (v) => { activa = v; if (v && !raf && !animacionReducida) raf = requestAnimationFrame(ciclo); },
+    fijarActiva: (v) => {
+      activa = v;
+      cuadros = 0;
+      marcaCuadros = 0;
+      if (v && !raf && !animacionReducida) raf = requestAnimationFrame(ciclo);
+    },
     dibujar,
+    remedir: () => { anchoPrevio = 0; ajustar(); },
     iniciar: () => { ajustar(); dibujar(); ciclo(); canvas.classList.add('listo'); },
   };
 };
@@ -385,6 +438,12 @@ const aplicarCapitulos = (p) => {
 
 const iniciarHero = async () => {
   if (!seccion || !canvas) return;
+
+  // Con ahorro de datos no descargo la librería 3D: queda la ilustración
+  if (navigator.connection && navigator.connection.saveData) {
+    seccion.classList.add('hero--sin3d');
+    return;
+  }
 
   let escena;
   try {
@@ -408,31 +467,47 @@ const iniciarHero = async () => {
 
   let actual = 0;
   let meta = 0;
-  let anterior = performance.now();
-  const leerScroll = () => {
-    const recorrido = seccion.offsetHeight - innerHeight;
-    meta = clamp01(-seccion.getBoundingClientRect().top / Math.max(1, recorrido));
+  let anterior = 0;
+  let cuadro = 0;
+  let recorrido = 1;
+  const fijo = seccion.querySelector('.hero-fijo');
+  const medir = () => {
+    // Uso la altura de la escena y no innerHeight, que cambia con la barra de Safari
+    recorrido = Math.max(1, seccion.offsetHeight - fijo.offsetHeight);
   };
-  const suavizar = (ahora = performance.now()) => {
+  const suavizar = (ahora) => {
     // Suavizado por tiempo: se siente igual aunque la pantalla vaya a pocos cuadros
     actual += (meta - actual) * (1 - Math.exp(-(ahora - anterior) * 0.009));
     anterior = ahora;
     if (Math.abs(meta - actual) < 0.0002) actual = meta;
     escena.fijarAvance(actual);
     aplicarCapitulos(actual);
-    requestAnimationFrame(suavizar);
+    // Al llegar al destino me detengo hasta el siguiente scroll
+    cuadro = actual === meta ? 0 : requestAnimationFrame(suavizar);
+  };
+  const leerScroll = () => {
+    meta = clamp01(-seccion.getBoundingClientRect().top / recorrido);
+    if (meta === actual || cuadro) return;
+    anterior = performance.now();
+    cuadro = requestAnimationFrame(suavizar);
   };
 
   addEventListener('scroll', leerScroll, { passive: true });
-  addEventListener('resize', () => { leerScroll(); escena.ajustar(); }, { passive: true });
+  addEventListener('resize', () => { medir(); leerScroll(); }, { passive: true });
+  // Al girar el celular, Safari avisa del resize antes de acomodar la página:
+  // observo el lienzo para medir ya con el tamaño final
+  new ResizeObserver(() => { medir(); leerScroll(); escena.remedir(); }).observe(canvas);
   new IntersectionObserver(([e]) => escena.fijarActiva(e.isIntersecting)).observe(seccion);
 
-  leerScroll();
+  // Al llegar las fuentes cambia la altura del texto
+  if (document.fonts) document.fonts.ready.then(() => escena.remedir());
+
+  medir();
+  meta = clamp01(-seccion.getBoundingClientRect().top / recorrido);
   actual = meta;
   aplicarCapitulos(actual);
   escena.fijarAvance(actual);
   escena.iniciar();
-  suavizar();
 };
 
 iniciarHero();

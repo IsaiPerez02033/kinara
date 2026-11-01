@@ -6,8 +6,8 @@
  * ============================================================
  */
 
-/* Archivo para títulos y texto; IBM Plex Mono para datos técnicos */
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+/* Archivo para títulos y texto; IBM Plex Mono para datos técnicos.
+   Las fuentes se cargan con <link> en cada página: @import retrasa el primer pintado */
 
 :root {
   /* === COLORES DE MARCA === */
@@ -79,7 +79,8 @@
 
   /* === LAYOUT === */
   --ancho-maximo: 1360px;
-  --padding-lateral: clamp(1rem, 4vw, 3rem);
+  /* En horizontal, el texto no se mete bajo la muesca del iPhone */
+  --padding-lateral: max(clamp(1rem, 4vw, 3rem), env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
   --altura-header: 72px;
 }
 

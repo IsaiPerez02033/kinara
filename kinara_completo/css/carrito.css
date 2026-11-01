@@ -28,7 +28,7 @@
   right: 0;
   bottom: 0;
   z-index: var(--capa-drawer);
-  width: min(440px, 100vw);
+  width: min(440px, 100%);
   display: flex;
   flex-direction: column;
   background-color: var(--color-grafito);
@@ -179,7 +179,6 @@
   transition: background-color var(--transicion-rapida);
 }
 
-.cantidad-btn:hover { background: rgba(20, 22, 26, 0.08); }
 
 .cantidad-numero {
   width: 30px;
@@ -204,11 +203,10 @@
   transition: color var(--transicion-rapida);
 }
 
-.carrito-item-eliminar:hover { color: var(--color-error); }
 
 .carrito-footer {
   flex-shrink: 0;
-  padding: 1rem var(--espacio-md) max(1rem, env(safe-area-inset-bottom));
+  padding: 1rem var(--espacio-md) max(1rem, env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--color-borde);
   background: var(--color-grafito-2);
 }
@@ -249,7 +247,6 @@
   transition: background-color var(--transicion-rapida), transform var(--transicion-rapida);
 }
 
-.btn-checkout:hover { background: var(--color-acento-luz); }
 .btn-checkout:active { transform: scale(0.98); }
 
 .btn-checkout:disabled {
@@ -257,6 +254,12 @@
   cursor: not-allowed;
   transform: none;
   background: var(--color-acento);
+}
+
+@media (hover: hover) {
+  .cantidad-btn:hover { background: rgba(20, 22, 26, 0.08); }
+  .carrito-item-eliminar:hover { color: var(--color-error); }
+  .btn-checkout:hover { background: var(--color-acento-luz); }
 }
 
 /* -------------------------------------------------------
@@ -284,6 +287,7 @@
 .checkout-modal {
   width: 100%;
   max-width: 540px;
+  max-height: 92vh;
   max-height: 92dvh;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -479,10 +483,11 @@
    ------------------------------------------------------- */
 #agregar-toast {
   position: fixed;
-  bottom: 1.25rem;
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
   left: 50%;
   z-index: var(--capa-toast);
-  max-width: calc(100vw - 2rem);
+  width: max-content;
+  max-width: calc(100% - 2rem);
   padding: 0.7rem 1.1rem;
   border-left: 3px solid var(--color-acento);
   border-radius: var(--radio-sm);
@@ -510,6 +515,7 @@
    PÁGINA DE CONFIRMACIÓN
    ------------------------------------------------------- */
 .pagina-simple {
+  min-height: 100vh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -676,6 +682,7 @@
 
   .checkout-modal {
     max-width: 100%;
+    max-height: 100vh;
     max-height: 100dvh;
     border-radius: 0;
   }

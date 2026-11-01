@@ -17,7 +17,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <!-- Evito que los motores de búsqueda indexen el panel admin -->
   <meta name="robots" content="noindex, nofollow" />
   <title>Admin — Kinara</title>
@@ -73,6 +73,7 @@
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
       min-height: 100vh;
+      min-height: 100dvh;
     }
     a { text-decoration: none; color: inherit; }
     button { font-family: var(--fuente); cursor: pointer; border: none; }
@@ -939,7 +940,7 @@
   <script>window.KINARA_ADMIN = true;</script>
 
   <!-- SDK de Supabase desde CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
 
   <!-- Cliente Supabase de la marca -->
   <script src="../js/lib/supabase.js"></script>

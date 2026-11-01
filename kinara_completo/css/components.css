@@ -14,7 +14,8 @@
   left: 0;
   right: 0;
   z-index: var(--capa-header);
-  height: var(--altura-header);
+  height: calc(var(--altura-header) + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
   display: flex;
   align-items: center;
   border-bottom: 1px solid transparent;
@@ -22,10 +23,8 @@
 }
 
 #header.solido {
-  background-color: rgba(242, 240, 234, 0.94);
+  background-color: var(--hueso);
   border-bottom-color: rgba(20, 22, 26, 0.2);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
 }
 
 .header-inner {
@@ -54,7 +53,6 @@
   transition: transform 0.7s var(--curva-salida);
 }
 
-.logo:hover .logo-marca { transform: rotate(45deg); }
 
 .logo-nombre {
   font-family: var(--fuente-display);
@@ -72,6 +70,7 @@
 }
 
 .nav-link {
+  white-space: nowrap;
   padding: 0.5rem 0.85rem;
   border-radius: var(--radio-full);
   font-size: var(--texto-sm);
@@ -80,7 +79,6 @@
   transition: color var(--transicion-rapida), background-color var(--transicion-rapida);
 }
 
-.nav-link:hover { color: var(--color-blanco); }
 
 .nav-link.activo {
   color: var(--color-blanco);
@@ -106,7 +104,6 @@
   transition: background-color var(--transicion-rapida), transform var(--transicion-rapida);
 }
 
-.btn-icono:hover { background-color: rgba(128, 128, 128, 0.18); }
 .btn-icono:active { transform: scale(0.94); }
 
 #carrito-contador {
@@ -138,7 +135,9 @@
   flex-direction: column;
   justify-content: center;
   gap: 0.25rem;
-  padding: var(--altura-header) var(--padding-lateral) var(--espacio-lg);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--altura-header) var(--padding-lateral) max(var(--espacio-lg), env(safe-area-inset-bottom, 0px));
   background-color: var(--color-negro);
   visibility: hidden;
   opacity: 0;
@@ -193,14 +192,10 @@
   color: var(--color-negro);
 }
 
-.btn-primario:hover { background-color: var(--color-acento-luz); }
-
 .btn-secundario {
   border: 1px solid var(--color-borde);
   color: var(--color-blanco);
 }
-
-.btn-secundario:hover { border-color: var(--color-blanco); }
 
 .btn-primario:active,
 .btn-secundario:active { transform: scale(0.97); }
@@ -253,6 +248,7 @@
   --filamento: var(--bermellon);
   position: relative;
   overflow: hidden;
+  background-color: var(--color-grafito-2);
   background-color: color-mix(in srgb, var(--filamento) 26%, var(--hueso));
 }
 
@@ -307,9 +303,6 @@
   transition: transform 0.6s var(--curva-salida);
 }
 
-.tarjeta-producto:hover .pieza-svg,
-.tarjeta-producto:hover .tarjeta-imagen img { transform: scale(1.06); }
-
 .tarjeta-badge {
   position: absolute;
   top: 0.75rem;
@@ -353,8 +346,6 @@
   text-align: left;
   transition: color var(--transicion-rapida);
 }
-
-.tarjeta-nombre:hover { color: var(--color-acento); }
 
 .tarjeta-descripcion {
   font-size: var(--texto-sm);
@@ -456,7 +447,7 @@
   right: 0;
   bottom: 0;
   z-index: var(--capa-drawer);
-  width: min(500px, 100vw);
+  width: min(500px, 100%);
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: var(--espacio-md);
@@ -532,7 +523,7 @@
   justify-content: space-between;
   gap: 1rem;
   margin: var(--espacio-md) calc(var(--espacio-md) * -1) calc(var(--espacio-md) * -1);
-  padding: 1rem var(--espacio-md);
+  padding: 1rem var(--espacio-md) max(1rem, env(safe-area-inset-bottom, 0px));
   background-color: var(--color-grafito-2);
 }
 
@@ -596,8 +587,6 @@
   transition: color var(--transicion-rapida);
 }
 
-.footer-link:hover { color: var(--color-acento-luz); }
-
 /* Marca a todo lo ancho: cierra la página */
 .footer-marca-grande {
   display: flex;
@@ -607,7 +596,7 @@
   padding-top: var(--espacio-lg);
   border-top: 1px solid var(--color-borde);
   font-family: var(--fuente-display);
-  font-size: clamp(3.2rem, 17vw, 16rem);
+  font-size: clamp(2.6rem, 15.5vw, 16rem);
   font-weight: 600;
   font-stretch: 112%;
   line-height: 0.9;
@@ -627,9 +616,25 @@
   justify-content: space-between;
   gap: var(--espacio-sm);
   margin-top: var(--espacio-md);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   font-family: var(--fuente-mono);
   font-size: var(--texto-xs);
   color: var(--color-blanco-dim);
+}
+
+/* -------------------------------------------------------
+   HOVER: solo con ratón. En pantallas táctiles se queda pegado al tocar
+   ------------------------------------------------------- */
+@media (hover: hover) {
+  .logo:hover .logo-marca { transform: rotate(45deg); }
+  .nav-link:hover { color: var(--color-blanco); }
+  .btn-icono:hover { background-color: rgba(128, 128, 128, 0.18); }
+  .btn-primario:hover { background-color: var(--color-acento-luz); }
+  .btn-secundario:hover { border-color: var(--color-blanco); }
+  .tarjeta-producto:hover .pieza-svg,
+  .tarjeta-producto:hover .tarjeta-imagen img { transform: scale(1.06); }
+  .tarjeta-nombre:hover { color: var(--color-acento); }
+  .footer-link:hover { color: var(--color-acento-luz); }
 }
 
 /* -------------------------------------------------------
@@ -638,9 +643,8 @@
 @media (max-width: 1024px) {
   .footer-grid { grid-template-columns: 1fr 1fr 1fr; }
   .footer-grid > :first-child { grid-column: 1 / -1; }
-}
 
-@media (max-width: 860px) {
+  /* El menú completo ya no cabe en tableta ni en celular horizontal */
   .nav-principal,
   .header-acciones .btn-primario { display: none; }
 

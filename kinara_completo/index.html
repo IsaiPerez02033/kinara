@@ -8,8 +8,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#1f36b5" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Kinara — Impresión 3D a tu medida</title>
   <meta name="description"
     content="Kinara — Impresión 3D en México: lámparas, herramientas, moldes, juguetes, figuras y piezas personalizadas, en una pieza o por lote." />
@@ -33,6 +32,8 @@
   <link rel="canonical" href="https://kinara.mx" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" />
 
   <!-- Marco que hay JavaScript antes de pintar: solo así oculto lo que se anima -->
   <script>document.documentElement.classList.add('js');</script>
@@ -539,11 +540,11 @@
 
   <div id="agregar-toast" role="status" aria-live="polite"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="js/lib/supabase.js"></script>
-  <script src="js/main.js"></script>
-  <script src="js/carrito.js"></script>
-  <script src="js/productos.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
+  <script defer src="js/lib/supabase.js"></script>
+  <script defer src="js/main.js"></script>
+  <script defer src="js/carrito.js"></script>
+  <script defer src="js/productos.js"></script>
   <script type="module" src="js/hero3d.js"></script>
 </body>
 </html>

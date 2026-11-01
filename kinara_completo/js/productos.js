@@ -85,7 +85,7 @@ const ModuloCatalogo = (() => {
         <button type="button" class="tarjeta-imagen cama" data-categoria="${escHTML(categoria)}"
                 onclick="ModuloProducto.abrirDetalle('${p.id}')" aria-label="Ver detalle de ${escHTML(p.nombre)}">
           ${piezaSVG(categoria)}
-          ${p.imagen_url ? `<img src="${escHTML(p.imagen_url)}" alt="${escHTML(p.nombre)}" loading="lazy" onerror="this.remove()">` : ''}
+          ${p.imagen_url ? `<img src="${escHTML(p.imagen_url)}" alt="${escHTML(p.nombre)}" loading="lazy" decoding="async" onerror="this.remove()">` : ''}
           <span class="tarjeta-badge" id="badge-${p.id}">
             <span class="badge-stock ${badge.clase}"><span class="punto"></span>${badge.texto}</span>
           </span>
@@ -233,7 +233,7 @@ const ModuloProducto = (() => {
       </button>
       <div class="detalle-imagen cama" data-categoria="${escHTML(categoria)}">
         ${piezaSVG(categoria)}
-        ${p.imagen_url ? `<img src="${escHTML(p.imagen_url)}" alt="${escHTML(p.nombre)}" onerror="this.remove()">` : ''}
+        ${p.imagen_url ? `<img src="${escHTML(p.imagen_url)}" alt="${escHTML(p.nombre)}" decoding="async" onerror="this.remove()">` : ''}
       </div>
       <span class="tarjeta-coleccion">${escHTML(categoria)}</span>
       <h2 class="detalle-titulo">${escHTML(p.nombre)}</h2>

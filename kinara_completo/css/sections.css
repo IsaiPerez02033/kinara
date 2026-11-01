@@ -19,13 +19,14 @@
 
 /* Sin animación o sin 3D, el hero ocupa solo una pantalla */
 #hero.hero--quieto,
-#hero.hero--sin3d { height: 100svh; min-height: 640px; }
+#hero.hero--sin3d { height: 100vh; height: 100svh; min-height: 560px; }
 
 .hero-fijo {
   position: sticky;
   top: 0;
+  /* svh no cambia al esconderse la barra de Safari: la escena no brinca */
+  height: 100vh;
   height: 100svh;
-  min-height: 560px;
   overflow: hidden;
   background-color: var(--cobalto);
 }
@@ -201,7 +202,7 @@
 .categorias-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  grid-auto-rows: minmax(250px, 21vw);
+  grid-auto-rows: minmax(250px, min(21vw, 340px));
   gap: 1px;
   border: 1px solid var(--tinta);
   background-color: var(--tinta);
@@ -218,8 +219,6 @@
   --tinta-bloque: var(--tinta);
   color: var(--tinta-bloque);
 }
-
-.categoria:hover .pieza-svg { transform: translateY(-6px); }
 
 .categoria.cama { background-color: var(--filamento); }
 
@@ -284,8 +283,6 @@
   border: 1px solid currentColor;
   transition: background-color var(--transicion-rapida), color var(--transicion-rapida);
 }
-
-.categoria-medida:hover .flecha-circulo { background-color: var(--hueso); color: var(--tinta); }
 
 /* -------------------------------------------------------
    PROCESO — Una ficha de taller
@@ -467,8 +464,6 @@
   transition: color var(--transicion-rapida), background-color var(--transicion-rapida);
 }
 
-.filtro-btn:hover { color: var(--color-blanco); }
-
 .filtro-btn.activo {
   background-color: var(--tinta);
   color: var(--hueso);
@@ -487,7 +482,8 @@
   border-radius: var(--radio-sm);
   background-color: var(--color-grafito);
   color: var(--color-blanco);
-  font-size: var(--texto-sm);
+  /* Con menos de 16px, iOS hace zoom a la página al tocarlo */
+  font-size: 1rem;
 }
 
 .catalogo-resultados {
@@ -527,7 +523,6 @@
 }
 
 .contacto-datos a { font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
-.contacto-datos a:hover { color: var(--ocre); }
 
 .formulario {
   display: grid;
@@ -597,6 +592,16 @@
 }
 
 /* -------------------------------------------------------
+   HOVER: solo con ratón
+   ------------------------------------------------------- */
+@media (hover: hover) {
+  .categoria:hover .pieza-svg { transform: translateY(-6px); }
+  .categoria-medida:hover .flecha-circulo { background-color: var(--hueso); color: var(--tinta); }
+  .filtro-btn:hover { color: var(--color-blanco); }
+  .contacto-datos a:hover { color: var(--ocre); }
+}
+
+/* -------------------------------------------------------
    RESPONSIVE
    ------------------------------------------------------- */
 @media (max-width: 1024px) {
@@ -613,9 +618,28 @@
 }
 
 @media (max-width: 860px) {
+  .categorias-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: minmax(210px, min(56vw, 320px));
+  }
+
+  .categoria-a,
+  .categoria-b,
+  .categoria-c,
+  .categoria-d,
+  .categoria-e { grid-column: span 1; grid-row: auto; }
+
+  .categoria-a { grid-column: span 2; }
+  .categoria-f { grid-column: span 2; }
+  .categoria { padding: 1rem; }
+  .categoria-a .pieza-svg { height: 58%; }
+  .categoria-medida { min-height: 170px; }
+}
+
+/* Celular y tableta chica en vertical: el texto va arriba y la impresora abajo */
+@media (max-width: 860px) and (orientation: portrait) {
   #hero { height: 360vh; }
 
-  /* En celular el texto va arriba y la impresora abajo */
   .hero-capitulo {
     justify-content: flex-start;
     padding-top: calc(var(--altura-header) + 0.5rem);
@@ -645,27 +669,43 @@
     width: min(68vw, 300px);
     transform: translateX(-50%);
   }
+}
 
-  .categorias-grid {
-    grid-template-columns: 1fr 1fr;
-    grid-auto-rows: minmax(210px, 56vw);
+/* Teléfonos chicos: el texto no debe alcanzar a la impresora */
+@media (max-height: 620px) and (orientation: portrait) {
+  .hero-titulo { font-size: clamp(2.1rem, 10vw, 3rem); }
+  .hero-subtitulo { font-size: clamp(1.7rem, 8vw, 2.4rem); }
+  .hero-descripcion { display: none; }
+}
+
+/* Celular en horizontal: hay muy poca altura, el texto va compacto a la izquierda */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero-capitulo { padding-top: calc(var(--altura-header) - 8px); padding-bottom: 0.5rem; justify-content: center; }
+  .hero-capitulo > * { max-width: 52%; }
+  .hero-titulo { margin-top: 0.3rem; font-size: clamp(1.7rem, 9vh, 2.3rem); }
+  .hero-subtitulo { margin-top: 0.3rem; font-size: clamp(1.5rem, 8vh, 2rem); }
+  .hero-descripcion {
+    max-width: 48%;
+    margin-top: 0.4rem;
+    font-size: 0.85rem;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
+  .hero-acciones { margin-top: 0.6rem; }
+  .hero-acciones .btn-primario,
+  .hero-acciones .btn-secundario { min-height: 40px; padding: 0.4rem 0.9rem; font-size: 0.85rem; }
+  .hero-lectura { bottom: 0.5rem; width: 34vw; font-size: 0.65rem; }
+  #menu-movil { justify-content: flex-start; }
+  #menu-movil a:not(.btn-primario) { font-size: 1.5rem; }
+}
 
-  .categoria-a,
-  .categoria-b,
-  .categoria-c,
-  .categoria-d,
-  .categoria-e { grid-column: span 1; grid-row: auto; }
-
-  .categoria-a { grid-column: span 2; }
-  .categoria-f { grid-column: span 2; }
-  .categoria { padding: 1rem; }
-  .categoria-a .pieza-svg { height: 58%; }
-  .categoria-medida { min-height: 170px; }
-
-  .catalogo-barra { flex-wrap: wrap; }
-  .catalogo-orden { width: 100%; }
-  .select-personalizado { width: 100%; }
+@media (max-width: 860px) {
+  /* Filtros y orden en una sola fila: la barra fija no se come la pantalla */
+  .catalogo-orden { flex-shrink: 0; max-width: 8.5rem; }
+  .select-personalizado { width: 100%; text-overflow: ellipsis; }
 }
 
 @media (max-width: 640px) {
@@ -684,6 +724,8 @@
   .categoria-c .pieza-svg,
   .categoria-d .pieza-svg,
   .categoria-e .pieza-svg { height: 44%; }
+
+  .figuras-texto { padding-top: var(--espacio-xl); padding-bottom: var(--espacio-xl); }
 
   /* El badge de stock ya ocupa la parte de arriba */
   .tarjeta-nuevo { top: auto; bottom: 0.75rem; }
