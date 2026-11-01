@@ -77,7 +77,7 @@ const ModuloCatalogo = (() => {
                data-id="${p.id}" data-coleccion="${colCorto}" data-estado="${p.estado_stock}"
                role="listitem">
         <div class="tarjeta-imagen" style="background-color:${fondo};">
-          ${p.imagen_url ? `<img src="${p.imagen_url}" alt="${escHTML(p.nombre)}" loading="lazy" onerror="this.style.display='none'">` : ''}
+          ${p.imagen_url ? `<img src="${escHTML(p.imagen_url)}" alt="${escHTML(p.nombre)}" loading="lazy" onerror="this.style.display='none'">` : ''}
           <div class="imagen-placeholder" style="display:flex;align-items:center;justify-content:center;
                width:100%;height:100%;position:absolute;inset:0;${p.imagen_url?'display:none;':''}">
             <span style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;
@@ -93,16 +93,16 @@ const ModuloCatalogo = (() => {
           </div>` : ''}
           ${badge.disponible ? `<div class="tarjeta-accion">
             <button class="btn-agregar" onclick="ModuloCarrito.agregar('${p.id}')"
-                    title="Agregar al carrito" aria-label="Agregar ${p.nombre}">+</button>
+                    title="Agregar al carrito" aria-label="Agregar ${escHTML(p.nombre)}">+</button>
           </div>` : ''}
         </div>
         <div class="tarjeta-cuerpo">
           <span class="tarjeta-coleccion">${escHTML(p.coleccion_nombre)}</span>
           <h3 class="tarjeta-nombre">${escHTML(p.nombre)}</h3>
-          <p class="tarjeta-descripcion">${p.descripcion || ''}</p>
+          <p class="tarjeta-descripcion">${escHTML(p.descripcion)}</p>
           ${Array.isArray(p.materiales) && p.materiales.length ? `
             <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">
-              ${p.materiales.map(m=>`<span style="font-size:.7rem;padding:2px 8px;border:1px solid var(--color-borde);border-radius:999px;color:var(--color-blanco-dim);opacity:.6;">${m}</span>`).join('')}
+              ${p.materiales.map(m=>`<span style="font-size:.7rem;padding:2px 8px;border:1px solid var(--color-borde);border-radius:999px;color:var(--color-blanco-dim);opacity:.6;">${escHTML(m)}</span>`).join('')}
             </div>` : ''}
         </div>
         <div class="tarjeta-pie">
@@ -233,17 +233,17 @@ const ModuloProducto = (() => {
       <div style="width:100%;aspect-ratio:1;background:rgba(15,15,15,.5);border:1px solid var(--color-borde);
                   display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem;">
         ${p.imagen_url
-          ? `<img src="${p.imagen_url}" style="width:100%;height:100%;object-fit:cover;">`
+          ? `<img src="${escHTML(p.imagen_url)}" style="width:100%;height:100%;object-fit:cover;">`
           : `<span style="font-family:'Cormorant Garamond',serif;font-style:italic;color:rgba(212,163,115,.2);">${escHTML(p.nombre)}</span>`}
       </div>
       <p style="color:var(--color-blanco-dim);line-height:1.8;margin-bottom:1.5rem;">${escHTML(p.descripcion)}</p>
       <div style="border-top:1px solid var(--color-borde);padding-top:1.5rem;margin-bottom:1.5rem;">
         ${p.dimensiones?`<div style="display:flex;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.05);">
           <span style="font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--color-blanco-dim);">Dimensiones</span>
-          <span style="font-size:.875rem;">${p.dimensiones}</span></div>`:''}
+          <span style="font-size:.875rem;">${escHTML(p.dimensiones)}</span></div>`:''}
         ${p.acabado?`<div style="display:flex;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.05);">
           <span style="font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--color-blanco-dim);">Acabado</span>
-          <span style="font-size:.875rem;">${p.acabado}</span></div>`:''}
+          <span style="font-size:.875rem;">${escHTML(p.acabado)}</span></div>`:''}
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding-top:1.5rem;border-top:1px solid var(--color-borde);">
         <div>

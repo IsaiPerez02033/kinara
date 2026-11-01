@@ -1,16 +1,13 @@
 // ============================================================
-// crear-preferencia-mp.ts — Edge Function SEGURA (versión 2)
+// crear-preferencia-mp.ts — Edge Function: checkout en servidor
 //
-// CAMBIO CLAVE vs la versión anterior:
-// Ignoro completamente los precios que manda el frontend.
-// Solo uso los IDs de productos y cantidades del carrito.
-// Los precios los leo directamente de la base de datos.
-// Así, ningún usuario puede manipular el precio desde el navegador.
+// El navegador solo manda qué quiere comprar y a dónde enviarlo.
+// Aquí creo cliente, pedido e items con precios de la base de datos,
+// y genero la preferencia de pago. El navegador no elige el precio,
+// el pedido al que se aplica el pago ni las URLs de retorno.
 //
-// Flujo:
-//   Frontend → manda { producto_id, cantidad }[]
-//   Edge Function → consulta precio real en Supabase
-//   Edge Function → crea preferencia en MP con el precio real
+// Secrets: MERCADOPAGO_ACCESS_TOKEN y SITE_URL
+// (SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY ya los provee Supabase)
 // ============================================================
 
 import { serve }        from "https://deno.land/std@0.168.0/http/server.ts";
@@ -22,100 +19,117 @@ const CORS = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const UUID_RE  = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const texto = (v: unknown, max: number) => String(v ?? "").trim().slice(0, max);
+
+// Regreso null si los datos no son válidos
+function validar(body: any) {
+  const cliente = body?.cliente ?? {};
+  const envio   = body?.envio ?? {};
+  const items   = body?.items;
+
+  const nombre    = texto(cliente.nombre, 120);
+  const email     = texto(cliente.email, 200);
+  const telefono  = texto(cliente.telefono, 30);
+  const direccion = texto(envio.direccion, 300);
+  const ciudad    = texto(envio.ciudad, 100);
+  const estado    = texto(envio.estado, 60);
+  const cp        = texto(envio.cp, 5);
+
+  if (
+    nombre.length < 3 || !EMAIL_RE.test(email) ||
+    telefono.replace(/\D/g, "").length < 10 ||
+    direccion.length < 10 || ciudad.length < 2 || !estado || !/^\d{5}$/.test(cp)
+  ) return null;
+
+  if (!Array.isArray(items) || items.length === 0 || items.length > 50) return null;
+
+  const itemsValidos = items.every((i: any) =>
+    UUID_RE.test(String(i?.id)) &&
+    Number.isInteger(i?.cantidad) && i.cantidad >= 1 && i.cantidad <= 100
+  );
+  if (!itemsValidos) return null;
+
+  return {
+    nombre, email, telefono,
+    direccionCompleta: `${direccion}, ${ciudad}, ${estado} CP ${cp}`,
+    items: items.map((i: any) => ({ id: i.id, cantidad: i.cantidad })),
+  };
+}
+
 serve(async (req: Request) => {
 
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  if (req.method !== "POST") return respuesta(405, { error: "Método no permitido" });
+
+  let supabase: any = null;
+  let pedidoId: string | null = null;
 
   try {
-    const body = await req.json();
-    const { pedido_id, items, payer, back_urls, auto_return, external_reference } = body;
+    const datos = validar(await req.json().catch(() => null));
+    if (!datos) return respuesta(400, { error: "Revisa los datos del pedido" });
 
-    // Valido que me lleguen IDs y cantidades (no precios — esos los ignoro)
-    if (!pedido_id || !items?.length) {
-      return respuesta(400, { error: "Datos incompletos" });
-    }
+    const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const siteUrl     = Deno.env.get("SITE_URL")?.replace(/\/+$/, "");
 
-    const accessToken  = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
-    const supabaseUrl  = Deno.env.get("SUPABASE_URL");
-    const serviceKey   = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!accessToken || !supabaseUrl || !serviceKey) {
+    if (!accessToken || !supabaseUrl || !serviceKey || !siteUrl) {
       throw new Error("Variables de entorno incompletas");
     }
 
-    // Conecto a Supabase con el service_role para leer precios reales
-    const supabase = createClient(supabaseUrl, serviceKey);
+    supabase = createClient(supabaseUrl, serviceKey);
 
-    // Extraigo solo los IDs de productos que viene del frontend
-    const productoIds = items.map((i: any) => i.id);
-
-    // Consulto los precios y nombres REALES desde la base de datos
-    // El frontend nunca puede alterar estos valores
-    const { data: productosDB, error: errorDB } = await supabase
-      .from("productos")
-      .select("id, nombre, precio, colecciones(nombre)")
-      .in("id", productoIds);
-
-    if (errorDB || !productosDB?.length) {
-      throw new Error("No se pudieron verificar los precios: " + errorDB?.message);
-    }
-
-    // Construyo los items con precios reales de la BD, no del frontend
-    const itemsVerificados = items.map((itemFrontend: any) => {
-      const productoDB = productosDB.find((p: any) => p.id === itemFrontend.id);
-
-      if (!productoDB) {
-        throw new Error(`Producto ${itemFrontend.id} no encontrado en la base de datos`);
-      }
-
-      // Uso el precio de Supabase — el precio del frontend se descarta
-      const precioReal = Number(productoDB.precio);
-      const cantidad   = Number(itemFrontend.quantity ?? itemFrontend.cantidad ?? 1);
-
-      // Registro en el log si alguien intentó manipular el precio
-      const precioFrontend = Number(itemFrontend.unit_price ?? itemFrontend.precio ?? 0);
-      if (precioFrontend !== precioReal) {
-        console.warn(
-          `INTENTO DE MANIPULACIÓN DE PRECIO detectado. ` +
-          `Producto: ${productoDB.nombre} | ` +
-          `Precio enviado por frontend: ${precioFrontend} | ` +
-          `Precio real en BD: ${precioReal}`
-        );
-      }
-
-      return {
-        id:          productoDB.id,
-        title:       `${(productoDB.colecciones as any)?.nombre ?? "Kinara"} — ${productoDB.nombre}`,
-        unit_price:  precioReal,     // Precio real de la BD
-        quantity:    cantidad,
-        currency_id: "MXN",
-        category_id: "art",
-      };
+    const { data: pedido, error: errorPedido } = await supabase.rpc("crear_pedido_checkout", {
+      p_nombre:    datos.nombre,
+      p_email:     datos.email,
+      p_telefono:  datos.telefono,
+      p_direccion: datos.direccionCompleta,
+      p_items:     datos.items,
     });
 
-    // Calculo el total real para verificar que coincide con el pedido guardado
-    const totalReal = itemsVerificados.reduce(
-      (s: number, i: any) => s + i.unit_price * i.quantity, 0
-    );
+    if (errorPedido) {
+      // Los errores CHECKOUT: son mensajes para el cliente (stock, producto retirado)
+      if (errorPedido.message?.startsWith("CHECKOUT: ")) {
+        return respuesta(409, { error: errorPedido.message.replace("CHECKOUT: ", "") });
+      }
+      throw new Error("Error creando pedido: " + errorPedido.message);
+    }
 
-    // Actualizo el total del pedido en Supabase con el precio real
-    // por si alguien también intentó manipular el total del pedido
-    await supabase
-      .from("pedidos")
-      .update({ total: totalReal })
-      .eq("id", pedido_id);
+    pedidoId = pedido.pedido_id;
+    const retorno = (status: string) =>
+      `${siteUrl}/pages/confirmacion.html?status=${status}&pedido=${pedidoId}`;
 
-    // Creo la preferencia en Mercado Pago con los precios verificados
+    const [primerNombre, ...apellidos] = datos.nombre.split(/\s+/);
+
     const preferencia = {
-      items:              itemsVerificados,
-      payer:              payer ?? {},
-      back_urls:          back_urls ?? {},
-      auto_return:        auto_return ?? "approved",
-      external_reference: external_reference ?? pedido_id,
+      items: pedido.items.map((i: any) => ({
+        id:          i.id,
+        title:       i.titulo,
+        unit_price:  Number(i.precio),
+        quantity:    i.cantidad,
+        currency_id: "MXN",
+        category_id: "art",
+      })),
+      payer: {
+        name:    primerNombre,
+        surname: apellidos.join(" "),
+        email:   datos.email,
+        phone:   { area_code: "52", number: datos.telefono.replace(/\D/g, "") },
+      },
+      back_urls: {
+        success: retorno("success"),
+        failure: retorno("failure"),
+        pending: retorno("pending"),
+      },
+      auto_return:        "approved",
+      external_reference: pedidoId,
       statement_descriptor: "KINARA LUMINARIAS",
       expires:            true,
       expiration_date_to: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
-      payment_methods: { installments: 12 },
+      payment_methods:    { installments: 12 },
     };
 
     const mpRes = await fetch("https://api.mercadopago.com/checkout/preferences", {
@@ -128,22 +142,27 @@ serve(async (req: Request) => {
     });
 
     if (!mpRes.ok) {
-      const err = await mpRes.json();
-      throw new Error("Error de Mercado Pago: " + (err.message ?? JSON.stringify(err)));
+      throw new Error(`Mercado Pago respondió ${mpRes.status}: ${await mpRes.text()}`);
     }
 
-    const datos = await mpRes.json();
+    const pref = await mpRes.json();
 
-    return respuesta(200, {
-      id:                 datos.id,
-      init_point:         datos.init_point,
-      sandbox_init_point: datos.sandbox_init_point,
-      total_verificado:   totalReal,   // Devuelvo el total real para que el frontend lo muestre
-    });
+    await supabase.from("pedidos").update({ mp_preference_id: pref.id }).eq("id", pedidoId);
+
+    // El sandbox solo se usa con credenciales de prueba
+    const urlPago = accessToken.startsWith("TEST-")
+      ? (pref.sandbox_init_point ?? pref.init_point)
+      : pref.init_point;
+
+    return respuesta(200, { pedido_id: pedidoId, url_pago: urlPago, total: pedido.total });
 
   } catch (e) {
     console.error("Error en crear-preferencia-mp:", e);
-    return respuesta(500, { error: String(e) });
+    // No dejo pendiente un pedido que nunca podrá pagarse
+    if (supabase && pedidoId) {
+      await supabase.from("pedidos").update({ estado: "cancelado" }).eq("id", pedidoId);
+    }
+    return respuesta(500, { error: "No se pudo iniciar el pago. Intenta de nuevo." });
   }
 });
 

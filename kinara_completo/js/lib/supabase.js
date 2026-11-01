@@ -53,11 +53,12 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const { createClient } = window.supabase;
 
 // Creo el cliente global de Supabase con la configuración del proyecto
+// El panel admin define window.KINARA_ADMIN antes de cargar este archivo
 const db = createClient(SUPABASE_URL, SUPABASE_ANON, {
   // Configuro el comportamiento de autenticación
   auth: {
     // No persisto la sesión en el sitio público (solo en el admin)
-    persistSession: false,
+    persistSession: window.KINARA_ADMIN === true,
     // No detecto automáticamente sesiones de la URL
     detectSessionInUrl: false
   }
@@ -70,6 +71,12 @@ const db = createClient(SUPABASE_URL, SUPABASE_ANON, {
    para un manejo consistente de errores en toda la app.
    ------------------------------------------------------- */
 const SupabaseDB = (() => {
+
+  // RLS no da error al bloquear un UPDATE: simplemente afecta 0 filas
+  const exigirFilas = ({ data, error }) =>
+    !error && !data?.length
+      ? { data, error: { message: 'Sin permiso o registro inexistente. Inicia sesión de nuevo.' } }
+      : { data, error };
 
   /* =====================================================
      FUNCIONES DE PRODUCTOS
@@ -194,7 +201,7 @@ const SupabaseDB = (() => {
 
   /**
    * Actualizo el stock de un producto desde el panel admin.
-   * Esta función requiere el service_role key (solo admin).
+   * RLS solo lo permite a un administrador con sesión activa.
    *
    * @param {string} productoId - UUID del producto
    * @param {number} nuevoStock - Nuevo valor del stock
@@ -211,7 +218,7 @@ const SupabaseDB = (() => {
         .eq('producto_id', productoId)
         .select();   // Retorno el registro actualizado
 
-      return { data, error };
+      return exigirFilas({ data, error });
 
     } catch (err) {
       console.error('Error al actualizar stock:', err);
@@ -281,13 +288,12 @@ const SupabaseDB = (() => {
         };
       }
 
-      // Inserto el registro en la tabla de contactos
-      const { data, error } = await db
+      // Inserto sin .select(): el público puede escribir mensajes, no leerlos
+      const { error } = await db
         .from('contactos')
-        .insert([{ nombre, email, tipo_consulta, mensaje }])
-        .select();   // Retorno el registro insertado (con el ID asignado)
+        .insert([{ nombre, email, tipo_consulta: tipo_consulta || 'otro', mensaje }]);
 
-      return { data, error };
+      return { data: null, error };
 
     } catch (err) {
       console.error('Error al guardar contacto:', err);
@@ -297,9 +303,8 @@ const SupabaseDB = (() => {
 
   /* =====================================================
      FUNCIONES DEL PANEL ADMIN
-     Estas funciones usan el service_role key para
-     operaciones que RLS restringe a administradores.
-     Las llamo solo desde admin.html.
+     RLS las permite solo a usuarios de la tabla admins,
+     con su sesión de Supabase Auth. Las llamo desde admin.html.
      ===================================================== */
 
   /**
@@ -339,7 +344,7 @@ const SupabaseDB = (() => {
         .eq('id', id)
         .select();
 
-      return { data, error };
+      return exigirFilas({ data, error });
 
     } catch (err) {
       console.error('Error al marcar contacto:', err);
@@ -362,7 +367,7 @@ const SupabaseDB = (() => {
         .eq('id', id)
         .select();
 
-      return { data, error };
+      return exigirFilas({ data, error });
 
     } catch (err) {
       console.error('Error al actualizar producto:', err);
@@ -411,22 +416,20 @@ const SupabaseDB = (() => {
    *
    * @param {string} id - UUID del pedido
    * @param {string} nuevoEstado - Nuevo estado del pedido
-   * @param {string} notas - Notas opcionales para el admin
    * @returns {Promise<{data: Object, error: Object}>}
    */
-  const actualizarEstadoPedido = async (id, nuevoEstado, notas = '') => {
+  const actualizarEstadoPedido = async (id, nuevoEstado) => {
     try {
       const { data, error } = await db
         .from('pedidos')
         .update({
-          estado: nuevoEstado,
-          notas: notas
+          estado: nuevoEstado
           // updated_at se actualiza automáticamente con el trigger
         })
         .eq('id', id)
         .select();
 
-      return { data, error };
+      return exigirFilas({ data, error });
 
     } catch (err) {
       console.error('Error al actualizar pedido:', err);

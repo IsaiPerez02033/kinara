@@ -150,8 +150,7 @@
     const params    = new URLSearchParams(window.location.search);
     const status    = params.get('status');
     const pedidoId  = params.get('pedido');
-    const paymentId = params.get('payment_id') || params.get('collection_id');
-
+    
     /**
      * Formateo un precio en MXN.
      */
@@ -173,18 +172,25 @@
     const renderizarConfirmacion = async () => {
       const contenedor = document.getElementById('confirmacion-contenido');
 
-      // Caso: pago aprobado (success)
-      if (status === 'success' && pedidoId) {
-        // Consulto el resumen del pedido en Supabase
-        const { data, error } = await SupabaseDB.cliente
+      // El estado real sale de la base de datos: el ?status= de la URL
+      // se puede editar a mano y solo indica cómo volvió el cliente.
+      let pedido = null;
+      if (pedidoId) {
+        const { data } = await SupabaseDB.cliente
           .rpc('obtener_resumen_pedido', { p_pedido_id: pedidoId });
+        pedido = data?.[0] ?? null;
+      }
 
-        // Limpio el carrito del localStorage porque el pago fue exitoso
+      const pagado = ['pagado', 'en_produccion', 'enviado', 'entregado'].includes(pedido?.estado);
+
+      // El pago ya se inició o concluyó: el carrito ya cumplió su función
+      if (pagado || status === 'success' || status === 'pending') {
         localStorage.removeItem('kinara_carrito_v1');
         localStorage.removeItem('kinara_pedido_actual');
+      }
 
-        const pedido = data?.[0];
-
+      // Caso: pago confirmado por el webhook
+      if (pagado) {
         contenedor.innerHTML = `
           <!-- Ícono de éxito -->
           <div class="confirmacion-icono" style="
@@ -204,13 +210,13 @@
           <!-- Título -->
           <h1 class="confirmacion-titulo">Gracias por tu pedido</h1>
           <p class="confirmacion-subtitulo">
-            ${pedido?.cliente_nombre ? `Hola, ${pedido.cliente_nombre.split(' ')[0]}.` : ''}
+            ${pedido?.cliente_nombre ? `Hola, ${escHTML(pedido.cliente_nombre)}.` : ''}
             Tu luminaria está en camino a nuestro taller.
           </p>
 
           <!-- ID del pedido -->
           <div class="confirmacion-id">
-            Pedido #${pedidoId?.substring(0,8).toUpperCase()}
+            Pedido #${escHTML(pedidoId?.substring(0,8).toUpperCase())}
           </div>
 
           <!-- Resumen del pedido si tenemos datos -->
@@ -230,8 +236,8 @@
                     .map(item => `
                       <tr>
                         <td>
-                          <span style="color:var(--color-blanco);">${item.nombre}</span>
-                          <span style="display:block;font-size:.75rem;color:var(--color-dorado);opacity:.7;">${item.coleccion}</span>
+                          <span style="color:var(--color-blanco);">${escHTML(item.nombre)}</span>
+                          <span style="display:block;font-size:.75rem;color:var(--color-dorado);opacity:.7;">${escHTML(item.coleccion)}</span>
                           <span style="font-size:.75rem;">× ${item.cantidad}</span>
                         </td>
                         <td>$${fmt(item.subtotal)}</td>
@@ -248,16 +254,6 @@
                 </span>
               </div>
             </div>
-
-            <!-- Dirección de envío -->
-            ${pedido.direccion_envio ? `
-              <div style="text-align:left;padding:1rem;background:rgba(212,163,115,0.05);
-                          border:1px solid rgba(212,163,115,0.15);margin-bottom:1.5rem;">
-                <p style="font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;
-                          color:var(--color-dorado);margin-bottom:.5rem;">Dirección de envío</p>
-                <p style="font-size:.875rem;color:var(--color-blanco-dim);">${pedido.direccion_envio}</p>
-              </div>
-            ` : ''}
           ` : ''}
 
           <!-- Próximos pasos -->
@@ -267,7 +263,7 @@
             <div style="display:flex;flex-direction:column;gap:.5rem;">
               <div style="display:flex;gap:.75rem;font-size:.875rem;color:var(--color-blanco-dim);">
                 <span style="color:var(--color-dorado);flex-shrink:0;">01</span>
-                <span>Recibirás un email de confirmación con los detalles de tu pedido</span>
+                <span>Guarda tu número de pedido para cualquier aclaración</span>
               </div>
               <div style="display:flex;gap:.75rem;font-size:.875rem;color:var(--color-blanco-dim);">
                 <span style="color:var(--color-dorado);flex-shrink:0;">02</span>
@@ -287,7 +283,8 @@
           </div>
         `;
 
-      } else if (status === 'pending') {
+      } else if (status === 'success' || status === 'pending') {
+        // El webhook aún no confirma: nunca muestro "pagado" antes de tiempo
         // Pago en proceso (transferencias bancarias, OXXO, etc.)
         contenedor.innerHTML = `
           <div class="confirmacion-icono" style="background:rgba(212,163,115,0.1);border:1px solid rgba(212,163,115,0.3);">
@@ -303,18 +300,18 @@
 
           <h1 class="confirmacion-titulo">Tu pedido está pendiente</h1>
           <p class="confirmacion-subtitulo">
-            Mercado Pago está procesando tu pago. Esto puede tardar algunas horas
-            dependiendo del método de pago seleccionado.
+            Estamos esperando la confirmación de Mercado Pago. Puede tardar desde
+            unos segundos hasta algunas horas, según el método de pago.
           </p>
 
-          <div class="confirmacion-id">Pedido #${pedidoId?.substring(0,8).toUpperCase()}</div>
+          <div class="confirmacion-id">Pedido #${escHTML(pedidoId?.substring(0,8).toUpperCase())}</div>
 
           <div style="padding:1rem;background:rgba(212,163,115,0.05);border:1px solid rgba(212,163,115,0.15);
                       text-align:left;margin-bottom:1.5rem;">
             <p style="font-size:.875rem;color:var(--color-blanco-dim);line-height:1.7;">
-              Te enviaremos un email cuando el pago sea confirmado y tu pedido
-              entre a producción. Si pagaste en OXXO, presenta el ticket en
-              cualquier tienda OXXO.
+              Actualiza esta página en unos minutos para ver la confirmación.
+              Si elegiste OXXO, presenta tu ficha en cualquier tienda para
+              completar el pago.
             </p>
           </div>
 
@@ -339,7 +336,7 @@
 
           <h1 class="confirmacion-titulo">Algo salió mal</h1>
           <p class="confirmacion-subtitulo">
-            El pago no pudo completarse. No se realizó ningún cargo.
+            El pago no pudo completarse.
             Puedes intentarlo de nuevo con otro método de pago.
           </p>
 

@@ -139,11 +139,11 @@ const ModuloCarrito = (() => {
         <div class="carrito-item" data-id="${item.id}">
           <div class="carrito-item-imagen">
             ${item.imagen_url
-              ? `<img src="${item.imagen_url}" alt="${escHTML(item.nombre)}" loading="lazy">`
+              ? `<img src="${escHTML(item.imagen_url)}" alt="${escHTML(item.nombre)}" loading="lazy">`
               : `<div class="carrito-item-imagen-placeholder">${escHTML(item.nombre)}</div>`}
           </div>
           <div class="carrito-item-info">
-            <span class="carrito-item-coleccion">${item.coleccion}</span>
+            <span class="carrito-item-coleccion">${escHTML(item.coleccion)}</span>
             <span class="carrito-item-nombre">${escHTML(item.nombre)}</span>
             <span class="carrito-item-precio">$${formatearPrecio(item.precio)} MXN</span>
           </div>
@@ -205,6 +205,7 @@ const ModuloCheckout = (() => {
   const abrir = () => {
     if (!ModuloCarrito.contarUnidades()) return;
     ModuloCarrito.cerrarDrawer();
+    restaurarFormulario();
     renderizarResumen();
     const o = document.getElementById('checkout-overlay');
     if (o) { o.style.display='flex'; requestAnimationFrame(()=>o.classList.add('visible')); }
@@ -227,7 +228,7 @@ const ModuloCheckout = (() => {
     if (!c) return;
     c.innerHTML = ModuloCarrito.obtenerItems().map(i =>
       `<div class="checkout-resumen-fila">
-        <span>${i.nombre} × ${i.cantidad}</span>
+        <span>${escHTML(i.nombre)} × ${i.cantidad}</span>
         <span>$${ModuloCarrito.formatearPrecio(i.precio*i.cantidad)}</span>
       </div>`).join('');
     if (t) t.textContent = `$${ModuloCarrito.formatearPrecio(ModuloCarrito.calcularTotal())} MXN`;
@@ -242,6 +243,7 @@ const ModuloCheckout = (() => {
       {id:'co-telefono',  err:'err-telefono',  msg:'Teléfono con al menos 10 dígitos',fn:v=>v.replace(/\D/g,'').length>=10},
       {id:'co-direccion', err:'err-direccion', msg:'Dirección de envío obligatoria',  fn:v=>v.length>=10},
       {id:'co-ciudad',    err:'err-ciudad',    msg:'Ciudad obligatoria',              fn:v=>v.length>=2},
+      {id:'co-estado',    err:'err-estado',    msg:'Selecciona tu estado',            fn:v=>v.length>0},
       {id:'co-cp',        err:'err-cp',        msg:'Código postal de 5 dígitos',      fn:v=>/^\d{5}$/.test(v)},
     ];
     reglas.forEach(({id,err,msg,fn})=>{
@@ -273,122 +275,84 @@ const ModuloCheckout = (() => {
     mostrarCargando();
 
     try {
-      const cliente = await guardarCliente(datos);
-      const pedido  = await crearPedido(cliente.id, datos);
-      const pref    = await crearPreferencia(pedido, datos);
-
-      await SupabaseDB.cliente.from('pedidos').update({mp_preference_id:pref.id}).eq('id',pedido.id);
-      localStorage.setItem('kinara_pedido_actual', pedido.id);
+      const pago = await crearPago(datos);
+      localStorage.setItem('kinara_pedido_actual', pago.pedido_id);
 
       // Redirigir a Mercado Pago
-      window.location.href = pref.sandbox_init_point || pref.init_point;
+      window.location.href = pago.url_pago;
 
     } catch (e) {
       mostrarError(e.message);
     }
   };
 
-  /* --- Guardar cliente en Supabase --- */
-  const guardarCliente = async (d) => {
-    const dir = `${d.direccion}, ${d.ciudad}, ${d.estado} CP ${d.cp}`;
-    const { data: ex } = await SupabaseDB.cliente.from('clientes').select('*').eq('email',d.email).maybeSingle();
-    if (ex) {
-      const { data } = await SupabaseDB.cliente.from('clientes').update({nombre:d.nombre,telefono:d.telefono,direccion:dir}).eq('id',ex.id).select().single();
-      return data;
-    }
-    const { data, error } = await SupabaseDB.cliente.from('clientes').insert([{nombre:d.nombre,email:d.email,telefono:d.telefono,direccion:dir}]).select().single();
-    if (error) throw new Error('Error guardando cliente: '+error.message);
-    return data;
-  };
-
-  /* --- Crear pedido en Supabase --- */
-  const crearPedido = async (clienteId, datos) => {
-    const items = ModuloCarrito.obtenerItems();
-    const dir   = `${datos.direccion}, ${datos.ciudad}, ${datos.estado} CP ${datos.cp}`;
-
-    const { data: pedido, error: ep } = await SupabaseDB.cliente
-      .from('pedidos')
-      .insert([{cliente_id:clienteId, estado:'pendiente', total:ModuloCarrito.calcularTotal(), direccion_envio:dir}])
-      .select().single();
-    if (ep) throw new Error('Error creando pedido: '+ep.message);
-
-    const { error: ei } = await SupabaseDB.cliente.from('pedido_items').insert(
-      items.map(i=>({pedido_id:pedido.id, producto_id:i.id, cantidad:i.cantidad, precio_unitario:i.precio}))
-    );
-    if (ei) throw new Error('Error guardando items: '+ei.message);
-
-    return pedido;
-  };
-
   /**
-   * Crear preferencia en Mercado Pago via Supabase Edge Function.
-   *
-   * CONFIGURACIÓN DE LA EDGE FUNCTION en Supabase:
-   * 1. Ve a supabase.com → tu proyecto → Edge Functions
-   * 2. Crea una función llamada "crear-preferencia-mp"
-   * 3. Pega el código del archivo sql/edge-function-mp.ts
-   * 4. Agrega el secret MERCADOPAGO_ACCESS_TOKEN en Settings → Secrets
-   *
-   * El Access Token de Mercado Pago NUNCA va en el frontend.
+   * Creo el pedido y el pago vía la Edge Function "crear-preferencia-mp".
+   * SEGURIDAD: solo mando IDs, cantidades y datos de envío. Precios,
+   * pedido y URLs de retorno se deciden en el servidor.
    */
-  const crearPreferencia = async (pedido, datos) => {
-    const items = ModuloCarrito.obtenerItems();
-    const origen = window.location.origin;
-
-    // SEGURIDAD: solo mando IDs y cantidades al servidor.
-    // El precio real lo lee la Edge Function directamente desde Supabase.
-    // Así nadie puede manipular el precio desde las DevTools del navegador.
+  const crearPago = async (datos) => {
     const { data, error } = await SupabaseDB.cliente.functions.invoke('crear-preferencia-mp', {
       body: {
-        pedido_id: pedido.id,
-        items: items.map(i=>({
-          id:       i.id,      // Solo el ID del producto
-          cantidad: i.cantidad // Solo la cantidad — SIN precio
-        })),
-        payer: {
-          name:  datos.nombre.split(' ')[0],
-          surname: datos.nombre.split(' ').slice(1).join(' '),
-          email: datos.email,
-          phone: { area_code:'52', number: datos.telefono.replace(/\D/g,'') }
-        },
-        back_urls: {
-          success: `${origen}/pages/confirmacion.html?status=success&pedido=${pedido.id}`,
-          failure: `${origen}/pages/confirmacion.html?status=failure&pedido=${pedido.id}`,
-          pending: `${origen}/pages/confirmacion.html?status=pending&pedido=${pedido.id}`
-        },
-        auto_return:        'approved',
-        external_reference: pedido.id
+        items: ModuloCarrito.obtenerItems().map(i=>({ id:i.id, cantidad:i.cantidad })),
+        cliente: { nombre:datos.nombre, email:datos.email, telefono:datos.telefono },
+        envio: { direccion:datos.direccion, ciudad:datos.ciudad, estado:datos.estado, cp:datos.cp }
       }
     });
 
-    if (error) throw new Error('Error creando preferencia MP: ' + error.message);
+    if (error) {
+      // En errores 4xx/5xx el mensaje para el cliente viene en la respuesta
+      const detalle = await error.context?.json?.().catch(()=>null);
+      throw new Error(detalle?.error || 'No se pudo iniciar el pago. Intenta de nuevo.');
+    }
     return data;
   };
 
   /* --- Estados visuales --- */
-  const mostrarCargando = () => {
+  // Oculto el formulario en lugar de borrarlo para poder reintentar
+  const mostrarEstado = (html) => {
     const c = document.getElementById('checkout-modal-cuerpo');
     if (!c) return;
-    c.innerHTML = `
+    Array.from(c.children).forEach(el => { if (el.id !== 'checkout-estado') el.hidden = true; });
+    let estado = document.getElementById('checkout-estado');
+    if (!estado) {
+      estado = document.createElement('div');
+      estado.id = 'checkout-estado';
+      c.appendChild(estado);
+    }
+    estado.innerHTML = html;
+  };
+
+  const restaurarFormulario = () => {
+    document.getElementById('checkout-estado')?.remove();
+    const c = document.getElementById('checkout-modal-cuerpo');
+    if (c) Array.from(c.children).forEach(el => { el.hidden = false; });
+    const btn = document.getElementById('btn-pagar');
+    if (btn) btn.disabled = false;
+  };
+
+  const mostrarCargando = () => {
+    // Evito crear dos pedidos con doble clic
+    const btn = document.getElementById('btn-pagar');
+    if (btn) btn.disabled = true;
+    mostrarEstado(`
       <div class="pago-estado">
         <div class="pago-spinner"></div>
         <p class="pago-estado-titulo">Preparando tu pedido</p>
         <p class="pago-estado-subtitulo">Verificando disponibilidad y creando tu orden de pago…</p>
-      </div>`;
+      </div>`);
   };
 
   const mostrarError = (msg) => {
-    const c = document.getElementById('checkout-modal-cuerpo');
-    if (!c) return;
-    c.innerHTML = `
+    mostrarEstado(`
       <div class="pago-estado">
         <div class="pago-error-icono">✕</div>
         <p class="pago-estado-titulo">Algo salió mal</p>
-        <p class="pago-estado-subtitulo">${msg || 'No se pudo procesar el pago. Intenta de nuevo.'}</p>
-        <button class="btn-primario" onclick="ModuloCheckout.cerrar()" style="margin-top:1rem;">
-          Volver al carrito
+        <p class="pago-estado-subtitulo">${escHTML(msg || 'No se pudo procesar el pago. Intenta de nuevo.')}</p>
+        <button class="btn-primario" onclick="ModuloCheckout.restaurarFormulario()" style="margin-top:1rem;">
+          Volver a mis datos
         </button>
-      </div>`;
+      </div>`);
   };
 
   /* --- Inicialización --- */
@@ -398,7 +362,7 @@ const ModuloCheckout = (() => {
     document.getElementById('checkout-overlay')?.addEventListener('click', e => { if(e.target===e.currentTarget) cerrar(); });
   };
 
-  return { abrir, cerrar, iniciar };
+  return { abrir, cerrar, iniciar, restaurarFormulario };
 })();
 
 

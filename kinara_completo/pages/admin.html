@@ -533,7 +533,6 @@
       margin-bottom: 1rem;
       box-sizing: border-box;
       text-align: center;
-      letter-spacing: .15em;
     }
     .auth-input:focus { outline: 1px solid var(--dorado); }
     .auth-btn {
@@ -567,26 +566,18 @@
 
   <!-- =====================================================
        OVERLAY DE AUTENTICACIÓN
-       Se muestra antes de cargar el panel. El PIN se
-       configura en la variable ADMIN_PIN del script de abajo.
+       Se muestra hasta que un administrador inicia sesión con
+       Supabase Auth. Los permisos reales los aplica RLS.
        ===================================================== -->
   <div id="auth-overlay">
-    <div class="auth-box">
+    <form class="auth-box" id="auth-form">
       <h2>✦ Kinara Admin</h2>
-      <p>Ingresa el PIN de acceso</p>
-      <input
-        id="auth-pin"
-        class="auth-input"
-        type="password"
-        inputmode="numeric"
-        maxlength="6"
-        placeholder="● ● ● ● ● ●"
-        autocomplete="current-password"
-      />
-      <button class="auth-btn" onclick="verificarPin()">Acceder</button>
-      <div class="auth-error" id="auth-error"></div>
-      <div class="auth-attempts" id="auth-attempts"></div>
-    </div>
+      <p>Inicia sesión con tu cuenta de administrador</p>
+      <input id="auth-email" class="auth-input" type="email" placeholder="Correo" autocomplete="username" required />
+      <input id="auth-password" class="auth-input" type="password" placeholder="Contraseña" autocomplete="current-password" required />
+      <button class="auth-btn" id="auth-btn" type="submit">Acceder</button>
+      <div class="auth-error" id="auth-error" role="alert"></div>
+    </form>
   </div>
 
 
@@ -606,9 +597,12 @@
     </div>
 
     <!-- Enlace de vuelta al sitio -->
-    <a href="index.html" class="admin-header-link">
+    <div style="display:flex;align-items:center;gap:1.5rem;">
+    <button type="button" class="admin-header-link" onclick="cerrarSesion()" style="background:none;border:none;cursor:pointer;">Cerrar sesión</button>
+    <a href="../index.html" class="admin-header-link">
       ← Ver sitio público
     </a>
+    </div>
   </header>
 
 
@@ -942,102 +936,14 @@
        ===================================================== -->
 
 
-  <!-- Script de autenticación del panel admin -->
-  <script>
-    'use strict';
-
-    /* -------------------------------------------------------
-       CONFIGURACIÓN DEL PIN DE ACCESO
-       ¡IMPORTANTE! Cambia este PIN antes de publicar.
-       Usa entre 4 y 6 dígitos numéricos.
-       En producción considera usar Supabase Auth en su lugar.
-       ------------------------------------------------------- */
-    const ADMIN_PIN = '250405';          // ← CAMBIA ESTE PIN
-    const MAX_INTENTOS = 5;
-    const BLOQUEO_MS   = 15 * 60 * 1000; // 15 minutos
-    const SESSION_KEY  = 'kinara_admin_auth';
-    const SESSION_TTL  = 8 * 60 * 60 * 1000; // 8 horas
-
-    let intentosFallidos = 0;
-
-    /* Verifico si ya hay una sesión activa guardada */
-    (function verificarSesion() {
-      try {
-        const s = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
-        if (s && s.expira > Date.now()) {
-          document.getElementById('auth-overlay').classList.add('oculto');
-          return;
-        }
-      } catch (_) {}
-      // Bloqueo por intentos fallidos previos
-      const bloqueo = parseInt(localStorage.getItem('kinara_admin_bloqueo') || '0');
-      if (bloqueo > Date.now()) {
-        const minutos = Math.ceil((bloqueo - Date.now()) / 60000);
-        document.getElementById('auth-error').textContent =
-          `Demasiados intentos. Espera ${minutos} min.`;
-        document.getElementById('auth-pin').disabled = true;
-        document.querySelector('.auth-btn').disabled = true;
-      }
-    })();
-
-    function verificarPin() {
-      const input = document.getElementById('auth-pin').value.trim();
-      const errEl = document.getElementById('auth-error');
-      const attEl = document.getElementById('auth-attempts');
-
-      // Verifico bloqueo activo
-      const bloqueo = parseInt(localStorage.getItem('kinara_admin_bloqueo') || '0');
-      if (bloqueo > Date.now()) {
-        const minutos = Math.ceil((bloqueo - Date.now()) / 60000);
-        errEl.textContent = `Bloqueado. Intenta en ${minutos} min.`;
-        return;
-      }
-
-      if (input === ADMIN_PIN) {
-        // PIN correcto — guardo sesión y muestro el panel
-        intentosFallidos = 0;
-        localStorage.removeItem('kinara_admin_bloqueo');
-        sessionStorage.setItem(SESSION_KEY, JSON.stringify({
-          expira: Date.now() + SESSION_TTL
-        }));
-        document.getElementById('auth-overlay').classList.add('oculto');
-        document.getElementById('auth-pin').value = '';
-        errEl.textContent = '';
-        attEl.textContent = '';
-      } else {
-        // PIN incorrecto
-        intentosFallidos++;
-        const restantes = MAX_INTENTOS - intentosFallidos;
-
-        if (intentosFallidos >= MAX_INTENTOS) {
-          localStorage.setItem('kinara_admin_bloqueo', String(Date.now() + BLOQUEO_MS));
-          errEl.textContent = 'Demasiados intentos. Bloqueado por 15 minutos.';
-          document.getElementById('auth-pin').disabled = true;
-          document.querySelector('.auth-btn').disabled = true;
-          attEl.textContent = '';
-        } else {
-          errEl.textContent = 'PIN incorrecto.';
-          attEl.textContent = `Intentos restantes: ${restantes}`;
-          document.getElementById('auth-pin').value = '';
-          document.getElementById('auth-pin').focus();
-        }
-      }
-    }
-
-    /* Permitir Enter en el input del PIN */
-    document.getElementById('auth-pin').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') verificarPin();
-    });
-
-    /* Auto-focus en el campo */
-    setTimeout(() => document.getElementById('auth-pin').focus(), 100);
-  </script>
+  <!-- Pido a supabase.js que conserve la sesión de Auth -->
+  <script>window.KINARA_ADMIN = true;</script>
 
   <!-- SDK de Supabase desde CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
   <!-- Cliente Supabase de la marca -->
-  <script src="js/lib/supabase.js"></script>
+  <script src="../js/lib/supabase.js"></script>
 
   <!-- Lógica del panel admin -->
   <script>
@@ -1160,13 +1066,13 @@
           <div style="padding:0.75rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.04);">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <div>
-                <span style="font-size:0.875rem;color:var(--blanco);">${c.nombre}</span>
-                <span style="font-size:0.75rem;color:var(--blanco-dim);margin-left:0.5rem;">${c.email}</span>
+                <span style="font-size:0.875rem;color:var(--blanco);">${escHTML(c.nombre)}</span>
+                <span style="font-size:0.75rem;color:var(--blanco-dim);margin-left:0.5rem;">${escHTML(c.email)}</span>
               </div>
               <span style="font-size:0.7rem;color:var(--blanco-dim);">${formatearFecha(c.created_at)}</span>
             </div>
             <p style="font-size:0.8rem;color:var(--blanco-dim);margin-top:4px;
-                      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.mensaje}</p>
+                      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHTML(c.mensaje)}</p>
           </div>
         `).join('');
       }
@@ -1176,9 +1082,16 @@
         document.getElementById('badge-contactos-pendientes').textContent = contactos.length;
       }
 
-      // Placeholder de pedidos (fase 3)
-      document.getElementById('dashboard-pedidos-recientes').innerHTML =
-        '<p style="text-align:center;color:var(--blanco-dim);font-size:0.875rem;padding:1.5rem;">Los pedidos estarán disponibles en la Fase 3</p>';
+      // Pedidos recientes
+      const { data: pedidos } = await SupabaseDB.obtenerPedidos();
+      document.getElementById('dashboard-pedidos-recientes').innerHTML = pedidos?.length
+        ? pedidos.slice(0,5).map(p => `
+            <div style="padding:0.75rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.04);display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+              <span style="font-size:0.875rem;color:var(--blanco);">${escHTML(p.contacto_nombre || p.clientes?.nombre || 'Invitado')}</span>
+              <span style="font-size:0.875rem;">$${parseFloat(p.total).toLocaleString('es-MX')}</span>
+              ${badgeEstadoPedido(p.estado)}
+            </div>`).join('')
+        : '<p style="text-align:center;color:var(--blanco-dim);font-size:0.875rem;padding:1.5rem;">No hay pedidos todavía</p>';
     };
 
     /* -------------------------------------------------------
@@ -1220,10 +1133,10 @@
         return `
           <tr>
             <td>
-              <div style="font-size:0.875rem;font-weight:400;color:var(--blanco);">${p.nombre}</div>
-              <div style="font-size:0.75rem;color:var(--blanco-dim);margin-top:2px;">${p.dimensiones || ''}</div>
+              <div style="font-size:0.875rem;font-weight:400;color:var(--blanco);">${escHTML(p.nombre)}</div>
+              <div style="font-size:0.75rem;color:var(--blanco-dim);margin-top:2px;">${escHTML(p.dimensiones)}</div>
             </td>
-            <td><span style="font-size:0.75rem;color:var(--blanco-dim);">${p.coleccion_nombre}</span></td>
+            <td><span style="font-size:0.75rem;color:var(--blanco-dim);">${escHTML(p.coleccion_nombre)}</span></td>
             <td>
               <span style="font-size:1.1rem;font-weight:400;color:var(--blanco);">${p.stock_actual}</span>
               <span style="font-size:0.75rem;color:var(--blanco-dim);"> piezas</span>
@@ -1302,8 +1215,8 @@
 
       tbody.innerHTML = productos.map(p => `
         <tr>
-          <td><span style="color:var(--blanco);">${p.nombre}</span></td>
-          <td><span style="font-size:0.75rem;color:var(--blanco-dim);">${p.coleccion_nombre}</span></td>
+          <td><span style="color:var(--blanco);">${escHTML(p.nombre)}</span></td>
+          <td><span style="font-size:0.75rem;color:var(--blanco-dim);">${escHTML(p.coleccion_nombre)}</span></td>
           <td style="font-family:var(--fuente-d);font-size:1rem;">$${parseFloat(p.precio).toLocaleString('es-MX')}</td>
           <td>
             <span class="badge ${p.destacado ? 'badge-dorado' : 'badge-gris'}">
@@ -1382,18 +1295,28 @@
        ------------------------------------------------------- */
     const cargarPedidosAdmin = async () => {
       const { data, error } = await SupabaseDB.obtenerPedidos();
+      if (error) { mostrarToast('Error al cargar pedidos', 'error'); return; }
+      renderizarPedidos(data || []);
+    };
+
+    const renderizarPedidos = (data) => {
       const tbody = document.getElementById('pedidos-tbody');
       if (!tbody) return;
 
-      if (error || !data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--blanco-dim);">No hay pedidos aún (disponible en Fase 3)</td></tr>';
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--blanco-dim);">No hay pedidos en esta categoría</td></tr>';
         return;
       }
 
       tbody.innerHTML = data.map(p => `
         <tr>
           <td style="font-size:0.75rem;color:var(--blanco-dim);">${p.id.substring(0,8)}...</td>
-          <td>${p.clientes?.nombre || 'Invitado'}</td>
+          <td>
+            ${escHTML(p.contacto_nombre || p.clientes?.nombre || 'Invitado')}
+            <div style="font-size:0.75rem;color:var(--blanco-dim);">${escHTML(p.clientes?.email)} ${escHTML(p.contacto_telefono)}</div>
+            <div style="font-size:0.75rem;color:var(--blanco-dim);">${escHTML(p.direccion_envio)}</div>
+            ${p.notas ? `<div style="font-size:0.75rem;color:var(--dorado);white-space:pre-line;margin-top:4px;">${escHTML(p.notas)}</div>` : ''}
+          </td>
           <td style="font-family:var(--fuente-d);font-size:1rem;">$${parseFloat(p.total).toLocaleString('es-MX')}</td>
           <td>${badgeEstadoPedido(p.estado)}</td>
           <td style="font-size:0.75rem;color:var(--blanco-dim);">${formatearFecha(p.created_at)}</td>
@@ -1427,16 +1350,16 @@
 
     const cambiarEstadoPedido = async (id, estado) => {
       const { error } = await SupabaseDB.actualizarEstadoPedido(id, estado);
-      if (error) { mostrarToast('Error al actualizar el pedido', 'error'); return; }
+      if (error) { mostrarToast('Error al actualizar el pedido', 'error'); cargarPedidosAdmin(); return; }
       mostrarToast(`Estado cambiado a: ${estado}`, 'exito');
     };
 
     const filtrarPedidos = async (estado, btn) => {
       document.querySelectorAll('[data-estado]').forEach(b => b.classList.remove('activo-filtro'));
       btn.classList.add('activo-filtro');
-      const { data } = await SupabaseDB.obtenerPedidos(estado || null);
-      // Re-renderizo con los pedidos filtrados
-      // (reutilizo la función de renderizado)
+      const { data, error } = await SupabaseDB.obtenerPedidos(estado || null);
+      if (error) { mostrarToast('Error al cargar pedidos', 'error'); return; }
+      renderizarPedidos(data || []);
     };
 
     /* -------------------------------------------------------
@@ -1485,12 +1408,12 @@
           <!-- Cabecera del mensaje -->
           <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.75rem;">
             <div>
-              <span style="font-size:0.875rem;font-weight:500;color:var(--blanco);">${c.nombre}</span>
-              <a href="mailto:${c.email}" style="font-size:0.75rem;color:var(--dorado);margin-left:0.75rem;">${c.email}</a>
+              <span style="font-size:0.875rem;font-weight:500;color:var(--blanco);">${escHTML(c.nombre)}</span>
+              <a href="mailto:${encodeURIComponent(c.email)}" style="font-size:0.75rem;color:var(--dorado);margin-left:0.75rem;">${escHTML(c.email)}</a>
             </div>
             <div style="display:flex;align-items:center;gap:0.75rem;">
               <!-- Tipo de consulta -->
-              <span class="badge badge-gris">${c.tipo_consulta || 'otro'}</span>
+              <span class="badge badge-gris">${escHTML(c.tipo_consulta || 'otro')}</span>
               <!-- Fecha -->
               <span style="font-size:0.7rem;color:var(--blanco-dim);">${formatearFecha(c.created_at)}</span>
             </div>
@@ -1499,19 +1422,19 @@
           <!-- Cuerpo del mensaje -->
           <p style="font-size:0.875rem;color:var(--blanco-dim);line-height:1.7;
                     padding:0.875rem;background:rgba(0,0,0,0.2);border-radius:var(--radio);
-                    margin-bottom:0.875rem;">${c.mensaje}</p>
+                    margin-bottom:0.875rem;">${escHTML(c.mensaje)}</p>
 
           <!-- Notas del admin (si existen) -->
           ${c.notas_admin ? `
             <div style="font-size:0.8rem;color:var(--verde);padding:0.5rem 0.875rem;
                         background:var(--verde-dim);border-radius:var(--radio);margin-bottom:0.75rem;">
-              Nota: ${c.notas_admin}
+              Nota: ${escHTML(c.notas_admin)}
             </div>` : ''}
 
           <!-- Acciones -->
           ${!c.respondido ? `
             <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
-              <a href="mailto:${c.email}?subject=Re: Consulta Kinara" class="btn btn-dorado">
+              <a href="mailto:${encodeURIComponent(c.email)}?subject=Re: Consulta Kinara" class="btn btn-dorado">
                 Responder por email
               </a>
               <button class="btn btn-exito" onclick="marcarRespondido('${c.id}')">
@@ -1581,11 +1504,59 @@
     };
 
     /* -------------------------------------------------------
-       INICIALIZACIÓN
+       AUTENTICACIÓN E INICIALIZACIÓN
+       Esta pantalla solo controla lo que se muestra: quien
+       protege los datos es RLS con la función es_admin().
        ------------------------------------------------------- */
-    document.addEventListener('DOMContentLoaded', () => {
-      // Cargo el dashboard al iniciar el panel admin
+    const mostrarErrorAuth = (mensaje) => {
+      document.getElementById('auth-error').textContent = mensaje;
+    };
+
+    const entrarSiEsAdmin = async () => {
+      const { data: esAdmin, error } = await SupabaseDB.cliente.rpc('es_admin');
+      if (error || esAdmin !== true) {
+        await SupabaseDB.cliente.auth.signOut();
+        mostrarErrorAuth('Esta cuenta no tiene acceso al panel.');
+        return;
+      }
+      document.getElementById('auth-overlay').classList.add('oculto');
+      mostrarErrorAuth('');
       cargarDashboard();
+    };
+
+    const cerrarSesion = async () => {
+      await SupabaseDB.cliente.auth.signOut();
+      window.location.reload();
+    };
+
+    document.getElementById('auth-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('auth-btn');
+      btn.disabled = true;
+      mostrarErrorAuth('');
+
+      const { error } = await SupabaseDB.cliente.auth.signInWithPassword({
+        email:    document.getElementById('auth-email').value.trim(),
+        password: document.getElementById('auth-password').value
+      });
+
+      if (error) {
+        mostrarErrorAuth('Correo o contraseña incorrectos.');
+      } else {
+        document.getElementById('auth-password').value = '';
+        await entrarSiEsAdmin();
+      }
+      btn.disabled = false;
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Si ya había una sesión guardada, entro directo
+      const { data: { session } } = await SupabaseDB.cliente.auth.getSession();
+      if (session) {
+        await entrarSiEsAdmin();
+      } else {
+        document.getElementById('auth-email').focus();
+      }
     });
   </script>
 

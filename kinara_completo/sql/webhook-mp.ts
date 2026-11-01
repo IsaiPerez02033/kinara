@@ -12,7 +12,9 @@
 //    MERCADOPAGO_ACCESS_TOKEN = TEST-... (o productivo)
 //    MERCADOPAGO_WEBHOOK_SECRET = tu-secret-de-webhook (ver paso 5)
 // 5. En el panel de MP → Developers → Webhooks → tu webhook → copiar "Secret"
-// 6. Deploy
+// 6. Desactiva "Verify JWT" en esta función (Mercado Pago no manda JWT;
+//    la autenticación es la firma HMAC). Con CLI: --no-verify-jwt
+// 7. Deploy
 //
 // URL resultante:
 // https://TU-PROYECTO.supabase.co/functions/v1/webhook-mp
@@ -37,11 +39,10 @@ const HEADERS = { "Content-Type": "application/json" };
 async function verificarFirmaMP(req: Request, rawBody: string): Promise<boolean> {
   const secret = Deno.env.get("MERCADOPAGO_WEBHOOK_SECRET");
 
-  // Si no hay secret configurado, logeo una advertencia pero no bloqueo
-  // (permite pruebas en sandbox sin secret). En producción DEBE configurarse.
+  // Sin secret no puedo verificar nada: rechazo el aviso
   if (!secret) {
-    console.warn("⚠️  MERCADOPAGO_WEBHOOK_SECRET no configurado — omitiendo verificación de firma");
-    return true;
+    console.error("MERCADOPAGO_WEBHOOK_SECRET no configurado — webhook rechazado");
+    return false;
   }
 
   // MP envía la firma en el header x-signature con formato:
@@ -64,18 +65,21 @@ async function verificarFirmaMP(req: Request, rawBody: string): Promise<boolean>
   const ts = parts["ts"];
   const v1 = parts["v1"];
   if (!ts || !v1) {
-    console.error("Formato de x-signature inválido:", signatureHeader);
+    console.error("Formato de x-signature inválido");
     return false;
   }
 
   // Construyo el mensaje a firmar según la documentación de MP:
   // "id:[data.id];request-id:[x-request-id];ts:[ts];"
-  // Extraigo el data.id del body ya leído
-  let dataId = "";
-  try {
-    const parsed = JSON.parse(rawBody);
-    dataId = String(parsed?.data?.id ?? "");
-  } catch (_) {}
+  // MP firma el data.id de la URL; si no viene, uso el del body
+  let dataId = new URL(req.url).searchParams.get("data.id") ?? "";
+  if (!dataId) {
+    try {
+      const parsed = JSON.parse(rawBody);
+      dataId = String(parsed?.data?.id ?? "");
+    } catch (_) {}
+  }
+  dataId = dataId.toLowerCase();
 
   const mensaje = `id:${dataId};request-id:${requestId};ts:${ts};`;
 
@@ -93,11 +97,13 @@ async function verificarFirmaMP(req: Request, rawBody: string): Promise<boolean>
     .map(b => b.toString(16).padStart(2, "0"))
     .join("");
 
-  const valido = signatureHex === v1;
-  if (!valido) {
-    console.error("Firma MP inválida. Esperada:", v1, "Calculada:", signatureHex);
+  // Comparo en tiempo constante y nunca escribo la firma en los logs
+  let diferencia = signatureHex.length ^ v1.length;
+  for (let i = 0; i < signatureHex.length; i++) {
+    diferencia |= signatureHex.charCodeAt(i) ^ v1.charCodeAt(i);
   }
-  return valido;
+  if (diferencia !== 0) console.error("Firma MP inválida");
+  return diferencia === 0;
 }
 
 serve(async (req: Request) => {
@@ -129,8 +135,8 @@ serve(async (req: Request) => {
 
     // Obtengo el ID del pago desde el cuerpo del webhook
     const pagoId = body.data?.id;
-    if (!pagoId) {
-      return new Response(JSON.stringify({ error: "ID de pago no encontrado" }), { status: 400, headers: HEADERS });
+    if (!/^\d+$/.test(String(pagoId ?? ""))) {
+      return new Response(JSON.stringify({ error: "ID de pago no válido" }), { status: 400, headers: HEADERS });
     }
 
     // Consulto los detalles completos del pago directamente a la API de MP
@@ -154,7 +160,7 @@ serve(async (req: Request) => {
     // Lo puse cuando creé la preferencia en crear-preferencia-mp.ts
     const pedidoId = pago.external_reference;
 
-    if (!pedidoId) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(pedidoId ?? ""))) {
       return new Response(JSON.stringify({ ok: true, mensaje: "Sin external_reference, ignorado" }), { status: 200, headers: HEADERS });
     }
 
@@ -167,28 +173,46 @@ serve(async (req: Request) => {
 
     // Proceso el pago según su estado
     if (pago.status === "approved") {
-      // Pago aprobado: actualizo el pedido y reduzco el stock
-      const { error } = await supabase.rpc("procesar_pago_confirmado", {
+      // Solo acepto pesos; el monto lo valida procesar_pago_confirmado
+      const monto = pago.currency_id === "MXN" ? pago.transaction_amount : null;
+
+      const { data: resultado, error } = await supabase.rpc("procesar_pago_confirmado", {
         p_pedido_id:     pedidoId,
-        p_mp_payment_id: String(pagoId)
+        p_mp_payment_id: String(pagoId),
+        p_monto:         monto
       });
 
       if (error) throw new Error("Error en procesar_pago_confirmado: " + error.message);
 
-      console.log(`Pedido ${pedidoId} marcado como pagado. MP payment: ${pagoId}`);
+      console.log(`Pedido ${pedidoId}, pago ${pagoId}: ${resultado}`);
 
-    } else if (pago.status === "rejected" || pago.status === "cancelled") {
-      // Pago rechazado o cancelado: marco el pedido como cancelado
-      await supabase
+    } else if (pago.status === "refunded" || pago.status === "charged_back") {
+      const { data: resultado, error } = await supabase.rpc("revertir_pago_confirmado", {
+        p_pedido_id:     pedidoId,
+        p_mp_payment_id: String(pagoId),
+        p_estado_mp:     pago.status
+      });
+
+      if (error) throw new Error("Error en revertir_pago_confirmado: " + error.message);
+
+      console.log(`Pedido ${pedidoId}, pago ${pagoId} ${pago.status}: ${resultado}`);
+
+    } else if (pago.status === "cancelled") {
+      // Pago cancelado (p. ej. ficha de OXXO vencida)
+      const { error } = await supabase
         .from("pedidos")
         .update({ estado: "cancelado" })
         .eq("id", pedidoId)
         .eq("estado", "pendiente"); // Solo si aún estaba pendiente
 
+      if (error) throw new Error("Error cancelando pedido: " + error.message);
+
       console.log(`Pedido ${pedidoId} cancelado. Estado MP: ${pago.status}`);
 
     } else {
-      // Pago pendiente (OXXO, transferencia) — no hago nada, espero otro webhook
+      // Un pago rechazado no cancela el pedido: el cliente puede reintentar
+      // con otra tarjeta sobre la misma preferencia. OXXO y transferencia
+      // también llegan aquí mientras esperan el pago.
       console.log(`Pago ${pagoId} en estado "${pago.status}", sin acción por ahora`);
     }
 
@@ -198,6 +222,6 @@ serve(async (req: Request) => {
   } catch (error) {
     console.error("Error en webhook-mp:", error);
     // Respondo 500 para que MP reintente más tarde
-    return new Response(JSON.stringify({ error: String(error) }), { status: 500, headers: HEADERS });
+    return new Response(JSON.stringify({ error: "Error interno" }), { status: 500, headers: HEADERS });
   }
 });
