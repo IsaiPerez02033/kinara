@@ -111,7 +111,7 @@ serve(async (req: Request) => {
         unit_price:  Number(i.precio),
         quantity:    i.cantidad,
         currency_id: "MXN",
-        category_id: "art",
+        category_id: "others",
       })),
       payer: {
         name:    primerNombre,
@@ -126,7 +126,7 @@ serve(async (req: Request) => {
       },
       auto_return:        "approved",
       external_reference: pedidoId,
-      statement_descriptor: "KINARA LUMINARIAS",
+      statement_descriptor: "KINARA 3D",
       expires:            true,
       expiration_date_to: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
       payment_methods:    { installments: 12 },

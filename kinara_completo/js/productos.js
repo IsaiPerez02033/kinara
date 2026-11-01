@@ -69,7 +69,7 @@ const ModuloCatalogo = (() => {
   const generarTarjeta = (p) => {
     const badge    = obtenerInfoBadge(p.estado_stock, p.stock_actual);
     const colCorto = p.coleccion_nombre?.replace('Kinara ', '') || '';
-    const fondos   = { Zen:'#1A1A16', Min:'#12151A', Nova:'#101218', Aura:'#1A1612', 'Raíz':'#1A1210' };
+    const fondos   = { 'Lámparas':'#1A1612', Herramientas:'#12151A', Moldes:'#1A1A16', Juguetes:'#101218', Figuras:'#1A1210' };
     const fondo    = fondos[colCorto] || '#1A1A1A';
 
     return `
@@ -170,11 +170,11 @@ const ModuloCatalogo = (() => {
     if (!grid) return;
     const productos = obtenerProductosFiltrados();
     const contador  = document.getElementById('catalogo-contador');
-    if (contador) contador.textContent = `${productos.length} luminaria${productos.length!==1?'s':''}`;
+    if (contador) contador.textContent = `${productos.length} producto${productos.length!==1?'s':''}`;
     if (!productos.length) {
       grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--color-blanco-dim);">
         <p style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-style:italic;">
-          No hay luminarias en esta colección</p></div>`;
+          No hay productos en esta categoría</p></div>`;
       return;
     }
     grid.innerHTML = productos.map(generarTarjeta).join('');
@@ -292,7 +292,15 @@ const ModuloContacto = (() => {
     if (btn) { btn.textContent='✦ Mensaje enviado'; btn.style.background='rgba(100,180,120,.15)'; }
     ['nombre','email','tipo','mensaje'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   };
-  return { enviar };
+
+  // Abro el formulario con el tipo de consulta ya elegido
+  const preparar = (tipo) => {
+    const sel = document.getElementById('tipo');
+    if (sel) sel.value = tipo;
+    document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  return { enviar, preparar };
 })();
 
 /* --- Inicialización --- */

@@ -1,5 +1,5 @@
 # ✦ KINARA — Proyecto completo
-## Diseño de Luminarias Innovadoras · Sitio web + Tienda en línea
+## Empresa de impresión 3D · Sitio web + Tienda en línea
 
 ---
 
@@ -33,6 +33,7 @@ kinara/
 │   ├── 02_seed.sql              ← 5 colecciones + 12 productos + inventario inicial
 │   ├── 03_webhook_mp.sql        ← Función procesar_pago_confirmado + obtener_resumen_pedido
 │   ├── 04_seguridad_checkout.sql ← Checkout en servidor, pagos idempotentes, admins y permisos
+│   ├── 05_catalogo_impresion_3d.sql ← Categorías y catálogo de impresión 3D (precios provisionales)
 │   ├── crear-preferencia-mp.ts  ← Edge Function: crea pedido y preferencia de pago en MP
 │   └── webhook-mp.ts            ← Edge Function: recibe notificaciones de pago de MP
 │
@@ -58,8 +59,9 @@ kinara/
 3. Nueva query → pega `sql/02_seed.sql` → **Run**
 4. Nueva query → pega `sql/03_webhook_mp.sql` → **Run**
 5. Nueva query → pega `sql/04_seguridad_checkout.sql` → **Run**
+6. Nueva query → pega `sql/05_catalogo_impresion_3d.sql` → **Run**
 
-> Si la base ya existía, basta con ejecutar `04_seguridad_checkout.sql`. Se puede repetir sin problema.
+> Si la base ya existía, basta con ejecutar `04_seguridad_checkout.sql` y `05_catalogo_impresion_3d.sql`. Se pueden repetir sin problema.
 
 ### 3 — Supabase: obtener las credenciales
 
@@ -237,8 +239,8 @@ Para OXXO: selecciona "Efectivo" en el checkout de MP y usa el código generado.
 
 | Tabla | Contenido |
 |-------|-----------|
-| `colecciones` | Las 5 líneas de diseño de Kinara |
-| `productos` | Catálogo de 12 luminarias |
+| `colecciones` | Categorías del catálogo (las inactivas no se muestran ni se venden) |
+| `productos` | Catálogo de productos impresos en 3D |
 | `inventario` | Stock en tiempo real (1:1 con productos) |
 | `clientes` | Compradores registrados |
 | `pedidos` | Órdenes de compra con estado y datos de MP |
@@ -249,7 +251,7 @@ Vista `productos_con_stock`: une las 3 primeras tablas y calcula el `estado_stoc
 
 ---
 
-**Kinara — Diseño de Luminarias Innovadoras · México · hola@kinara.mx**
+**Kinara — Impresión 3D · México · hola@kinara.mx**
 
 ---
 
@@ -306,7 +308,8 @@ Se creó `robots.txt` en la raíz del proyecto. Bloquea el indexado de
 
 ## Lista de pendientes antes de publicar
 
-- [ ] Ejecutar `sql/04_seguridad_checkout.sql` y redesplegar las dos Edge Functions
+- [ ] Ejecutar `sql/04_seguridad_checkout.sql` y `sql/05_catalogo_impresion_3d.sql`, y redesplegar las dos Edge Functions
+- [ ] Confirmar precios, medidas, materiales, stock y fotos de los productos de `05_catalogo_impresion_3d.sql`
 - [ ] Desactivar Verify JWT en `webhook-mp`
 - [ ] Crear la cuenta admin y desactivar el registro público (paso 9)
 - [ ] Configurar `SITE_URL` en Supabase Secrets

@@ -316,40 +316,6 @@
   gap: var(--espacio-sm);
 }
 
-/* Las últimas 2 tarjetas las centro en la fila inferior */
-.coleccion-card:nth-child(4) {
-  grid-column: 1 / 2;
-  margin-left: calc(50% + var(--espacio-xs) / 2);
-}
-
-.coleccion-card:nth-child(5) {
-  grid-column: 2 / 3;
-  margin-left: 0;
-}
-
-/* Redefino el grid para las últimas 2 tarjetas centradas */
-.colecciones-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: var(--espacio-sm);
-}
-
-/* Las primeras 3 tarjetas ocupan 2 columnas cada una */
-.coleccion-card:nth-child(1),
-.coleccion-card:nth-child(2),
-.coleccion-card:nth-child(3) {
-  grid-column: span 2;
-}
-
-/* Las últimas 2 tarjetas: las centro usando offsets */
-.coleccion-card:nth-child(4) {
-  grid-column: 2 / span 2;
-}
-
-.coleccion-card:nth-child(5) {
-  grid-column: 4 / span 2;
-}
-
 /* Tarjeta de colección */
 .coleccion-card {
   position: relative;
@@ -600,6 +566,11 @@
 }
 
 @media (max-width: 768px) {
+  /* El lema no cabe junto al carrito y al botón en móvil */
+  .logo-slogan {
+    display: none;
+  }
+
   /* Colecciones en 2 columnas en móvil */
   .colecciones-grid {
     grid-template-columns: repeat(2, 1fr) !important;

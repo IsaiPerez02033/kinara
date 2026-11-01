@@ -303,7 +303,7 @@ body.cursor-hover #cursor-anillo {
 
 /* -------------------------------------------------------
    TARJETAS DE PRODUCTO
-   Componente central de la tienda: muestra cada luminaria
+   Componente central de la tienda: muestra cada producto
    ------------------------------------------------------- */
 /* Contenedor de la tarjeta */
 .tarjeta-producto {
@@ -424,7 +424,7 @@ body.cursor-hover #cursor-anillo {
   gap: var(--espacio-xs);
 }
 
-/* Colección de la luminaria (ej: "Kinara Zen") */
+/* Categoría del producto (ej: "Moldes") */
 .tarjeta-coleccion {
   font-size: var(--texto-xs);
   letter-spacing: 0.2em;
@@ -433,7 +433,7 @@ body.cursor-hover #cursor-anillo {
   opacity: 0.8;
 }
 
-/* Nombre de la luminaria */
+/* Nombre del producto */
 .tarjeta-nombre {
   font-family: var(--fuente-display);
   font-size: var(--texto-xl);

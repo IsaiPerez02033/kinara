@@ -4,7 +4,7 @@
   admin.html — Panel de Administración de Kinara
   Esta página es de uso EXCLUSIVO del administrador de la marca.
   Desde aquí puedo:
-  - Ver y editar el inventario de todas las luminarias
+  - Ver y editar el inventario de todos los productos
   - Gestionar los pedidos recibidos (cambiar estado)
   - Leer y responder los mensajes de contacto
   - Editar datos básicos de los productos
@@ -715,24 +715,24 @@
 
     <!-- ===================================================
          PANEL: INVENTARIO
-         Control de stock de cada luminaria.
+         Control de stock de cada producto.
          ================================================= -->
     <section id="panel-inventario" class="panel-seccion">
 
       <div class="seccion-header">
         <div>
           <h1 class="seccion-titulo">Inventario</h1>
-          <p class="seccion-subtitulo">Gestiona el stock de cada luminaria en tiempo real</p>
+          <p class="seccion-subtitulo">Gestiona el stock de cada producto en tiempo real</p>
         </div>
         <div style="display:flex;gap:0.75rem;">
-          <!-- Selector de filtro por colección -->
+          <!-- Selector de filtro por categoría -->
           <select class="form-input" style="width:180px;" onchange="filtrarInventario(this.value)" id="filtro-inventario-col">
-            <option value="Todos">Todas las colecciones</option>
-            <option value="Zen">Kinara Zen</option>
-            <option value="Min">Kinara Min</option>
-            <option value="Nova">Kinara Nova</option>
-            <option value="Aura">Kinara Aura</option>
-            <option value="Raíz">Kinara Raíz</option>
+            <option value="Todos">Todas las categorías</option>
+            <option value="Lámparas">Lámparas</option>
+            <option value="Herramientas">Herramientas</option>
+            <option value="Moldes">Moldes</option>
+            <option value="Juguetes">Juguetes</option>
+            <option value="Figuras">Figuras</option>
           </select>
         </div>
       </div>
@@ -742,8 +742,8 @@
         <table class="admin-tabla">
           <thead>
             <tr>
-              <th>Luminaria</th>
-              <th>Colección</th>
+              <th>Producto</th>
+              <th>Categoría</th>
               <th>Stock actual</th>
               <th>Estado</th>
               <th>Actualizar stock</th>
@@ -760,14 +760,14 @@
 
     <!-- ===================================================
          PANEL: PRODUCTOS
-         Edición básica de datos de cada luminaria.
+         Edición básica de datos de cada producto.
          ================================================= -->
     <section id="panel-productos" class="panel-seccion">
 
       <div class="seccion-header">
         <div>
           <h1 class="seccion-titulo">Productos</h1>
-          <p class="seccion-subtitulo">Edita los datos de cada luminaria del catálogo</p>
+          <p class="seccion-subtitulo">Edita los datos de cada producto del catálogo</p>
         </div>
       </div>
 
@@ -776,8 +776,8 @@
         <table class="admin-tabla">
           <thead>
             <tr>
-              <th>Luminaria</th>
-              <th>Colección</th>
+              <th>Producto</th>
+              <th>Categoría</th>
               <th>Precio (MXN)</th>
               <th>Destacado</th>
               <th>Nuevo</th>
@@ -1010,7 +1010,7 @@
       // Renderizo las tarjetas de estadísticas
       document.getElementById('stats-grid').innerHTML = `
         <div class="stat-card">
-          <div class="stat-label">Total luminarias</div>
+          <div class="stat-label">Total productos</div>
           <div class="stat-valor" style="color:var(--blanco);">${total}</div>
           <div class="stat-cambio">En catálogo</div>
         </div>
@@ -1413,7 +1413,7 @@
             </div>
             <div style="display:flex;align-items:center;gap:0.75rem;">
               <!-- Tipo de consulta -->
-              <span class="badge badge-gris">${escHTML(c.tipo_consulta || 'otro')}</span>
+              <span class="badge badge-gris">${escHTML(TIPOS_CONSULTA[c.tipo_consulta] || c.tipo_consulta || 'Otro')}</span>
               <!-- Fecha -->
               <span style="font-size:0.7rem;color:var(--blanco-dim);">${formatearFecha(c.created_at)}</span>
             </div>
@@ -1480,6 +1480,12 @@
        ------------------------------------------------------- */
 
     /* Formateo una fecha para mostrarla amigablemente */
+    // Nombres legibles de los tipos del formulario de contacto
+    const TIPOS_CONSULTA = {
+      producto: 'Producto', figura: 'Figura personalizada', a_medida: 'Pieza a medida',
+      volumen: 'Volumen', personalizado: 'Personalizado', arquitecto: 'Arquitecto', otro: 'Otro'
+    };
+
     const formatearFecha = (fecha) => {
       if (!fecha) return '—';
       return new Date(fecha).toLocaleDateString('es-MX', {
