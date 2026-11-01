@@ -40,8 +40,8 @@ const escHTML = (str) => {
    El anon key es seguro para usarlo en el frontend porque
    las políticas RLS protegen los datos.
    ------------------------------------------------------- */
-const SUPABASE_URL  = 'https://vnnhnnflnirfjzqpfvmt.supabase.co';   // Ej: https://xyzxyz.supabase.co
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZubmhubmZsbmlyZmp6cXBmdm10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzc2NTksImV4cCI6MjA5MDc1MzY1OX0.YFAs8T5pX14-1w9CbXq0vXEuYPt8C0FZRiuNYOlqHFU';       // Ej: eyJhbGci...
+const SUPABASE_URL  = 'https://vrazcrtbdmwjahgrljag.supabase.co';   // Ej: https://xyzxyz.supabase.co
+const SUPABASE_ANON = 'sb_publishable_uUgQWuBlPXr4r_YQOmF2ig_TbcIywn1';       // Ej: eyJhbGci...
 
 /* -------------------------------------------------------
    CLIENTE DE SUPABASE
