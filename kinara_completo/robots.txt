@@ -3,4 +3,4 @@ Allow: /
 Disallow: /pages/admin.html
 Disallow: /pages/admin
 
-Sitemap: https://kinara.mx/sitemap.xml
+Sitemap: https://kinaramx.com/sitemap.xml

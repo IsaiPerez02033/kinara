@@ -312,7 +312,7 @@ const ModuloContacto = (() => {
     btn.textContent = 'Enviar consulta';
     btn.disabled = false;
     if (error) {
-      estado.textContent = 'No pudimos enviar tu mensaje. Inténtalo otra vez o escríbenos a hola@kinara.mx.';
+      estado.textContent = 'No pudimos enviar tu mensaje. Inténtalo otra vez o escríbenos a hola@kinaramx.com.';
       estado.classList.add('error');
       return;
     }

@@ -105,7 +105,7 @@ Ve a **Settings** → **Secrets** y agrega estos valores (`SUPABASE_URL` y `SUPA
 |--------|-------|
 | `MERCADOPAGO_ACCESS_TOKEN` | Tu Access Token de MP (empieza con `TEST-`) |
 | `MERCADOPAGO_WEBHOOK_SECRET` | El Secret del webhook en el panel de MP (obligatorio: sin él se rechazan los avisos) |
-| `SITE_URL` | La URL donde publicarás el sitio (ej: `https://kinara.mx`) |
+| `SITE_URL` | La URL donde publicarás el sitio (ej: `https://kinaramx.com`) |
 
 ### 8 — Mercado Pago: registrar el webhook
 
@@ -252,7 +252,7 @@ Vista `productos_con_stock`: une las 3 primeras tablas y calcula el `estado_stoc
 
 ---
 
-**Kinara — Impresión 3D · México · hola@kinara.mx**
+**Kinara — Impresión 3D · México · hola@kinaramx.com**
 
 ---
 
