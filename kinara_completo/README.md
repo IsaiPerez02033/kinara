@@ -14,13 +14,14 @@ kinara/
 │   ├── variables.css            ← Paleta, tipografía y tokens de diseño de la marca
 │   ├── base.css                 ← Reset CSS, estilos globales, scrollbar, selección
 │   ├── components.css           ← Header, botones, tarjetas, badges de stock, footer
-│   ├── sections.css             ← Hero, filosofía, colecciones, catálogo
+│   ├── sections.css             ← Hero, categorías, proceso, materiales, catálogo, contacto
 │   └── carrito.css              ← Drawer del carrito, checkout, estados de pago
 │
 ├── js/
 │   ├── lib/
 │   │   └── supabase.js          ← Cliente Supabase + todas las funciones de BD
-│   ├── main.js                  ← Cursor, partículas, header scroll, animaciones
+│   ├── main.js                  ← Header, menú móvil, sección activa, animaciones
+│   ├── hero3d.js                ← Impresora 3D del hero (Three.js por CDN), ligada al scroll
 │   ├── productos.js             ← Catálogo con Supabase, filtros, drawer de detalle
 │   └── carrito.js               ← Carrito persistente + checkout + Mercado Pago
 │
@@ -145,7 +146,7 @@ Abre `pages/admin.html` desde el sitio publicado o un servidor local e inicia se
 | Stock | Badge visible | Color |
 |-------|--------------|-------|
 | Mayor al mínimo (3) | Disponible | Verde pulsante |
-| Entre 1 y 3 | Últimas N piezas | Dorado urgente |
+| Entre 1 y 3 | Últimas N piezas | Ámbar |
 | 0 | Agotado | Rojo sin animación |
 
 El umbral de alerta (`stock_minimo`) es 3 por defecto y se puede cambiar por producto en la tabla `inventario` de Supabase.

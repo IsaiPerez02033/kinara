@@ -1,623 +1,668 @@
 /*
  * ============================================================
  * components.css — Componentes reutilizables de Kinara
- * Defino aquí todos los componentes del sistema de diseño:
- * header, navegación, botones, tarjetas de producto,
- * badges de stock y footer. Cada bloque está comentado
- * con su propósito y comportamiento.
+ * Header, botones, badges, tarjetas de producto y footer.
  * ============================================================
  */
 
 /* -------------------------------------------------------
-   CURSOR PERSONALIZADO
-   Creo un cursor circular dorado que sigue al mouse,
-   característico del lujo y la atención al detalle.
+   HEADER
    ------------------------------------------------------- */
-/* Punto pequeño que sigue exactamente al cursor */
-#cursor-punto {
-  position: fixed;
-  /* Inicio en el origen, JavaScript lo mueve con el mouse */
-  top: 0;
-  left: 0;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: var(--color-dorado);
-  /* El z-index alto lo mantiene sobre todo el contenido */
-  z-index: 9999;
-  /* Desactivo los eventos del mouse para que no interfiera */
-  pointer-events: none;
-  /* Traduzco para centrar el punto en la posición del cursor */
-  transform: translate(-50%, -50%);
-  transition: transform var(--transicion-rapida), opacity var(--transicion-rapida);
-}
-
-/* Anillo que sigue al cursor con un leve retraso */
-#cursor-anillo {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid rgba(212, 163, 115, 0.4);
-  z-index: 9998;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  /* El retraso en la transición crea el efecto de seguimiento suave */
-  transition: transform 0.15s ease, width var(--transicion-normal),
-              height var(--transicion-normal), opacity var(--transicion-rapida);
-}
-
-/* Cuando el cursor está sobre un elemento clickeable, agrando el anillo */
-body.cursor-hover #cursor-anillo {
-  width: 48px;
-  height: 48px;
-  border-color: rgba(212, 163, 115, 0.7);
-}
-
-/* -------------------------------------------------------
-   HEADER Y NAVEGACIÓN
-   ------------------------------------------------------- */
-/* Contenedor principal del header */
 #header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  /* Uso z-index alto para que esté siempre visible */
-  z-index: 1000;
-  /* Altura definida en las variables */
+  z-index: var(--capa-header);
   height: var(--altura-header);
   display: flex;
   align-items: center;
-  /* Transición para el efecto de scroll */
-  transition: background-color var(--transicion-normal),
-              border-color var(--transicion-normal);
-}
-
-/* Estado inicial: header transparente sobre el hero */
-#header.transparente {
-  background-color: transparent;
   border-bottom: 1px solid transparent;
+  transition: background-color var(--transicion-normal), border-color var(--transicion-normal);
 }
 
-/* Estado al hacer scroll: header con fondo oscuro */
 #header.solido {
-  background-color: rgba(15, 15, 15, 0.95);
-  border-bottom: 1px solid var(--color-borde);
-  /* Desenfoque del fondo para el efecto frosted glass */
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(18, 16, 14, 0.86);
+  border-bottom-color: rgba(246, 241, 232, 0.09);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
-/* Layout interno del header */
 .header-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--espacio-md);
   width: 100%;
   max-width: var(--ancho-maximo);
   margin: 0 auto;
   padding: 0 var(--padding-lateral);
 }
 
-/* Logo de la marca */
 .logo {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
 }
 
-/* Nombre principal del logo */
+.logo-rombo {
+  width: 13px;
+  height: 13px;
+  fill: var(--color-acento);
+  flex-shrink: 0;
+}
+
 .logo-nombre {
   font-family: var(--fuente-display);
-  font-size: 1.6rem;
-  font-weight: 400;
-  letter-spacing: 0.15em;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   color: var(--color-blanco);
-  /* Transición para el hover del logo */
-  transition: color var(--transicion-rapida);
 }
 
-/* Slogan bajo el nombre */
-.logo-slogan {
-  font-size: var(--texto-xs);
-  font-weight: 300;
-  letter-spacing: 0.2em;
-  color: var(--color-dorado);
-  opacity: 0.8;
-}
-
-/* Navegación principal */
 .nav-principal {
   display: flex;
   align-items: center;
-  gap: var(--espacio-lg);
+  gap: 0.25rem;
 }
 
-/* Ítem individual del menú */
 .nav-link {
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radio-full);
   font-size: var(--texto-sm);
-  font-weight: 400;
-  letter-spacing: 0.08em;
+  font-weight: 500;
   color: var(--color-blanco-dim);
-  /* Posición relativa para la línea animada */
-  position: relative;
-  transition: color var(--transicion-rapida);
+  transition: color var(--transicion-rapida), background-color var(--transicion-rapida);
 }
 
-/* Línea decorativa bajo cada ítem del menú */
-.nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background-color: var(--color-dorado);
-  /* Animo el ancho para crear el efecto de subrayado */
-  transition: width var(--transicion-normal);
-}
+.nav-link:hover { color: var(--color-blanco); }
 
-/* En hover: el texto se ilumina y aparece la línea */
-.nav-link:hover {
+.nav-link.activo {
   color: var(--color-blanco);
+  background-color: rgba(246, 241, 232, 0.09);
 }
 
-.nav-link:hover::after {
-  width: 100%;
+.header-acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-icono {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radio-full);
+  color: var(--color-blanco);
+  transition: background-color var(--transicion-rapida), transform var(--transicion-rapida);
+}
+
+.btn-icono:hover { background-color: rgba(246, 241, 232, 0.1); }
+.btn-icono:active { transform: scale(0.94); }
+
+#carrito-contador {
+  display: none;
+  position: absolute;
+  top: 3px;
+  right: 1px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: var(--radio-full);
+  background-color: var(--color-acento);
+  color: var(--color-negro);
+  font-family: var(--fuente-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-menu { display: none; }
+
+/* Menú de pantalla completa en celular */
+#menu-movil {
+  position: fixed;
+  inset: 0;
+  z-index: var(--capa-menu);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: var(--altura-header) var(--padding-lateral) var(--espacio-lg);
+  background-color: var(--color-negro);
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity var(--transicion-rapida), transform var(--transicion-normal), visibility var(--transicion-rapida);
+}
+
+#menu-movil.abierto {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+}
+
+#menu-movil a:not(.btn-primario) {
+  padding: 0.4rem 0;
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+#menu-movil .btn-primario { margin-top: var(--espacio-md); justify-content: center; }
+
+#menu-movil-cerrar {
+  position: absolute;
+  top: 16px;
+  right: var(--padding-lateral);
 }
 
 /* -------------------------------------------------------
    BOTONES
    ------------------------------------------------------- */
-/* Botón primario: relleno dorado */
-.btn-primario {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--espacio-xs);
-  padding: 0.875rem 2rem;
-  background-color: var(--color-dorado);
-  color: var(--color-negro);
-  font-family: var(--fuente-cuerpo);
-  font-size: var(--texto-sm);
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  border: 1px solid var(--color-dorado);
-  border-radius: 0;
-  transition: background-color var(--transicion-normal),
-              color var(--transicion-normal),
-              transform var(--transicion-rapida),
-              box-shadow var(--transicion-normal);
-}
-
-/* Hover del botón primario: invierto colores */
-.btn-primario:hover {
-  background-color: transparent;
-  color: var(--color-dorado);
-  /* Sombra dorada para reforzar el efecto de brillo */
-  box-shadow: var(--sombra-dorada);
-  transform: translateY(-1px);
-}
-
-/* Botón secundario: solo contorno */
+.btn-primario,
 .btn-secundario {
   display: inline-flex;
   align-items: center;
-  gap: var(--espacio-xs);
-  padding: 0.875rem 2rem;
-  background-color: transparent;
-  color: var(--color-blanco-dim);
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 48px;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radio-full);
   font-family: var(--fuente-cuerpo);
-  font-size: var(--texto-sm);
-  font-weight: 400;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  border: 1px solid var(--color-borde);
-  border-radius: 0;
-  transition: border-color var(--transicion-normal),
-              color var(--transicion-normal),
-              transform var(--transicion-rapida);
+  font-size: 0.97rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color var(--transicion-rapida), color var(--transicion-rapida),
+              border-color var(--transicion-rapida), transform var(--transicion-rapida);
 }
 
-/* Hover del botón secundario: borde dorado */
-.btn-secundario:hover {
-  border-color: var(--color-dorado);
+.btn-primario {
+  background-color: var(--color-acento);
+  color: var(--color-negro);
+}
+
+.btn-primario:hover {
+  background-color: var(--color-acento-luz);
+  transform: translateY(-2px);
+}
+
+.btn-secundario {
+  border: 1px solid rgba(246, 241, 232, 0.25);
   color: var(--color-blanco);
-  transform: translateY(-1px);
+}
+
+.btn-secundario:hover {
+  border-color: var(--color-blanco);
+  transform: translateY(-2px);
+}
+
+.btn-primario:active,
+.btn-secundario:active { transform: scale(0.97); }
+
+.btn-primario:disabled,
+.btn-secundario:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-chico {
+  min-height: 42px;
+  padding: 0.5rem 1.1rem;
+  font-size: var(--texto-sm);
 }
 
 /* -------------------------------------------------------
    BADGE DE STOCK
-   Indicadores visuales del nivel de inventario de cada pieza
    ------------------------------------------------------- */
-/* Contenedor base del badge */
 .badge-stock {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  border-radius: var(--radio-full);
-  font-size: var(--texto-xs);
-  font-weight: 500;
-  letter-spacing: 0.05em;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background-color: rgba(18, 16, 14, 0.82);
+  font-family: var(--fuente-mono);
+  font-size: 0.7rem;
+  line-height: 1.5;
 }
 
-/* Punto indicador animado */
 .badge-stock .punto {
   width: 6px;
   height: 6px;
   border-radius: 50%;
+  background-color: currentColor;
   flex-shrink: 0;
 }
 
-/* Estado: disponible (stock normal) */
-.badge-disponible {
-  background-color: rgba(100, 180, 120, 0.12);
-  color: #7BC99A;
-  border: 1px solid rgba(100, 180, 120, 0.2);
+.badge-disponible { color: var(--color-exito); }
+.badge-pocas      { color: var(--filamento-lampara); }
+.badge-agotado    { color: var(--color-error); }
+
+/* -------------------------------------------------------
+   PIEZA ILUSTRADA
+   Mientras no haya foto, cada tarjeta muestra el dibujo de su
+   categoría en el color de su filamento, sobre una cama de
+   impresión. La máscara le da líneas de capa.
+   ------------------------------------------------------- */
+.cama {
+  --filamento: var(--color-acento);
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-grafito);
+  background-image: radial-gradient(rgba(246, 241, 232, 0.1) 1px, transparent 1.4px);
+  background-size: 16px 16px;
 }
 
-.badge-disponible .punto {
-  background-color: #7BC99A;
-  /* Pulso animado para indicar disponibilidad */
-  animation: pulso-verde 2s infinite;
+.pieza-svg {
+  width: 100%;
+  height: 100%;
+  color: var(--filamento);
+  fill: color-mix(in srgb, var(--filamento) 22%, transparent);
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  -webkit-mask-image: repeating-linear-gradient(0deg, #000 0 3px, rgba(0, 0, 0, 0.62) 3px 4.5px);
+  mask-image: repeating-linear-gradient(0deg, #000 0 3px, rgba(0, 0, 0, 0.62) 3px 4.5px);
+  transition: transform 0.6s var(--curva-salida);
 }
 
-/* Estado: pocas piezas (stock ≤ 3) */
-.badge-pocas {
-  background-color: rgba(212, 163, 115, 0.12);
-  color: var(--color-dorado);
-  border: 1px solid rgba(212, 163, 115, 0.25);
-}
-
-.badge-pocas .punto {
-  background-color: var(--color-dorado);
-  /* Pulso más urgente para las pocas piezas */
-  animation: pulso-dorado 1.5s infinite;
-}
-
-/* Estado: agotado */
-.badge-agotado {
-  background-color: rgba(180, 80, 80, 0.12);
-  color: #C07070;
-  border: 1px solid rgba(180, 80, 80, 0.2);
-}
-
-.badge-agotado .punto {
-  background-color: #C07070;
-}
-
-/* Animaciones de pulso para los puntos indicadores */
-@keyframes pulso-verde {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.5; transform: scale(0.8); }
-}
-
-@keyframes pulso-dorado {
-  0%, 100% { opacity: 1; transform: scale(1);   box-shadow: 0 0 0 0 rgba(212, 163, 115, 0.4); }
-  50%       { opacity: 0.8; transform: scale(1.1); box-shadow: 0 0 0 4px rgba(212, 163, 115, 0); }
-}
+[data-categoria="Lámparas"]     { --filamento: var(--filamento-lampara); }
+[data-categoria="Herramientas"] { --filamento: var(--filamento-herramienta); }
+[data-categoria="Moldes"]       { --filamento: var(--filamento-molde); }
+[data-categoria="Juguetes"]     { --filamento: var(--filamento-juguete); }
+[data-categoria="Figuras"]      { --filamento: var(--filamento-figura); }
 
 /* -------------------------------------------------------
    TARJETAS DE PRODUCTO
-   Componente central de la tienda: muestra cada producto
    ------------------------------------------------------- */
-/* Contenedor de la tarjeta */
 .tarjeta-producto {
-  position: relative;
-  background-color: var(--color-grafito);
-  border: 1px solid var(--color-borde);
-  /* Sin radio para un look más arquitectónico */
-  border-radius: 0;
-  overflow: hidden;
-  /* Transición suave para el hover */
-  transition: transform var(--transicion-normal),
-              border-color var(--transicion-normal),
-              box-shadow var(--transicion-normal);
-  /* Inicio con el fondo oscuro del diseño */
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
-/* Hover de la tarjeta: eleva y brilla */
-.tarjeta-producto:hover {
-  transform: translateY(-8px);
-  border-color: var(--color-dorado-sombra);
-  box-shadow: var(--sombra-dorada), var(--sombra-md);
-}
-
-/* Área de la imagen con overlay */
 .tarjeta-imagen {
   position: relative;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  background-color: var(--color-negro);
-}
-
-/* La imagen del producto */
-.tarjeta-imagen img {
+  display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* Escalo la imagen en hover para el efecto zoom */
-  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radio-lg);
+  text-align: left;
 }
 
-/* Zoom de la imagen al hacer hover en la tarjeta */
-.tarjeta-producto:hover .tarjeta-imagen img {
-  transform: scale(1.06);
+.tarjeta-imagen .pieza-svg {
+  position: absolute;
+  inset: 21%;
+  width: 58%;
+  height: 58%;
 }
 
-/* Overlay oscuro sobre la imagen para el texto */
-.tarjeta-imagen-overlay {
+.tarjeta-imagen img {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to bottom,
-    transparent 30%,
-    rgba(15, 15, 15, 0.6) 100%
-  );
-  /* El overlay aparece gradualmente en hover */
-  opacity: 0.6;
-  transition: opacity var(--transicion-normal);
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s var(--curva-salida);
 }
 
-.tarjeta-producto:hover .tarjeta-imagen-overlay {
-  opacity: 1;
-}
+.tarjeta-producto:hover .pieza-svg,
+.tarjeta-producto:hover .tarjeta-imagen img { transform: scale(1.06); }
 
-/* Badge de stock posicionado en la esquina superior */
 .tarjeta-badge {
   position: absolute;
-  top: var(--espacio-sm);
-  left: var(--espacio-sm);
+  top: 0.75rem;
+  left: 0.75rem;
   z-index: 2;
 }
 
-/* Botón de acción rápida (agregar al carrito) */
-.tarjeta-accion {
+.tarjeta-nuevo {
   position: absolute;
-  bottom: var(--espacio-sm);
-  right: var(--espacio-sm);
+  top: 0.75rem;
+  right: 0.75rem;
   z-index: 2;
-  /* Oculto inicialmente, aparece en hover */
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity var(--transicion-normal), transform var(--transicion-normal);
-}
-
-.tarjeta-producto:hover .tarjeta-accion {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Botón circular de agregar al carrito */
-.btn-agregar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background-color: var(--color-dorado);
+  padding: 3px 9px;
+  border-radius: 6px;
+  background-color: var(--color-acento);
   color: var(--color-negro);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
+  font-family: var(--fuente-mono);
+  font-size: 0.7rem;
   font-weight: 500;
-  border: none;
-  transition: transform var(--transicion-rapida), background-color var(--transicion-rapida);
+  line-height: 1.5;
 }
 
-.btn-agregar:hover {
-  transform: scale(1.1);
-  background-color: var(--color-dorado-luz);
-}
-
-/* Cuerpo de la tarjeta con la información del producto */
 .tarjeta-cuerpo {
-  padding: var(--espacio-md);
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--espacio-xs);
+  gap: 0.35rem;
+  padding: 0.95rem 0.25rem 0.8rem;
 }
 
-/* Categoría del producto (ej: "Moldes") */
 .tarjeta-coleccion {
-  font-size: var(--texto-xs);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--color-dorado);
-  opacity: 0.8;
+  font-family: var(--fuente-mono);
+  font-size: 0.72rem;
+  color: var(--color-blanco-dim);
 }
 
-/* Nombre del producto */
 .tarjeta-nombre {
-  font-family: var(--fuente-display);
-  font-size: var(--texto-xl);
-  font-weight: 300;
-  color: var(--color-blanco);
-  line-height: 1.2;
+  font-size: 1.28rem;
+  font-weight: 650;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-align: left;
+  transition: color var(--transicion-rapida);
 }
 
-/* Descripción breve */
+.tarjeta-nombre:hover { color: var(--color-acento-luz); }
+
 .tarjeta-descripcion {
   font-size: var(--texto-sm);
-  color: var(--color-blanco-dim);
-  line-height: 1.6;
-  /* Limito a 2 líneas con ellipsis */
+  line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* Pie de la tarjeta: precio y stock */
+.tarjeta-materiales {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 0.25rem;
+}
+
+.chip-material {
+  padding: 1px 7px;
+  border: 1px solid var(--color-borde);
+  border-radius: 5px;
+  font-family: var(--fuente-mono);
+  font-size: 0.68rem;
+  color: var(--color-blanco-dim);
+}
+
 .tarjeta-pie {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--espacio-sm) var(--espacio-md);
+  gap: 0.5rem;
+  padding: 0.7rem 0.25rem 0;
   border-top: 1px solid var(--color-borde);
   margin-top: auto;
 }
 
-/* Precio del producto */
 .tarjeta-precio {
-  font-family: var(--fuente-display);
-  font-size: var(--texto-xl);
-  font-weight: 400;
-  color: var(--color-blanco);
+  font-size: 1.28rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
-/* Moneda y centavos */
-.tarjeta-precio .moneda {
-  font-size: var(--texto-sm);
+.tarjeta-precio small {
+  margin-left: 3px;
+  font-family: var(--fuente-mono);
+  font-size: 0.68rem;
+  font-weight: 400;
   color: var(--color-blanco-dim);
-  vertical-align: super;
-  margin-right: 2px;
 }
+
+.tarjeta-agotado {
+  font-size: var(--texto-sm);
+  color: var(--color-error);
+}
+
+/* Estados del catálogo */
+.tarjeta-esqueleto {
+  aspect-ratio: 3 / 4.3;
+  border-radius: var(--radio-lg);
+  background-color: var(--color-grafito);
+  animation: esqueleto 1.5s ease infinite;
+}
+
+@keyframes esqueleto {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 0.85; }
+}
+
+.catalogo-mensaje {
+  grid-column: 1 / -1;
+  padding: var(--espacio-xl) var(--espacio-md);
+  border: 1px dashed var(--color-borde);
+  border-radius: var(--radio-lg);
+  text-align: center;
+}
+
+.catalogo-mensaje h3 { font-size: var(--texto-xl); margin-bottom: 0.5rem; }
+.catalogo-mensaje .btn-secundario,
+.catalogo-mensaje .btn-primario { margin-top: var(--espacio-md); }
 
 /* -------------------------------------------------------
-   FILTROS DE COLECCIÓN
-   Botones para filtrar el catálogo por colección
+   DETALLE DE PRODUCTO (panel lateral)
    ------------------------------------------------------- */
-.filtros-coleccion {
+#drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--capa-overlay);
+  background: rgba(10, 7, 4, 0.7);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#drawer-overlay.visible { opacity: 1; }
+
+#producto-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--capa-drawer);
+  width: min(500px, 100vw);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--espacio-md);
+  background: var(--color-grafito);
+  border-left: 1px solid var(--color-borde);
+  transform: translateX(100%);
+  transition: transform 0.4s var(--curva-salida);
+}
+
+#producto-drawer.abierto { transform: none; }
+
+.detalle-cerrar {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
+  background-color: rgba(18, 16, 14, 0.75);
+}
+
+.detalle-imagen {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  margin-bottom: var(--espacio-md);
+  border-radius: var(--radio-md);
+  background-color: var(--color-negro);
+}
+
+.detalle-imagen .pieza-svg {
+  position: absolute;
+  inset: 22%;
+  width: 56%;
+  height: 56%;
+}
+
+.detalle-imagen img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.detalle-titulo {
+  margin: 0.35rem 0 0.75rem;
+  font-size: clamp(2rem, 6vw, 2.6rem);
+}
+
+.detalle-descripcion { margin: 1rem 0 1.25rem; line-height: 1.65; }
+
+.detalle-specs { border-top: 1px solid var(--color-borde); }
+
+.detalle-specs > div {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--espacio-xs);
-  align-items: center;
-}
-
-/* Botón de filtro individual */
-.filtro-btn {
-  padding: 0.5rem 1.25rem;
-  border: 1px solid var(--color-borde);
-  background-color: transparent;
-  color: var(--color-blanco-dim);
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--color-borde);
   font-size: var(--texto-sm);
-  letter-spacing: 0.05em;
-  border-radius: var(--radio-full);
-  transition: all var(--transicion-normal);
 }
 
-/* Estado activo del filtro */
-.filtro-btn.activo,
-.filtro-btn:hover {
-  border-color: var(--color-dorado);
-  color: var(--color-dorado);
-  background-color: rgba(212, 163, 115, 0.08);
+.detalle-specs dt {
+  font-family: var(--fuente-mono);
+  font-size: 0.74rem;
+  color: var(--color-blanco-dim);
+}
+
+.detalle-specs dd { text-align: right; }
+
+.detalle-compra {
+  position: sticky;
+  bottom: calc(var(--espacio-md) * -1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: var(--espacio-md) calc(var(--espacio-md) * -1) calc(var(--espacio-md) * -1);
+  padding: 1rem var(--espacio-md);
+  background-color: var(--color-grafito-2);
+}
+
+.detalle-precio {
+  font-size: 1.7rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.detalle-precio small {
+  font-family: var(--fuente-mono);
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--color-blanco-dim);
 }
 
 /* -------------------------------------------------------
    FOOTER
    ------------------------------------------------------- */
 #footer {
-  background-color: var(--color-grafito);
+  position: relative;
+  overflow: hidden;
+  padding: var(--espacio-2xl) 0 var(--espacio-md);
+  background-color: var(--color-negro);
   border-top: 1px solid var(--color-borde);
-  padding: var(--espacio-2xl) 0 var(--espacio-lg);
 }
 
-/* Grid del footer en 4 columnas */
 .footer-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: var(--espacio-2xl);
-  margin-bottom: var(--espacio-2xl);
+  gap: var(--espacio-lg);
+  margin-bottom: var(--espacio-xl);
 }
 
-/* Columna de la marca en el footer */
-.footer-marca .logo-nombre {
-  font-size: 1.3rem;
-}
-
-/* Descripción de la marca en el footer */
 .footer-descripcion {
-  font-size: var(--texto-sm);
-  color: var(--color-blanco-dim);
-  line-height: 1.8;
+  max-width: 300px;
   margin-top: var(--espacio-sm);
-  max-width: 280px;
+  font-size: var(--texto-sm);
 }
 
-/* Título de cada columna del footer */
 .footer-titulo {
-  font-family: var(--fuente-cuerpo);
+  margin-bottom: var(--espacio-sm);
+  font-family: var(--fuente-mono);
   font-size: var(--texto-xs);
   font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--color-dorado);
-  margin-bottom: var(--espacio-sm);
+  letter-spacing: 0;
+  color: var(--color-blanco-dim);
 }
 
-/* Links del footer */
 .footer-links {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio-xs);
+  align-items: flex-start;
+  gap: 0.45rem;
 }
 
 .footer-link {
-  font-size: var(--texto-sm);
-  color: var(--color-blanco-dim);
+  font-size: 0.97rem;
+  text-align: left;
   transition: color var(--transicion-rapida);
 }
 
-.footer-link:hover {
-  color: var(--color-blanco);
+.footer-link:hover { color: var(--color-acento-luz); }
+
+/* Nombre gigante en capas: cierra la página como una pieza terminada */
+.footer-marca-grande {
+  font-family: var(--fuente-display);
+  font-size: clamp(5rem, 23.5vw, 21rem);
+  font-weight: 800;
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  text-align: center;
+  white-space: nowrap;
+  color: transparent;
+  background-image: repeating-linear-gradient(0deg, var(--color-grafito-2) 0 5px, var(--color-grafito) 5px 7px);
+  -webkit-background-clip: text;
+  background-clip: text;
+  user-select: none;
 }
 
-/* Línea divisora antes del copyright */
 .footer-bottom {
-  border-top: 1px solid var(--color-borde);
-  padding-top: var(--espacio-md);
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-/* Texto de copyright */
-.footer-copyright {
+  gap: var(--espacio-sm);
+  margin-top: var(--espacio-md);
+  font-family: var(--fuente-mono);
   font-size: var(--texto-xs);
   color: var(--color-blanco-dim);
-  opacity: 0.6;
-  letter-spacing: 0.05em;
 }
 
 /* -------------------------------------------------------
-   RESPONSIVE — adapto los componentes a pantallas pequeñas
+   RESPONSIVE
    ------------------------------------------------------- */
 @media (max-width: 1024px) {
-  /* El footer pasa a 2 columnas en tablet */
-  .footer-grid {
-    grid-template-columns: 1fr 1fr;
-  }
+  .footer-grid { grid-template-columns: 1fr 1fr 1fr; }
+  .footer-grid > :first-child { grid-column: 1 / -1; }
 }
 
-@media (max-width: 768px) {
-  /* Oculto la navegación principal en móvil */
-  .nav-principal {
-    display: none;
-  }
+@media (max-width: 860px) {
+  .nav-principal,
+  .header-acciones .btn-primario { display: none; }
 
-  /* El footer pasa a 1 columna en móvil */
-  .footer-grid {
-    grid-template-columns: 1fr;
-    gap: var(--espacio-lg);
-  }
+  .btn-menu { display: inline-flex; }
+}
 
-  /* El pie del footer en columna */
+@media (max-width: 640px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+
   .footer-bottom {
     flex-direction: column;
-    gap: var(--espacio-xs);
     text-align: center;
   }
 
-  /* Títulos de sección más pequeños en móvil */
-  .titulo-seccion {
-    font-size: var(--texto-2xl);
+  .tarjeta-descripcion,
+  .tarjeta-materiales { display: none; }
+
+  .tarjeta-nombre { font-size: 1.05rem; }
+  .tarjeta-precio { font-size: 1.05rem; }
+
+  .tarjeta-pie {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

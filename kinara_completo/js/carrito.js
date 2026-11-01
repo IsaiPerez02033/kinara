@@ -111,7 +111,7 @@ const ModuloCarrito = (() => {
   const actualizarUI = () => {
     const total = contarUnidades();
     const el = document.getElementById('carrito-contador');
-    if (el) { el.textContent = total; el.style.display = total > 0 ? 'flex' : 'none'; }
+    if (el) { el.textContent = total; el.style.display = total > 0 ? 'inline-flex' : 'none'; }
     if (document.getElementById('carrito-drawer')?.classList.contains('abierto')) renderizarItems();
   };
 
@@ -126,37 +126,39 @@ const ModuloCarrito = (() => {
     if (!items.length) {
       c.innerHTML = `
         <div class="carrito-vacio">
-          <svg class="carrito-vacio-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round">
-            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
-          </svg>
-          <p class="carrito-vacio-texto">Tu carrito está vacío</p>
-          <p class="carrito-vacio-subtexto">Agrega un producto para comenzar</p>
+          <svg class="pieza-svg carrito-vacio-icono" viewBox="0 0 120 120" aria-hidden="true"><use href="#pieza-medida"/></svg>
+          <p class="carrito-vacio-texto">Todavía no hay piezas aquí</p>
+          <p class="carrito-vacio-subtexto">Agrega algo del catálogo o cotiza una pieza a tu medida.</p>
+          <a href="#catalogo" class="btn-secundario btn-chico" onclick="ModuloCarrito.cerrarDrawer()">Ver catálogo</a>
         </div>`;
       const btn = document.getElementById('btn-checkout');
       if (btn) btn.disabled = true;
     } else {
-      c.innerHTML = items.map(item => `
+      c.innerHTML = items.map(item => {
+        const categoria = (item.coleccion || '').replace('Kinara ', '');
+        return `
         <div class="carrito-item" data-id="${item.id}">
-          <div class="carrito-item-imagen">
+          <div class="carrito-item-imagen cama" data-categoria="${escHTML(categoria)}">
             ${item.imagen_url
               ? `<img src="${escHTML(item.imagen_url)}" alt="${escHTML(item.nombre)}" loading="lazy">`
-              : `<div class="carrito-item-imagen-placeholder">${escHTML(item.nombre)}</div>`}
+              : piezaSVG(categoria)}
           </div>
           <div class="carrito-item-info">
             <span class="carrito-item-coleccion">${escHTML(item.coleccion)}</span>
             <span class="carrito-item-nombre">${escHTML(item.nombre)}</span>
-            <span class="carrito-item-precio">$${formatearPrecio(item.precio)} MXN</span>
-          </div>
-          <div class="carrito-item-controles">
-            <div class="cantidad-control">
-              <button class="cantidad-btn" onclick="ModuloCarrito.cambiarCantidad('${item.id}',-1)">−</button>
-              <span class="cantidad-numero">${item.cantidad}</span>
-              <button class="cantidad-btn" onclick="ModuloCarrito.cambiarCantidad('${item.id}',1)">+</button>
+            <span class="carrito-item-precio">$${formatearPrecio(item.precio)} MXN c/u</span>
+            <div class="carrito-item-controles">
+              <div class="cantidad-control">
+                <button type="button" class="cantidad-btn" aria-label="Quitar una pieza de ${escHTML(item.nombre)}" onclick="ModuloCarrito.cambiarCantidad('${item.id}',-1)">−</button>
+                <span class="cantidad-numero">${item.cantidad}</span>
+                <button type="button" class="cantidad-btn" aria-label="Agregar una pieza de ${escHTML(item.nombre)}" onclick="ModuloCarrito.cambiarCantidad('${item.id}',1)">+</button>
+              </div>
+              <span class="carrito-item-subtotal">$${formatearPrecio(item.precio*item.cantidad)}</span>
             </div>
-            <span style="font-size:.8rem;color:var(--color-dorado);">$${formatearPrecio(item.precio*item.cantidad)}</span>
-            <button class="carrito-item-eliminar" onclick="ModuloCarrito.eliminar('${item.id}')">Eliminar</button>
+            <button type="button" class="carrito-item-eliminar" onclick="ModuloCarrito.eliminar('${item.id}')">Eliminar</button>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
       const btn = document.getElementById('btn-checkout');
       if (btn) btn.disabled = false;
     }
@@ -175,7 +177,7 @@ const ModuloCarrito = (() => {
     const t = document.getElementById('agregar-toast');
     if (!t) return;
     t.textContent = msg;
-    t.style.borderLeftColor = tipo==='error' ? '#C07070' : 'var(--color-dorado)';
+    t.style.borderLeftColor = tipo==='error' ? 'var(--color-error)' : 'var(--color-acento)';
     t.classList.add('visible');
     clearTimeout(t._to);
     t._to = setTimeout(()=>t.classList.remove('visible'), 2500);
@@ -192,7 +194,7 @@ const ModuloCarrito = (() => {
   };
 
   return { iniciar, agregar, cambiarCantidad, eliminar, vaciar, abrirDrawer, cerrarDrawer,
-           calcularTotal, contarUnidades, obtenerItems:()=>items, formatearPrecio };
+           calcularTotal, contarUnidades, obtenerItems:()=>items, formatearPrecio, mostrarMensaje };
 })();
 
 
@@ -347,9 +349,9 @@ const ModuloCheckout = (() => {
     mostrarEstado(`
       <div class="pago-estado">
         <div class="pago-error-icono">✕</div>
-        <p class="pago-estado-titulo">Algo salió mal</p>
+        <p class="pago-estado-titulo">No se pudo iniciar el pago</p>
         <p class="pago-estado-subtitulo">${escHTML(msg || 'No se pudo procesar el pago. Intenta de nuevo.')}</p>
-        <button class="btn-primario" onclick="ModuloCheckout.restaurarFormulario()" style="margin-top:1rem;">
+        <button class="btn-primario" onclick="ModuloCheckout.restaurarFormulario()">
           Volver a mis datos
         </button>
       </div>`);

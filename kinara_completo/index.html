@@ -1,864 +1,453 @@
 <!DOCTYPE html>
 <!--
-  ============================================================
-  index.html — Página principal de Kinara
-  Este es el documento HTML raíz del sitio web de Kinara.
-  Estructuro aquí todas las secciones de la página principal:
-  header fijo, hero, filosofía, colecciones y catálogo.
-  Cada sección está comentada con su propósito y estructura.
-  ============================================================
+  index.html — Página principal de Kinara, empresa de impresión 3D.
+  Secciones: hero con la impresora en 3D, categorías, proceso,
+  materiales, figuras personalizadas, catálogo y contacto.
 -->
 <html lang="es">
 
 <head>
-  <!-- =====================================================
-       META TAGS — Información del documento para el
-       navegador y los motores de búsqueda
-       ===================================================== -->
-
-  <!-- Charset UTF-8 para soporte de caracteres especiales -->
   <meta charset="UTF-8" />
-
-  <!-- Viewport responsivo para todos los dispositivos -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Descripción para SEO y redes sociales -->
+  <meta name="theme-color" content="#12100e" />
+  <title>Kinara — Impresión 3D a tu medida</title>
   <meta name="description"
     content="Kinara — Impresión 3D en México: lámparas, herramientas, moldes, juguetes, figuras y piezas personalizadas, en una pieza o por lote." />
-
-  <!-- Palabras clave relevantes para la marca -->
-  <meta name="keywords"
-    content="impresión 3D, impresión 3D México, figuras personalizadas, moldes 3D, herramientas 3D, lámparas 3D, juguetes 3D, Kinara" />
-
-  <!-- Autor del sitio -->
   <meta name="author" content="Kinara — Impresión 3D" />
 
-  <!-- Open Graph para compartir en redes sociales -->
   <meta property="og:title" content="Kinara — Impresión 3D a tu medida" />
   <meta property="og:description" content="Impresión 3D en México: lámparas, herramientas, moldes, juguetes, figuras y piezas personalizadas, en una pieza o por lote." />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="es_MX" />
-  <meta property="og:image" content="assets/images/og-cover.jpg" />
+  <meta property="og:image" content="https://kinara.mx/assets/images/og-cover.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:url" content="https://kinara.mx" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Kinara — Impresión 3D a tu medida" />
   <meta name="twitter:description" content="Impresión 3D en México: lámparas, herramientas, moldes, juguetes, figuras y piezas personalizadas, en una pieza o por lote." />
-  <meta name="twitter:image" content="assets/images/og-cover.jpg" />
+  <meta name="twitter:image" content="https://kinara.mx/assets/images/og-cover.jpg" />
 
-  <!-- Título de la pestaña del navegador -->
-  <title>Kinara — Impresión 3D a tu medida</title>
-
-  <!-- Favicon: diamante dorado en SVG inline -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,
-    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>
-      <polygon points='16,2 30,16 16,30 2,16' fill='%23D4A373'/>
-    </svg>
-  " />
-
-  <!-- =====================================================
-       HOJAS DE ESTILO — Las cargo en el orden correcto:
-       primero las variables, luego base, components y sections
-       ===================================================== -->
-
-  <!-- 1. Variables de la marca (colores, tipografía, etc.) -->
-  <link rel="stylesheet" href="css/variables.css" />
-
-  <!-- 2. Reset y estilos globales -->
-  <link rel="stylesheet" href="css/base.css" />
-
-  <!-- 3. Componentes reutilizables (header, botones, tarjetas) -->
-  <link rel="stylesheet" href="css/components.css" />
-
-  <!-- 4.5. Estilos del carrito y checkout (Fase 3) -->
-  <link rel="stylesheet" href="css/carrito.css" />
-
-  <!-- 4. Estilos de cada sección del sitio -->
-  <link rel="stylesheet" href="css/sections.css" />
-
-  <!-- Precargo las fuentes de Google para mejor performance -->
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg" />
   <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png" />
   <link rel="canonical" href="https://kinara.mx" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Marco que hay JavaScript antes de pintar: solo así oculto lo que se anima -->
+  <script>document.documentElement.classList.add('js');</script>
+
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/carrito.css" />
+  <link rel="stylesheet" href="css/sections.css" />
 </head>
 
 <body>
+  <a href="#contenido" class="skip-link">Saltar al contenido</a>
 
-  <!-- =====================================================
-       CURSOR PERSONALIZADO
-       Estos dos elementos forman el cursor dorado animado.
-       JavaScript (main.js) los mueve siguiendo al mouse.
-       ===================================================== -->
-  <div id="cursor-punto" aria-hidden="true"></div>
-  <div id="cursor-anillo" aria-hidden="true"></div>
+  <!-- Dibujos de las piezas: se reutilizan en categorías, catálogo y carrito -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="pieza-lampara" viewBox="0 0 120 120">
+        <path d="M60 8v14"/><path d="M38 22h44l16 46H22z"/><path d="M50 22 44 68M70 22l6 46"/>
+        <path d="M46 68c0 9 6 14 14 14s14-5 14-14"/><path d="M60 82v22"/><path d="M36 112c0-5 10-8 24-8s24 3 24 8z"/>
+      </symbol>
+      <symbol id="pieza-herramienta" viewBox="0 0 120 120">
+        <path d="M84 8a26 26 0 0 0-30 34L12 84a14 14 0 0 0 0 20l4 4a14 14 0 0 0 20 0l42-42a26 26 0 0 0 34-30L95 53l-18-5-5-18z"/>
+        <circle cx="25" cy="95" r="4"/>
+      </symbol>
+      <symbol id="pieza-molde" viewBox="0 0 120 120">
+        <path d="M60 14 110 40v42L60 108 10 82V40z"/><path d="M10 40l50 26 50-26M60 66v42"/>
+        <ellipse cx="60" cy="38" rx="20" ry="10"/><path d="M42 42c3 8 33 8 36 0"/>
+      </symbol>
+      <symbol id="pieza-juguete" viewBox="0 0 120 120">
+        <path d="M60 10 69 18 81 15 85 27 97 31 94 43 102 52 94 61 97 73 85 77 81 89 69 86 60 94 51 86 39 89 35 77 23 73 26 61 18 52 26 43 23 31 35 27 39 15 51 18z"/>
+        <circle cx="60" cy="52" r="16"/><path d="M30 104h60M42 112h36"/>
+      </symbol>
+      <symbol id="pieza-figura" viewBox="0 0 120 120">
+        <path d="M34 42a26 24 0 1 1 52 0 26 24 0 0 1-52 0z"/>
+        <path d="M34 34 22 22l-6 16M86 34l12-12 6 16"/>
+        <path d="M44 66c-10 4-14 14-14 32h60c0-18-4-28-14-32"/><path d="M26 112h68v-14H26z"/>
+        <circle cx="50" cy="42" r="3"/><circle cx="70" cy="42" r="3"/><path d="M54 52c3 3 9 3 12 0"/>
+      </symbol>
+      <symbol id="pieza-medida" viewBox="0 0 120 120">
+        <path d="M60 10 106 34v52L60 110 14 86V34z"/><path d="M14 34l46 24 46-24M60 58v52"/>
+        <path d="M37 22l46 24M83 22 37 46" stroke-dasharray="3 6"/>
+      </symbol>
+    </defs>
+  </svg>
 
-
-  <!-- =====================================================
-       HEADER — Barra de navegación fija
-       Comienza transparente y se vuelve sólida al hacer scroll.
-       Contiene el logo y el menú de navegación principal.
-       ===================================================== -->
-  <header id="header" role="banner">
+  <header id="header">
     <div class="header-inner">
-
-      <!-- Logo de la marca con link al inicio -->
-      <a href="#hero" class="logo" aria-label="Kinara — Ir al inicio">
-        <!-- Rombo decorativo del logo -->
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
-            <polygon points="6,0 12,6 6,12 0,6" fill="#D4A373" />
-          </svg>
-          <span class="logo-nombre">KINARA</span>
-        </div>
-        <!-- Slogan de la marca -->
-        <span class="logo-slogan">Donde las ideas cobran forma</span>
+      <a href="#hero" class="logo" aria-label="Kinara, ir al inicio">
+        <svg class="logo-rombo" viewBox="0 0 12 12" aria-hidden="true"><polygon points="6,0 12,6 6,12 0,6"/></svg>
+        <span class="logo-nombre">KINARA</span>
       </a>
 
-      <!-- Navegación principal — solo visible en desktop -->
-      <nav class="nav-principal" role="navigation" aria-label="Navegación principal">
-        <a href="#filosofia" class="nav-link">Qué hacemos</a>
-        <a href="#colecciones" class="nav-link">Categorías</a>
+      <nav class="nav-principal" aria-label="Navegación principal">
+        <a href="#categorias" class="nav-link">Categorías</a>
+        <a href="#proceso" class="nav-link">Cómo funciona</a>
+        <a href="#materiales" class="nav-link">Materiales</a>
         <a href="#catalogo" class="nav-link">Catálogo</a>
         <a href="#contacto" class="nav-link">Contacto</a>
       </nav>
 
-      <!-- Acciones del header: carrito y CTA -->
-      <div style="display: flex; align-items: center; gap: 1.5rem;">
-
-        <!-- Icono del carrito con contador de items -->
-        <button
-          id="btn-carrito" onclick="ModuloCarrito.abrirDrawer()"
-          aria-label="Ver carrito de compras"
-          style="
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--color-blanco-dim);
-            font-size: 0.85rem;
-            letter-spacing: 0.05em;
-            transition: color 0.2s ease;
-          "
-        >
-          <!-- Icono SVG del carrito -->
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <path d="M16 10a4 4 0 01-8 0"/>
+      <div class="header-acciones">
+        <button id="btn-carrito" type="button" class="btn-icono" aria-label="Ver carrito de compras">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>
           </svg>
-          <!-- Contador de items en el carrito (oculto si es 0) -->
-          <span id="carrito-contador" style="
-            display: none;
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background-color: var(--color-dorado);
-            color: var(--color-negro);
-            font-size: 0.6rem;
-            font-weight: 500;
-            align-items: center;
-            justify-content: center;
-          ">0</span>
+          <span id="carrito-contador">0</span>
         </button>
-
-        <!-- Botón de contacto / CTA -->
-        <a href="#contacto" class="btn-primario" style="padding: 0.625rem 1.25rem; font-size: 0.75rem;">
-          Cotizar pieza
-        </a>
+        <a href="#contacto" class="btn-primario btn-chico">Cotizar pieza</a>
+        <button id="menu-movil-abrir" type="button" class="btn-icono btn-menu" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-movil">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg>
+        </button>
       </div>
     </div>
   </header>
 
+  <div id="menu-movil">
+    <button id="menu-movil-cerrar" type="button" class="btn-icono" aria-label="Cerrar menú">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <a href="#categorias">Categorías</a>
+    <a href="#proceso">Cómo funciona</a>
+    <a href="#materiales">Materiales</a>
+    <a href="#catalogo">Catálogo</a>
+    <a href="#contacto">Contacto</a>
+    <a href="#contacto" class="btn-primario">Cotizar pieza</a>
+  </div>
 
-  <!-- =====================================================
-       SECCIÓN HERO — Pantalla completa de bienvenida
-       El canvas de partículas crea el campo de luz dorada.
-       La animación de entrada escalonada presenta la marca.
-       ===================================================== -->
-  <section id="hero" aria-label="Bienvenida a Kinara">
+  <main id="contenido">
 
-    <!-- Canvas para las partículas de luz (main.js lo controla) -->
-    <canvas id="canvas-particulas" aria-hidden="true"></canvas>
+    <!-- HERO: la impresora avanza con el scroll (js/hero3d.js) -->
+    <section id="hero" aria-label="Bienvenida a Kinara">
+      <div class="hero-fijo">
+        <canvas id="hero-canvas" aria-hidden="true"></canvas>
 
-    <!-- Contenido central del hero -->
-    <div class="hero-contenido">
+        <div class="hero-respaldo cama" style="background:none" aria-hidden="true">
+          <svg class="pieza-svg" viewBox="0 0 120 120"><use href="#pieza-medida"/></svg>
+        </div>
 
-      <!-- Ornamento superior con el rombo de la marca -->
-      <div class="hero-ornamento" aria-hidden="true">
-        <div class="hero-rombo"></div>
-      </div>
-
-      <!-- Título principal: nombre de la marca -->
-      <h1 class="hero-titulo">KINARA</h1>
-
-      <!-- Slogan de la marca -->
-      <p class="hero-slogan">Donde las ideas cobran forma</p>
-
-      <!-- Descripción breve para contexto -->
-      <p class="hero-descripcion">
-        Imprimimos en 3D lo que necesites: herramientas, moldes, lámparas,
-        juguetes, figuras personalizadas y cualquier pieza que puedas imaginar.
-      </p>
-
-      <!-- Botones de acción principales -->
-      <div class="hero-acciones">
-        <a href="#catalogo" class="btn-primario">
-          Explorar catálogo
-        </a>
-        <a href="#colecciones" class="btn-secundario">
-          Ver categorías
-        </a>
-      </div>
-    </div>
-
-    <!-- Indicador de scroll hacia abajo -->
-    <div class="hero-scroll" aria-hidden="true">
-      <span>Scroll</span>
-      <div class="scroll-linea"></div>
-    </div>
-  </section>
-
-
-  <!-- =====================================================
-       SECCIÓN FILOSOFÍA — Esencia y valores de la marca
-       Presenta la filosofía de diseño y los 5 valores
-       fundamentales de Kinara.
-       ===================================================== -->
-  <section id="filosofia" class="seccion" aria-label="Filosofía de Kinara">
-    <div class="contenedor">
-
-      <!-- Grid de dos columnas: cita y valores -->
-      <div class="filosofia-grid">
-
-        <!-- Columna izquierda: texto filosófico -->
-        <div class="filosofia-texto">
-          <!-- Etiqueta de sección -->
-          <span class="etiqueta-seccion reveal">Qué hacemos</span>
-
-          <!-- Cita principal de la filosofía -->
-          <blockquote class="filosofia-cita reveal">
-            Si lo puedes imaginar,<br/>
-            lo podemos <span class="dorado">imprimir</span>.
-          </blockquote>
-
-          <!-- Descripción de la filosofía -->
-          <p class="reveal" style="max-width: 460px;">
-            Kinara es una empresa de impresión 3D. Fabricamos productos propios y
-            piezas por encargo, tanto para quien busca un regalo único como para
-            talleres y negocios que necesitan una solución a su medida.
+        <div class="hero-capitulo hero-portada">
+          <span class="etiqueta-seccion">Impresión 3D en México</span>
+          <h1 class="hero-titulo">Si lo imaginas, lo <em>imprimimos.</em></h1>
+          <p class="hero-descripcion">
+            Herramientas, moldes, lámparas, juguetes y figuras personalizadas.
+            Desde una sola pieza hasta un lote para tu negocio.
           </p>
-
-          <!-- Datos estadísticos de la marca -->
-          <div style="display: flex; gap: 2.5rem; margin-top: 1rem;" class="reveal">
-            <!-- Número 1: categorías -->
-            <div>
-              <div style="
-                font-family: 'Cormorant Garamond', serif;
-                font-size: 2.5rem;
-                font-weight: 300;
-                color: var(--color-dorado);
-                line-height: 1;
-              ">6</div>
-              <div style="font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-blanco-dim); margin-top: 4px;">
-                Categorías
-              </div>
-            </div>
-            <!-- Número 2: tamaño de pedido -->
-            <div>
-              <div style="
-                font-family: 'Cormorant Garamond', serif;
-                font-size: 2.5rem;
-                font-weight: 300;
-                color: var(--color-dorado);
-                line-height: 1;
-              ">1+</div>
-              <div style="font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-blanco-dim); margin-top: 4px;">
-                Desde una pieza
-              </div>
-            </div>
-            <!-- Número 3: tecnología de fabricación -->
-            <div>
-              <div style="
-                font-family: 'Cormorant Garamond', serif;
-                font-size: 2.5rem;
-                font-weight: 300;
-                color: var(--color-dorado);
-                line-height: 1;
-              ">3D</div>
-              <div style="font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-blanco-dim); margin-top: 4px;">
-                Impresión 3D
-              </div>
-            </div>
+          <div class="hero-acciones">
+            <a href="#catalogo" class="btn-primario">Ver catálogo</a>
+            <a href="#contacto" class="btn-secundario">Cotizar mi pieza</a>
           </div>
         </div>
 
-        <!-- Columna derecha: los 5 valores fundamentales -->
-        <div class="filosofia-valores">
+        <div class="hero-capitulo">
+          <span class="etiqueta-seccion">Herramientas y moldes</span>
+          <h2 class="hero-subtitulo">Piezas que resuelven un problema real.</h2>
+          <p class="hero-descripcion">Organizadores, soportes, guías, refacciones y moldes para producir más.</p>
+        </div>
 
-          <!-- Valor 1 -->
-          <div class="valor-item reveal">
-            <span class="valor-numero">01</span>
-            <div class="valor-contenido">
-              <h3 class="valor-nombre">A tu medida</h3>
-              <p class="valor-descripcion">
-                Partimos de tu idea, tu boceto, tu foto o tu archivo STL y lo convertimos en una pieza real.
-              </p>
-            </div>
-          </div>
+        <div class="hero-capitulo">
+          <span class="etiqueta-seccion">Figuras y juguetes</span>
+          <h2 class="hero-subtitulo">Otras, solo para sacarte una sonrisa.</h2>
+          <p class="hero-descripcion">Figuras de colección, juguetes articulados y regalos que nadie más va a tener.</p>
+        </div>
 
-          <!-- Valor 2 -->
-          <div class="valor-item reveal">
-            <span class="valor-numero">02</span>
-            <div class="valor-contenido">
-              <h3 class="valor-nombre">Función y forma</h3>
-              <p class="valor-descripcion">
-                Elegimos el material y la orientación de impresión según el uso que tendrá cada pieza.
-              </p>
-            </div>
-          </div>
-
-          <!-- Valor 3 -->
-          <div class="valor-item reveal">
-            <span class="valor-numero">03</span>
-            <div class="valor-contenido">
-              <h3 class="valor-nombre">De una pieza a un lote</h3>
-              <p class="valor-descripcion">
-                Imprimimos un prototipo, un regalo único o una serie para tu negocio.
-              </p>
-            </div>
-          </div>
-
-          <!-- Valor 4 -->
-          <div class="valor-item reveal">
-            <span class="valor-numero">04</span>
-            <div class="valor-contenido">
-              <h3 class="valor-nombre">Diseño incluido</h3>
-              <p class="valor-descripcion">
-                Si todavía no tienes un modelo 3D, lo cotizamos y lo diseñamos contigo.
-              </p>
-            </div>
-          </div>
-
-          <!-- Valor 5 -->
-          <div class="valor-item reveal">
-            <span class="valor-numero">05</span>
-            <div class="valor-contenido">
-              <h3 class="valor-nombre">Trato directo</h3>
-              <p class="valor-descripcion">
-                Hablas con quien hace tu pieza antes de imprimirla.
-              </p>
-            </div>
+        <div class="hero-capitulo">
+          <span class="etiqueta-seccion">Tu turno</span>
+          <h2 class="hero-subtitulo">¿Qué quieres imprimir?</h2>
+          <p class="hero-descripcion">Mándanos tu idea, una foto o tu archivo STL. Nosotros te decimos cómo hacerla realidad.</p>
+          <div class="hero-acciones">
+            <a href="#contacto" class="btn-primario">Cotizar mi pieza</a>
+            <a href="#categorias" class="btn-secundario">Explorar categorías</a>
           </div>
         </div>
+
+        <div class="hero-lectura" aria-hidden="true">
+          <div class="hero-lectura-fila"><span id="hero-pieza">Lámpara</span><span id="hero-capa">capa 000/245</span></div>
+          <div class="hero-barra"><div id="hero-avance"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="cinta" aria-hidden="true">
+      <div class="cinta-pista">
+        <span>Lámparas</span><i></i><span>Herramientas</span><i></i><span>Moldes</span><i></i><span>Juguetes</span><i></i><span>Figuras</span><i></i><span>Refacciones</span><i></i><span>Prototipos</span><i></i><span>Regalos únicos</span><i></i>
+        <span>Lámparas</span><i></i><span>Herramientas</span><i></i><span>Moldes</span><i></i><span>Juguetes</span><i></i><span>Figuras</span><i></i><span>Refacciones</span><i></i><span>Prototipos</span><i></i><span>Regalos únicos</span><i></i>
       </div>
     </div>
-  </section>
 
-
-  <!-- =====================================================
-       SECCIÓN COLECCIONES — Las categorías de la marca
-       Grid interactivo con hover que revela la descripción
-       de cada colección. El JS renderizará las imágenes.
-       ===================================================== -->
-  <section id="colecciones" class="seccion" aria-label="Colecciones de Kinara">
-    <div class="contenedor">
-
-      <!-- Cabecera de la sección -->
-      <div class="seccion-cabecera">
-        <span class="etiqueta-seccion reveal">Categorías</span>
-        <h2 class="titulo-seccion reveal">
-          Todo lo que se puede <span class="acento">imprimir</span>
-        </h2>
-        <p class="reveal" style="max-width: 520px; color: var(--color-blanco-dim);">
-          Estas son las líneas con las que empezamos. Si lo que buscas no aparece,
-          cuéntanos y lo cotizamos.
-        </p>
-      </div>
-
-      <!-- Grid de colecciones (6 columnas para el layout asimétrico) -->
-      <div class="colecciones-grid" id="colecciones-grid">
-
-        <!-- Lámparas -->
-        <article class="coleccion-card reveal" onclick="ModuloCatalogo.activarFiltro('Lámparas'); document.querySelector('#catalogo').scrollIntoView({behavior:'smooth'})">
-          <div style="width:100%;height:100%;background:linear-gradient(135deg,#18130c 0%,#281e12 100%);display:flex;align-items:center;justify-content:center;">
-            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#D4A373" stroke-width="1" style="opacity:0.3" aria-hidden="true">
-              <path d="M22 8h16l6 22H16z"/><line x1="30" y1="30" x2="30" y2="50"/><line x1="20" y1="50" x2="40" y2="50"/>
-            </svg>
+    <!-- CATEGORÍAS -->
+    <section id="categorias" class="seccion">
+      <div class="contenedor">
+        <div class="cabecera-dividida">
+          <div>
+            <span class="etiqueta-seccion reveal">Categorías</span>
+            <h2 class="titulo-seccion reveal">Un taller, muchas <span class="acento">formas.</span></h2>
           </div>
-          <div class="coleccion-overlay">
-            <span class="coleccion-filosofia">Luz con forma propia</span>
-            <h3 class="coleccion-nombre">Lámparas</h3>
-            <p class="coleccion-desc">Para mesa, pared y techo.</p>
-          </div>
-        </article>
+          <p class="reveal">Estas son las líneas con las que empezamos. Si lo que buscas no aparece, cuéntanos y lo cotizamos.</p>
+        </div>
 
-        <!-- Herramientas -->
-        <article class="coleccion-card reveal" onclick="ModuloCatalogo.activarFiltro('Herramientas'); document.querySelector('#catalogo').scrollIntoView({behavior:'smooth'})">
-          <div style="width:100%;height:100%;background:linear-gradient(135deg,#101418 0%,#1a2028 100%);display:flex;align-items:center;justify-content:center;">
-            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#D4A373" stroke-width="1" style="opacity:0.3" aria-hidden="true">
-              <path d="M42 8a11 11 0 00-13 14L9 42l9 9 20-20a11 11 0 0014-13l-8 8-7-2-2-7z"/>
-            </svg>
-          </div>
-          <div class="coleccion-overlay">
-            <span class="coleccion-filosofia">Piezas para trabajar</span>
-            <h3 class="coleccion-nombre">Herramientas</h3>
-            <p class="coleccion-desc">Organizadores, soportes y guías para el taller.</p>
-          </div>
-        </article>
-
-        <!-- Moldes -->
-        <article class="coleccion-card reveal" onclick="ModuloCatalogo.activarFiltro('Moldes'); document.querySelector('#catalogo').scrollIntoView({behavior:'smooth'})">
-          <div style="width:100%;height:100%;background:linear-gradient(135deg,#1a1a14 0%,#2a2518 100%);display:flex;align-items:center;justify-content:center;">
-            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#D4A373" stroke-width="1" style="opacity:0.3" aria-hidden="true">
-              <rect x="8" y="12" width="44" height="36"/><circle cx="22" cy="30" r="8"/><circle cx="40" cy="30" r="8"/>
-            </svg>
-          </div>
-          <div class="coleccion-overlay">
-            <span class="coleccion-filosofia">La forma para producir más</span>
-            <h3 class="coleccion-nombre">Moldes</h3>
-            <p class="coleccion-desc">Para jabón, concreto, silicón y más.</p>
-          </div>
-        </article>
-
-        <!-- Juguetes -->
-        <article class="coleccion-card reveal" onclick="ModuloCatalogo.activarFiltro('Juguetes'); document.querySelector('#catalogo').scrollIntoView({behavior:'smooth'})">
-          <div style="width:100%;height:100%;background:linear-gradient(135deg,#0c1018 0%,#141828 100%);display:flex;align-items:center;justify-content:center;">
-            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#D4A373" stroke-width="1" style="opacity:0.3" aria-hidden="true">
-              <path d="M18 10h24v14h10v26H8V24h10z"/><line x1="8" y1="36" x2="52" y2="36"/><line x1="30" y1="24" x2="30" y2="50"/>
-            </svg>
-          </div>
-          <div class="coleccion-overlay">
-            <span class="coleccion-filosofia">Piezas para jugar</span>
-            <h3 class="coleccion-nombre">Juguetes</h3>
-            <p class="coleccion-desc">Articulados y rompecabezas.</p>
-          </div>
-        </article>
-
-        <!-- Figuras -->
-        <article class="coleccion-card reveal" onclick="ModuloCatalogo.activarFiltro('Figuras'); document.querySelector('#catalogo').scrollIntoView({behavior:'smooth'})">
-          <div style="width:100%;height:100%;background:linear-gradient(135deg,#1a1008 0%,#281810 100%);display:flex;align-items:center;justify-content:center;">
-            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#D4A373" stroke-width="1" style="opacity:0.3" aria-hidden="true">
-              <circle cx="30" cy="16" r="9"/><path d="M16 52c0-16 6-24 14-24s14 8 14 24z"/>
-            </svg>
-          </div>
-          <div class="coleccion-overlay">
-            <span class="coleccion-filosofia">Para coleccionar y regalar</span>
-            <h3 class="coleccion-nombre">Figuras</h3>
-            <p class="coleccion-desc">Decorativas y de colección.</p>
-          </div>
-        </article>
-
-        <!-- Figuras personalizadas: no se compran directo, se cotizan -->
-        <article class="coleccion-card reveal" onclick="ModuloContacto.preparar('figura')">
-          <div style="width:100%;height:100%;background:linear-gradient(135deg,#1c1408 0%,#33240f 100%);display:flex;align-items:center;justify-content:center;">
-            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#D4A373" stroke-width="1" style="opacity:0.3" aria-hidden="true">
-              <circle cx="30" cy="20" r="13"/><path d="M18 52c0-11 5-17 12-17s12 6 12 17z"/><path d="M47 8v10M42 13h10"/>
-            </svg>
-          </div>
-          <div class="coleccion-overlay">
-            <span class="coleccion-filosofia">Cotización a medida</span>
-            <h3 class="coleccion-nombre">Figuras personalizadas</h3>
-            <p class="coleccion-desc">Tu figura coleccionable a partir de una foto.</p>
-          </div>
-        </article>
-
-      </div>
-    </div>
-  </section>
-
-
-  <!-- =====================================================
-       SECCIÓN CATÁLOGO — Grid de productos con filtros
-       El módulo productos.js renderiza las tarjetas dinámicamente.
-       Los filtros permiten explorar por colección y ordenamiento.
-       ===================================================== -->
-  <section id="catalogo" class="seccion" aria-label="Catálogo de productos">
-    <div class="contenedor">
-
-      <!-- Cabecera de la sección -->
-      <div style="margin-bottom: 3rem;">
-        <span class="etiqueta-seccion reveal">Catálogo completo</span>
-        <h2 class="titulo-seccion reveal">
-          Listas para <span class="acento">pedir</span>
-        </h2>
-      </div>
-
-      <!-- Layout: filtros lateral + grid de productos -->
-      <div class="catalogo-layout">
-
-        <!-- Panel de filtros lateral -->
-        <aside class="catalogo-filtros reveal" aria-label="Filtros del catálogo">
-
-          <!-- Título del panel -->
-          <span class="filtros-titulo">Filtrar por</span>
-
-          <!-- Divisor decorativo -->
-          <div class="filtros-separador"></div>
-
-          <!-- Grupo de filtros: por colección -->
-          <div class="filtro-grupo">
-            <span class="filtro-grupo-titulo">Categoría</span>
-
-            <!-- Botón "Todos" activo por defecto -->
-            <button class="filtro-btn activo" data-coleccion="Todos">
-              Todas las categorías
-            </button>
-            <button class="filtro-btn" data-coleccion="Lámparas">Lámparas</button>
-            <button class="filtro-btn" data-coleccion="Herramientas">Herramientas</button>
-            <button class="filtro-btn" data-coleccion="Moldes">Moldes</button>
-            <button class="filtro-btn" data-coleccion="Juguetes">Juguetes</button>
-            <button class="filtro-btn" data-coleccion="Figuras">Figuras</button>
-          </div>
-
-          <!-- Divisor -->
-          <div class="filtros-separador"></div>
-
-          <!-- Grupo de filtros: por disponibilidad -->
-          <div class="filtro-grupo">
-            <span class="filtro-grupo-titulo">Stock</span>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-
-              <!-- Leyenda de los badges de stock -->
-              <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--color-blanco-dim);">
-                <span class="badge-stock badge-disponible" style="font-size: 0.65rem;">
-                  <span class="punto"></span>Disponible
-                </span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--color-blanco-dim);">
-                <span class="badge-stock badge-pocas" style="font-size: 0.65rem;">
-                  <span class="punto"></span>Últimas piezas
-                </span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--color-blanco-dim);">
-                <span class="badge-stock badge-agotado" style="font-size: 0.65rem;">
-                  <span class="punto"></span>Agotado
-                </span>
-              </div>
+        <div class="categorias-grid">
+          <a href="#catalogo" data-filtro="Lámparas" data-categoria="Lámparas" class="categoria categoria-a cama reveal">
+            <svg class="pieza-svg" viewBox="0 0 120 120" aria-hidden="true"><use href="#pieza-lampara"/></svg>
+            <h3>Lámparas</h3><p>Luz con forma propia, para mesa, pared y techo.</p>
+          </a>
+          <a href="#catalogo" data-filtro="Herramientas" data-categoria="Herramientas" class="categoria categoria-b cama reveal">
+            <svg class="pieza-svg" viewBox="0 0 120 120" aria-hidden="true"><use href="#pieza-herramienta"/></svg>
+            <h3>Herramientas</h3><p>Organizadores, soportes y guías para el taller.</p>
+          </a>
+          <a href="#catalogo" data-filtro="Moldes" data-categoria="Moldes" class="categoria categoria-c cama reveal">
+            <svg class="pieza-svg" viewBox="0 0 120 120" aria-hidden="true"><use href="#pieza-molde"/></svg>
+            <h3>Moldes</h3><p>Jabón, concreto, silicón y más.</p>
+          </a>
+          <a href="#catalogo" data-filtro="Juguetes" data-categoria="Juguetes" class="categoria categoria-d cama reveal">
+            <svg class="pieza-svg" viewBox="0 0 120 120" aria-hidden="true"><use href="#pieza-juguete"/></svg>
+            <h3>Juguetes</h3><p>Articulados y rompecabezas.</p>
+          </a>
+          <a href="#catalogo" data-filtro="Figuras" data-categoria="Figuras" class="categoria categoria-e cama reveal">
+            <svg class="pieza-svg" viewBox="0 0 120 120" aria-hidden="true"><use href="#pieza-figura"/></svg>
+            <h3>Figuras</h3><p>Decorativas y de colección, para tu repisa.</p>
+          </a>
+          <a href="#contacto" data-consulta="a_medida" class="categoria categoria-f categoria-medida reveal">
+            <div>
+              <h3>¿No está en la lista? Lo hacemos a medida.</h3>
+              <p>Refacciones, prototipos, piezas para tu negocio o cualquier idea que tengas.</p>
             </div>
-          </div>
-
-          <!-- Divisor -->
-          <div class="filtros-separador"></div>
-
-          <!-- Información de personalización -->
-          <div style="padding: 1rem; background: rgba(212,163,115,0.05); border: 1px solid rgba(212,163,115,0.15);">
-            <p style="font-size: 0.75rem; color: var(--color-blanco-dim); line-height: 1.6;">
-              ¿Buscas una pieza <strong style="color: var(--color-dorado);">personalizada</strong>?
-              Cotizamos figuras, refacciones, prototipos y lotes a medida.
-            </p>
-            <a href="#contacto" class="btn-primario" style="display: block; text-align: center; margin-top: 12px; padding: 0.625rem; font-size: 0.7rem;">
-              Cotizar
-            </a>
-          </div>
-        </aside>
-
-        <!-- Área principal del catálogo -->
-        <div>
-          <!-- Barra de resultados y ordenamiento -->
-          <div class="catalogo-barra">
-            <!-- Contador de resultados (actualizado por productos.js) -->
-            <span class="catalogo-resultados">
-              <span id="catalogo-contador"></span>
+            <span class="flecha-circulo" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </span>
+          </a>
+        </div>
+      </div>
+    </section>
 
-            <!-- Selector de ordenamiento -->
-            <div class="catalogo-orden">
-              <span>Ordenar por:</span>
-              <select
-                id="selector-orden"
-                class="select-personalizado"
-                aria-label="Ordenar productos"
-              >
-                <option value="destacado">Destacados</option>
-                <option value="nuevo">Más recientes</option>
-                <option value="precio-asc">Precio: menor a mayor</option>
-                <option value="precio-desc">Precio: mayor a menor</option>
-              </select>
-            </div>
+    <!-- PROCESO -->
+    <section id="proceso" class="seccion seccion-papel">
+      <div class="contenedor proceso-grid">
+        <div class="proceso-intro">
+          <span class="etiqueta-seccion reveal">Cómo funciona</span>
+          <h2 class="titulo-seccion reveal">De tu idea a tus <span class="acento">manos.</span></h2>
+          <p class="reveal">No necesitas saber de modelado 3D. Hablas con quien hace tu pieza antes de imprimirla.</p>
+          <a href="#contacto" data-consulta="a_medida" class="btn-primario reveal">Empezar mi cotización</a>
+        </div>
+        <ol>
+          <li class="paso reveal">
+            <span class="paso-numero">01</span>
+            <div><h3>Nos cuentas tu idea</h3><p>Con un boceto, una foto, medidas aproximadas o tu archivo STL. Lo que tengas nos sirve para empezar.</p></div>
+          </li>
+          <li class="paso reveal">
+            <span class="paso-numero">02</span>
+            <div><h3>Lo cotizamos y lo diseñamos contigo</h3><p>Si todavía no tienes un modelo 3D, lo cotizamos y lo preparamos junto contigo.</p></div>
+          </li>
+          <li class="paso reveal">
+            <span class="paso-numero">03</span>
+            <div><h3>Elegimos material e imprimimos</h3><p>Escogemos el material y la orientación de impresión según el uso que tendrá la pieza.</p></div>
+          </li>
+          <li class="paso reveal">
+            <span class="paso-numero">04</span>
+            <div><h3>Te la enviamos</h3><p>Hacemos envíos a todo México, sea un prototipo, un regalo único o una serie para tu negocio.</p></div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- MATERIALES -->
+    <section id="materiales" class="seccion">
+      <div class="contenedor">
+        <div class="cabecera-dividida">
+          <div>
+            <span class="etiqueta-seccion reveal">Materiales</span>
+            <h2 class="titulo-seccion reveal">El material correcto para cada <span class="acento">pieza.</span></h2>
           </div>
+          <p class="reveal">Si no sabes cuál te conviene, no te preocupes: te ayudamos a elegir según el uso.</p>
+        </div>
+        <div class="materiales-lista">
+          <article class="material reveal">
+            <h3>PLA</h3>
+            <div><span class="material-dato">Ideal para</span><span class="material-valor">Juguetes, decoración y lámparas</span></div>
+            <div><span class="material-dato">Por qué</span><span class="material-valor">Buen detalle y variedad de colores. Mejor lejos del calor.</span></div>
+          </article>
+          <article class="material reveal">
+            <h3>PETG</h3>
+            <div><span class="material-dato">Ideal para</span><span class="material-valor">Herramientas, soportes y moldes</span></div>
+            <div><span class="material-dato">Por qué</span><span class="material-valor">Más resistente y flexible que el PLA, para piezas de uso diario.</span></div>
+          </article>
+          <article class="material reveal">
+            <h3>Resina</h3>
+            <div><span class="material-dato">Ideal para</span><span class="material-valor">Figuras y matrices de molde</span></div>
+            <div><span class="material-dato">Por qué</span><span class="material-valor">Superficie lisa y detalle fino, lista para pintar a mano.</span></div>
+          </article>
+        </div>
+      </div>
+    </section>
 
-          <!-- Grid donde productos.js inyecta las tarjetas -->
-          <div class="catalogo-grid" id="catalogo-grid" role="list" aria-label="Listado de productos">
-            <!-- Las tarjetas se generan dinámicamente con JavaScript -->
-            <!-- Ver js/productos.js → ModuloCatalogo.renderizarCatalogo() -->
+    <!-- FIGURAS PERSONALIZADAS -->
+    <section id="figuras" class="seccion">
+      <div class="contenedor">
+        <div class="figuras-panel reveal">
+          <div class="figuras-texto">
+            <span class="etiqueta-seccion" style="color:var(--filamento-figura)">Figuras personalizadas</span>
+            <h2 class="titulo-seccion">Tu figura coleccionable, a partir de una foto.</h2>
+            <p>Para ti, tu pareja, tu mascota o tu equipo. Cada una se cotiza según su tamaño y su nivel de detalle.</p>
+            <ul class="figuras-pasos">
+              <li><span>01</span>Mándanos tus fotos</li>
+              <li><span>02</span>Aprueba el diseño antes de imprimir</li>
+              <li><span>03</span>Recíbela lista para tu repisa</li>
+            </ul>
+            <a href="#contacto" data-consulta="figura" class="btn-primario">Cotizar mi figura</a>
+            <p class="figuras-aviso">Solo reproducimos marcas o personajes registrados si cuentas con autorización de su titular.</p>
+          </div>
+          <div class="figuras-arte cama" data-categoria="Figuras" aria-hidden="true">
+            <svg class="pieza-svg" viewBox="0 0 120 120"><use href="#pieza-figura"/></svg>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
+    <!-- CATÁLOGO: productos.js inyecta las tarjetas -->
+    <section id="catalogo" class="seccion" style="padding-top:0">
+      <div class="contenedor">
+        <div class="catalogo-cabecera">
+          <div>
+            <span class="etiqueta-seccion reveal">Catálogo</span>
+            <h2 class="titulo-seccion reveal">Listas para <span class="acento">pedir.</span></h2>
+          </div>
+          <span class="catalogo-resultados" id="catalogo-contador" aria-live="polite"></span>
+        </div>
 
-  <!-- =====================================================
-       SECCIÓN CONTACTO — Formulario y datos de contacto
-       ===================================================== -->
-  <section id="contacto" class="seccion" style="background-color: var(--color-grafito);" aria-label="Contacto">
-    <div class="contenedor">
+        <div class="catalogo-barra">
+          <div class="filtros-coleccion" role="group" aria-label="Filtrar por categoría">
+            <button type="button" class="filtro-btn activo" data-coleccion="Todos" aria-pressed="true">Todas</button>
+            <button type="button" class="filtro-btn" data-coleccion="Lámparas" aria-pressed="false">Lámparas</button>
+            <button type="button" class="filtro-btn" data-coleccion="Herramientas" aria-pressed="false">Herramientas</button>
+            <button type="button" class="filtro-btn" data-coleccion="Moldes" aria-pressed="false">Moldes</button>
+            <button type="button" class="filtro-btn" data-coleccion="Juguetes" aria-pressed="false">Juguetes</button>
+            <button type="button" class="filtro-btn" data-coleccion="Figuras" aria-pressed="false">Figuras</button>
+          </div>
+          <div class="catalogo-orden">
+            <select id="selector-orden" class="select-personalizado" aria-label="Ordenar productos">
+              <option value="destacado">Destacados</option>
+              <option value="nuevo">Más recientes</option>
+              <option value="precio-asc">Precio: menor a mayor</option>
+              <option value="precio-desc">Precio: mayor a menor</option>
+            </select>
+          </div>
+        </div>
 
-      <!-- Layout de dos columnas: información y formulario -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;">
+        <div class="catalogo-grid" id="catalogo-grid" role="list" aria-label="Listado de productos"></div>
+      </div>
+    </section>
 
-        <!-- Columna izquierda: información -->
+    <!-- CONTACTO -->
+    <section id="contacto" class="seccion seccion-papel">
+      <div class="contenedor contacto-grid">
         <div>
           <span class="etiqueta-seccion reveal">Hablemos</span>
-          <h2 class="titulo-seccion reveal">
-            ¿Qué quieres<br/><span class="acento">imprimir</span>?
-          </h2>
-          <p class="reveal" style="margin-top: 1.5rem; max-width: 400px;">
-            Cuéntanos qué necesitas, para qué lo vas a usar, qué medidas tiene y
-            cuántas piezas quieres. Si ya tienes una foto o un archivo STL, lo
-            revisamos por correo cuando te respondamos.
+          <h2 class="titulo-seccion reveal">¿Qué quieres <span class="acento">imprimir?</span></h2>
+          <p class="reveal">
+            Cuéntanos qué necesitas, para qué lo vas a usar, qué medidas tiene y cuántas piezas quieres.
+            Si ya tienes una foto o un archivo STL, lo revisamos por correo cuando te respondamos.
           </p>
-
-          <!-- Datos de contacto -->
-          <div style="margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1rem;" class="reveal">
-            <div style="display: flex; gap: 1rem; align-items: center; color: var(--color-blanco-dim); font-size: 0.875rem;">
-              <span style="color: var(--color-dorado);">✦</span>
-              <span>hola@kinara.mx</span>
-            </div>
-            <div style="display: flex; gap: 1rem; align-items: center; color: var(--color-blanco-dim); font-size: 0.875rem;">
-              <span style="color: var(--color-dorado);">✦</span>
-              <span>México — atención en todo el país</span>
-            </div>
-            <div style="display: flex; gap: 1rem; align-items: center; color: var(--color-blanco-dim); font-size: 0.875rem;">
-              <span style="color: var(--color-dorado);">✦</span>
-              <span>Tiempo de respuesta: 24-48 horas</span>
-            </div>
+          <div class="contacto-datos reveal">
+            <a href="mailto:hola@kinara.mx">hola@kinara.mx</a>
+            <span>Envíos a todo México</span>
+            <span>Respondemos en 24 a 48 horas</span>
           </div>
         </div>
 
-        <!-- Columna derecha: formulario -->
-        <div class="reveal">
-          <!-- Formulario de contacto básico -->
-          <!-- NOTA: En fase 2 conectaré este formulario a Supabase
-               para gestionar los leads y consultas desde el panel admin -->
-          <div style="
-            background: rgba(15,15,15,0.5);
-            border: 1px solid var(--color-borde);
-            padding: 2.5rem;
-          ">
-            <!-- Nombre -->
-            <div style="margin-bottom: 1.25rem;">
-              <label for="nombre" style="display: block; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-dorado); margin-bottom: 0.5rem;">
-                Nombre
-              </label>
-              <input
-                type="text"
-                id="nombre"
-                placeholder="Tu nombre completo"
-                style="
-                  width: 100%;
-                  background: transparent;
-                  border: 1px solid var(--color-borde);
-                  color: var(--color-blanco);
-                  font-family: var(--fuente-cuerpo);
-                  font-size: 0.875rem;
-                  padding: 0.875rem 1rem;
-                  outline: none;
-                  transition: border-color 0.2s ease;
-                "
-                onfocus="this.style.borderColor='var(--color-dorado)'"
-                onblur="this.style.borderColor='var(--color-borde)'"
-              />
-            </div>
-
-            <!-- Email -->
-            <div style="margin-bottom: 1.25rem;">
-              <label for="email" style="display: block; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-dorado); margin-bottom: 0.5rem;">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                placeholder="tu@email.com"
-                style="
-                  width: 100%;
-                  background: transparent;
-                  border: 1px solid var(--color-borde);
-                  color: var(--color-blanco);
-                  font-family: var(--fuente-cuerpo);
-                  font-size: 0.875rem;
-                  padding: 0.875rem 1rem;
-                  outline: none;
-                  transition: border-color 0.2s ease;
-                "
-                onfocus="this.style.borderColor='var(--color-dorado)'"
-                onblur="this.style.borderColor='var(--color-borde)'"
-              />
-            </div>
-
-            <!-- Tipo de consulta -->
-            <div style="margin-bottom: 1.25rem;">
-              <label for="tipo" style="display: block; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-dorado); margin-bottom: 0.5rem;">
-                Tipo de consulta
-              </label>
-              <select
-                id="tipo"
-                class="select-personalizado"
-                style="width: 100%; padding: 0.875rem 1rem; border-radius: 0;"
-              >
-                <option value="">Selecciona una opción</option>
-                <option value="producto">Consulta sobre un producto</option>
-                <option value="figura">Figura personalizada</option>
-                <option value="a_medida">Pieza a medida (refacción, molde, herramienta, prototipo)</option>
-                <option value="volumen">Pedido por volumen para mi negocio</option>
-                <option value="otro">Otro</option>
-              </select>
-            </div>
-
-            <!-- Mensaje -->
-            <div style="margin-bottom: 1.5rem;">
-              <label for="mensaje" style="display: block; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-dorado); margin-bottom: 0.5rem;">
-                Mensaje
-              </label>
-              <textarea
-                id="mensaje"
-                rows="4"
-                placeholder="Qué pieza necesitas, medidas aproximadas, uso y cantidad..."
-                style="
-                  width: 100%;
-                  background: transparent;
-                  border: 1px solid var(--color-borde);
-                  color: var(--color-blanco);
-                  font-family: var(--fuente-cuerpo);
-                  font-size: 0.875rem;
-                  padding: 0.875rem 1rem;
-                  outline: none;
-                  resize: vertical;
-                  min-height: 120px;
-                  transition: border-color 0.2s ease;
-                "
-                onfocus="this.style.borderColor='var(--color-dorado)'"
-                onblur="this.style.borderColor='var(--color-borde)'"
-              ></textarea>
-            </div>
-
-            <!-- Botón de envío -->
-            <button
-              id="btn-enviar-contacto"
-              type="button"
-              class="btn-primario"
-              style="width: 100%; justify-content: center;"
-            >
-              Enviar consulta
-            </button>
-            <p style="font-size: 0.75rem; color: var(--color-blanco-dim); opacity: 0.7; line-height: 1.6; margin-top: 1rem;">
-              Solo reproducimos marcas o personajes registrados si cuentas con autorización de su titular.
-            </p>
+        <form id="form-contacto" class="formulario reveal" novalidate>
+          <div class="campo">
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" autocomplete="name" placeholder="Tu nombre completo" required />
+            <span class="campo-error" id="error-nombre"></span>
           </div>
-        </div>
+          <div class="campo">
+            <label for="email">Correo</label>
+            <input type="email" id="email" autocomplete="email" placeholder="tu@email.com" required />
+            <span class="campo-error" id="error-email"></span>
+          </div>
+          <div class="campo">
+            <label for="tipo">Tipo de consulta</label>
+            <select id="tipo">
+              <option value="">Selecciona una opción</option>
+              <option value="producto">Consulta sobre un producto</option>
+              <option value="figura">Figura personalizada</option>
+              <option value="a_medida">Pieza a medida (refacción, molde, herramienta, prototipo)</option>
+              <option value="volumen">Pedido por volumen para mi negocio</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="mensaje">Mensaje</label>
+            <textarea id="mensaje" rows="4" placeholder="Qué pieza necesitas, medidas aproximadas, uso y cantidad" required></textarea>
+            <span class="campo-error" id="error-mensaje"></span>
+          </div>
+          <button id="btn-enviar-contacto" type="submit" class="btn-primario">Enviar consulta</button>
+          <p class="formulario-estado" id="contacto-estado" role="status"></p>
+          <p class="formulario-nota">Solo reproducimos marcas o personajes registrados si cuentas con autorización de su titular.</p>
+        </form>
       </div>
-    </div>
-  </section>
+    </section>
+  </main>
 
-
-  <!-- =====================================================
-       FOOTER — Pie de página con links y copyright
-       ===================================================== -->
-  <footer id="footer" role="contentinfo">
+  <footer id="footer">
     <div class="contenedor">
-
-      <!-- Grid del footer en 4 columnas -->
       <div class="footer-grid">
-
-        <!-- Columna 1: Marca -->
-        <div class="footer-marca">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.5rem;">
-            <svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true">
-              <polygon points="6,0 12,6 6,12 0,6" fill="#D4A373" />
-            </svg>
-            <span class="logo-nombre" style="font-size: 1.1rem;">KINARA</span>
-          </div>
-          <p class="footer-descripcion">
-            Empresa de impresión 3D: productos propios y piezas por encargo.
-            Donde las ideas cobran forma.
-          </p>
-        </div>
-
-        <!-- Columna 2: Categorías -->
         <div>
-          <h4 class="footer-titulo">Categorías</h4>
+          <a href="#hero" class="logo" aria-label="Kinara, ir al inicio">
+            <svg class="logo-rombo" viewBox="0 0 12 12" aria-hidden="true"><polygon points="6,0 12,6 6,12 0,6"/></svg>
+            <span class="logo-nombre">KINARA</span>
+          </a>
+          <p class="footer-descripcion">Empresa de impresión 3D: productos propios y piezas por encargo. Donde las ideas cobran forma.</p>
+        </div>
+        <div>
+          <h2 class="footer-titulo">Categorías</h2>
           <nav class="footer-links" aria-label="Categorías">
-            <a href="#catalogo" class="footer-link" onclick="ModuloCatalogo.activarFiltro('Lámparas')">Lámparas</a>
-            <a href="#catalogo" class="footer-link" onclick="ModuloCatalogo.activarFiltro('Herramientas')">Herramientas</a>
-            <a href="#catalogo" class="footer-link" onclick="ModuloCatalogo.activarFiltro('Moldes')">Moldes</a>
-            <a href="#catalogo" class="footer-link" onclick="ModuloCatalogo.activarFiltro('Juguetes')">Juguetes</a>
-            <a href="#catalogo" class="footer-link" onclick="ModuloCatalogo.activarFiltro('Figuras')">Figuras</a>
+            <a href="#catalogo" class="footer-link" data-filtro="Lámparas">Lámparas</a>
+            <a href="#catalogo" class="footer-link" data-filtro="Herramientas">Herramientas</a>
+            <a href="#catalogo" class="footer-link" data-filtro="Moldes">Moldes</a>
+            <a href="#catalogo" class="footer-link" data-filtro="Juguetes">Juguetes</a>
+            <a href="#catalogo" class="footer-link" data-filtro="Figuras">Figuras</a>
           </nav>
         </div>
-
-        <!-- Columna 3: Información -->
         <div>
-          <h4 class="footer-titulo">Información</h4>
+          <h2 class="footer-titulo">Taller</h2>
           <nav class="footer-links" aria-label="Información">
-            <a href="#filosofia" class="footer-link">Sobre la marca</a>
-            <a href="#" class="footer-link">Proceso de creación</a>
-            <a href="#" class="footer-link">Materiales</a>
-            <a href="#" class="footer-link">Envíos y entregas</a>
-            <a href="#contacto" class="footer-link">Proyectos a medida</a>
+            <a href="#proceso" class="footer-link">Cómo funciona</a>
+            <a href="#materiales" class="footer-link">Materiales</a>
+            <a href="#figuras" class="footer-link">Figuras personalizadas</a>
+            <a href="#contacto" data-consulta="volumen" class="footer-link">Pedidos por volumen</a>
           </nav>
         </div>
-
-        <!-- Columna 4: Contacto -->
         <div>
-          <h4 class="footer-titulo">Contacto</h4>
+          <h2 class="footer-titulo">Contacto</h2>
           <nav class="footer-links" aria-label="Contacto">
             <a href="#contacto" class="footer-link">Enviar mensaje</a>
             <a href="mailto:hola@kinara.mx" class="footer-link">hola@kinara.mx</a>
-            <a href="#" class="footer-link">Instagram</a>
-            <a href="#" class="footer-link">Pinterest</a>
           </nav>
         </div>
       </div>
-
-      <!-- Pie del footer: copyright -->
+      <div class="footer-marca-grande" aria-hidden="true">KINARA</div>
       <div class="footer-bottom">
-        <span class="footer-copyright">
-          © 2025 Kinara — Todos los derechos reservados
-        </span>
-        <span class="footer-copyright">
-          Impresión 3D · México
-        </span>
+        <span>© <span id="anio">2026</span> Kinara. Todos los derechos reservados.</span>
+        <span>Impresión 3D · México</span>
       </div>
     </div>
   </footer>
 
-
-  <!-- =====================================================
-       SCRIPTS — Los cargo al final del body para no
-       bloquear el renderizado del HTML.
-       Orden: primero el principal, luego los módulos.
-       ===================================================== -->
-
-  <!-- SDK de Supabase (antes que nuestros scripts) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <!-- Cliente Supabase de Kinara -->
-  <script src="js/lib/supabase.js"></script>
-
-  <!-- Script principal: cursor, header, partículas, animaciones -->
-  <script src="js/main.js"></script>
-
-  <!-- SDK de Mercado Pago -->
-  <script src="https://sdk.mercadopago.com/js/v2"></script>
-
-  <!-- Módulo del carrito -->
-  <script src="js/carrito.js"></script>
-
-  <!-- Script del catálogo: productos, filtros y carrito -->
-  <script src="js/productos.js"></script>
-
-
-  <!-- DRAWER DEL CARRITO (Fase 3) -->
+  <!-- DRAWER DEL CARRITO -->
   <div id="carrito-overlay" aria-hidden="true"></div>
   <aside id="carrito-drawer" role="dialog" aria-modal="true" aria-label="Carrito de compras">
     <div class="carrito-header">
-      <span class="carrito-titulo">Carrito <span class="carrito-titulo-contador" id="carrito-titulo-contador"></span></span>
-      <button class="carrito-cerrar" id="carrito-cerrar-btn" aria-label="Cerrar carrito">&#215;</button>
+      <span class="carrito-titulo">Carrito<span class="carrito-titulo-contador" id="carrito-titulo-contador"></span></span>
+      <button class="btn-icono" id="carrito-cerrar-btn" type="button" aria-label="Cerrar carrito">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
     </div>
     <div class="carrito-items" id="carrito-items-contenedor"></div>
     <div class="carrito-footer">
@@ -866,17 +455,19 @@
         <span class="carrito-subtotal-label">Total estimado</span>
         <span class="carrito-subtotal-valor" id="carrito-total-valor">$0 MXN</span>
       </div>
-      <p class="carrito-nota-envio">El costo de envio se calcula en el checkout</p>
-      <button class="btn-checkout" id="btn-checkout" disabled>Proceder al pago</button>
+      <p class="carrito-nota-envio">El costo de envío se calcula en el checkout.</p>
+      <button class="btn-checkout" id="btn-checkout" type="button" disabled>Proceder al pago</button>
     </div>
   </aside>
 
-  <!-- MODAL DE CHECKOUT (Fase 3) -->
-  <div id="checkout-overlay" style="display:none;" role="dialog" aria-modal="true">
+  <!-- MODAL DE CHECKOUT -->
+  <div id="checkout-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="checkout-titulo">
     <div class="checkout-modal">
       <div class="checkout-modal-header">
-        <h2 class="checkout-modal-titulo">Datos de envio</h2>
-        <button id="checkout-cerrar-btn" style="color:var(--color-blanco-dim);font-size:1.4rem;background:none;border:none;">&#215;</button>
+        <h2 class="checkout-modal-titulo" id="checkout-titulo">Datos de envío</h2>
+        <button id="checkout-cerrar-btn" class="btn-icono" type="button" aria-label="Cerrar">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
       </div>
       <div class="checkout-modal-cuerpo" id="checkout-modal-cuerpo">
         <div class="checkout-paso-label"><span class="checkout-paso-numero">1</span>Datos de contacto</div>
@@ -887,31 +478,31 @@
         </div>
         <div class="checkout-grid-2">
           <div class="checkout-campo">
-            <label class="checkout-label" for="co-email">Email</label>
+            <label class="checkout-label" for="co-email">Correo</label>
             <input type="email" id="co-email" class="checkout-input" placeholder="tu@email.com" autocomplete="email"/>
             <span class="checkout-campo-error" id="err-email"></span>
           </div>
           <div class="checkout-campo">
-            <label class="checkout-label" for="co-telefono">Telefono</label>
+            <label class="checkout-label" for="co-telefono">Teléfono</label>
             <input type="tel" id="co-telefono" class="checkout-input" placeholder="55 1234 5678" autocomplete="tel"/>
             <span class="checkout-campo-error" id="err-telefono"></span>
           </div>
         </div>
-        <div class="checkout-paso-label" style="margin-top:1.25rem;"><span class="checkout-paso-numero">2</span>Direccion de envio</div>
+        <div class="checkout-paso-label checkout-paso-label--separado"><span class="checkout-paso-numero">2</span>Dirección de envío</div>
         <div class="checkout-campo">
-          <label class="checkout-label" for="co-direccion">Calle y numero</label>
+          <label class="checkout-label" for="co-direccion">Calle, número y colonia</label>
           <input type="text" id="co-direccion" class="checkout-input" placeholder="Av. Insurgentes Sur 1234, Col. Del Valle" autocomplete="street-address"/>
           <span class="checkout-campo-error" id="err-direccion"></span>
         </div>
         <div class="checkout-grid-2">
           <div class="checkout-campo">
             <label class="checkout-label" for="co-ciudad">Ciudad</label>
-            <input type="text" id="co-ciudad" class="checkout-input" placeholder="Ciudad de Mexico" autocomplete="address-level2"/>
+            <input type="text" id="co-ciudad" class="checkout-input" placeholder="Ciudad de México" autocomplete="address-level2"/>
             <span class="checkout-campo-error" id="err-ciudad"></span>
           </div>
           <div class="checkout-campo">
-            <label class="checkout-label" for="co-cp">Codigo postal</label>
-            <input type="text" id="co-cp" class="checkout-input" placeholder="03100" maxlength="5" autocomplete="postal-code"/>
+            <label class="checkout-label" for="co-cp">Código postal</label>
+            <input type="text" id="co-cp" class="checkout-input" placeholder="03100" maxlength="5" inputmode="numeric" autocomplete="postal-code"/>
             <span class="checkout-campo-error" id="err-cp"></span>
           </div>
         </div>
@@ -921,35 +512,39 @@
             <option value="">Selecciona tu estado</option>
             <option>Aguascalientes</option><option>Baja California</option><option>Baja California Sur</option>
             <option>Campeche</option><option>Chiapas</option><option>Chihuahua</option>
-            <option>Ciudad de Mexico</option><option>Coahuila</option><option>Colima</option>
-            <option>Durango</option><option>Guanajuato</option><option>Guerrero</option>
-            <option>Hidalgo</option><option>Jalisco</option><option>Mexico</option>
-            <option>Michoacan</option><option>Morelos</option><option>Nayarit</option>
-            <option>Nuevo Leon</option><option>Oaxaca</option><option>Puebla</option>
-            <option>Queretaro</option><option>Quintana Roo</option><option>San Luis Potosi</option>
+            <option>Ciudad de México</option><option>Coahuila</option><option>Colima</option>
+            <option>Durango</option><option>Estado de México</option><option>Guanajuato</option><option>Guerrero</option>
+            <option>Hidalgo</option><option>Jalisco</option>
+            <option>Michoacán</option><option>Morelos</option><option>Nayarit</option>
+            <option>Nuevo León</option><option>Oaxaca</option><option>Puebla</option>
+            <option>Querétaro</option><option>Quintana Roo</option><option>San Luis Potosí</option>
             <option>Sinaloa</option><option>Sonora</option><option>Tabasco</option>
             <option>Tamaulipas</option><option>Tlaxcala</option><option>Veracruz</option>
-            <option>Yucatan</option><option>Zacatecas</option>
+            <option>Yucatán</option><option>Zacatecas</option>
           </select>
+          <span class="checkout-campo-error" id="err-estado"></span>
         </div>
-        <div class="checkout-paso-label" style="margin-top:1.25rem;"><span class="checkout-paso-numero">3</span>Resumen</div>
+        <div class="checkout-paso-label checkout-paso-label--separado"><span class="checkout-paso-numero">3</span>Resumen</div>
         <div class="checkout-resumen">
           <div id="checkout-resumen-items"></div>
           <div class="checkout-resumen-total">
-            <span style="font-size:.875rem;color:var(--color-blanco-dim);">Total</span>
+            <span>Total</span>
             <span id="checkout-total">$0 MXN</span>
           </div>
         </div>
-        <p style="font-size:.75rem;color:var(--color-blanco-dim);opacity:.6;text-align:center;margin-bottom:1rem;">
-          Seras redirigido a Mercado Pago para completar el pago de forma segura.
-        </p>
-        <button id="btn-pagar" class="btn-checkout">Ir a pagar con Mercado Pago</button>
+        <p class="checkout-nota">Te llevaremos a Mercado Pago para completar el pago de forma segura.</p>
+        <button id="btn-pagar" class="btn-checkout" type="button">Ir a pagar con Mercado Pago</button>
       </div>
     </div>
   </div>
 
-  <!-- Toast de agregar al carrito -->
   <div id="agregar-toast" role="status" aria-live="polite"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/lib/supabase.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/carrito.js"></script>
+  <script src="js/productos.js"></script>
+  <script type="module" src="js/hero3d.js"></script>
 </body>
 </html>

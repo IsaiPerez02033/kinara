@@ -6,6 +6,14 @@
  */
 'use strict';
 
+/* Dibujo de la categoría, definido como <symbol> en index.html */
+const SIMBOLOS_CATEGORIA = {
+  'Lámparas': 'pieza-lampara', Herramientas: 'pieza-herramienta', Moldes: 'pieza-molde',
+  Juguetes: 'pieza-juguete', Figuras: 'pieza-figura'
+};
+const piezaSVG = (categoria) =>
+  `<svg class="pieza-svg" viewBox="0 0 120 120" aria-hidden="true"><use href="#${SIMBOLOS_CATEGORIA[categoria] || 'pieza-medida'}"/></svg>`;
+
 const ModuloCatalogo = (() => {
   let todosLosProductos = [];
   let filtroActivo = 'Todos';
@@ -68,52 +76,36 @@ const ModuloCatalogo = (() => {
   /* --- Genera HTML de una tarjeta --- */
   const generarTarjeta = (p) => {
     const badge    = obtenerInfoBadge(p.estado_stock, p.stock_actual);
-    const colCorto = p.coleccion_nombre?.replace('Kinara ', '') || '';
-    const fondos   = { 'Lámparas':'#1A1612', Herramientas:'#12151A', Moldes:'#1A1A16', Juguetes:'#101218', Figuras:'#1A1210' };
-    const fondo    = fondos[colCorto] || '#1A1A1A';
+    const categoria = p.coleccion_nombre?.replace('Kinara ', '') || '';
 
     return `
       <article class="tarjeta-producto reveal"
-               data-id="${p.id}" data-coleccion="${colCorto}" data-estado="${p.estado_stock}"
+               data-id="${p.id}" data-coleccion="${escHTML(categoria)}" data-estado="${p.estado_stock}"
                role="listitem">
-        <div class="tarjeta-imagen" style="background-color:${fondo};">
-          ${p.imagen_url ? `<img src="${escHTML(p.imagen_url)}" alt="${escHTML(p.nombre)}" loading="lazy" onerror="this.style.display='none'">` : ''}
-          <div class="imagen-placeholder" style="display:flex;align-items:center;justify-content:center;
-               width:100%;height:100%;position:absolute;inset:0;${p.imagen_url?'display:none;':''}">
-            <span style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;
-                         color:rgba(212,163,115,0.25);letter-spacing:0.1em;">${escHTML(p.nombre)}</span>
-          </div>
-          <div class="tarjeta-imagen-overlay"></div>
-          <div class="tarjeta-badge" id="badge-${p.id}">
+        <button type="button" class="tarjeta-imagen cama" data-categoria="${escHTML(categoria)}"
+                onclick="ModuloProducto.abrirDetalle('${p.id}')" aria-label="Ver detalle de ${escHTML(p.nombre)}">
+          ${piezaSVG(categoria)}
+          ${p.imagen_url ? `<img src="${escHTML(p.imagen_url)}" alt="${escHTML(p.nombre)}" loading="lazy" onerror="this.remove()">` : ''}
+          <span class="tarjeta-badge" id="badge-${p.id}">
             <span class="badge-stock ${badge.clase}"><span class="punto"></span>${badge.texto}</span>
-          </div>
-          ${p.nuevo ? `<div style="position:absolute;top:.75rem;right:.75rem;z-index:2;">
-            <span style="padding:3px 10px;background:rgba(212,163,115,.15);border:1px solid rgba(212,163,115,.35);
-                         color:var(--color-dorado);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;">Nuevo</span>
-          </div>` : ''}
-          ${badge.disponible ? `<div class="tarjeta-accion">
-            <button class="btn-agregar" onclick="ModuloCarrito.agregar('${p.id}')"
-                    title="Agregar al carrito" aria-label="Agregar ${escHTML(p.nombre)}">+</button>
-          </div>` : ''}
-        </div>
+          </span>
+          ${p.nuevo ? '<span class="tarjeta-nuevo">Nuevo</span>' : ''}
+        </button>
         <div class="tarjeta-cuerpo">
           <span class="tarjeta-coleccion">${escHTML(p.coleccion_nombre)}</span>
           <h3 class="tarjeta-nombre">${escHTML(p.nombre)}</h3>
           <p class="tarjeta-descripcion">${escHTML(p.descripcion)}</p>
           ${Array.isArray(p.materiales) && p.materiales.length ? `
-            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">
-              ${p.materiales.map(m=>`<span style="font-size:.7rem;padding:2px 8px;border:1px solid var(--color-borde);border-radius:999px;color:var(--color-blanco-dim);opacity:.6;">${escHTML(m)}</span>`).join('')}
+            <div class="tarjeta-materiales">
+              ${p.materiales.map(m=>`<span class="chip-material">${escHTML(m)}</span>`).join('')}
             </div>` : ''}
         </div>
         <div class="tarjeta-pie">
-          <div class="tarjeta-precio">
-            <span class="moneda">$</span>${formatearPrecio(p.precio)}
-            <span style="font-size:.75rem;color:var(--color-blanco-dim);margin-left:4px;">MXN</span>
-          </div>
+          <div class="tarjeta-precio">$${formatearPrecio(p.precio)}<small>MXN</small></div>
           ${badge.disponible
-            ? `<button class="btn-secundario" style="padding:.5rem 1rem;font-size:.75rem;"
-                       onclick="ModuloProducto.abrirDetalle('${p.id}')">Ver detalle</button>`
-            : `<span style="font-size:.75rem;color:#C07070;">Agotado</span>`}
+            ? `<button type="button" class="btn-primario btn-chico" onclick="ModuloCarrito.agregar('${p.id}')"
+                       aria-label="Agregar ${escHTML(p.nombre)} al carrito">Agregar</button>`
+            : '<span class="tarjeta-agotado">Agotado</span>'}
         </div>
       </article>`;
   };
@@ -134,33 +126,17 @@ const ModuloCatalogo = (() => {
   /* --- Estados de carga y error --- */
   const mostrarCargando = () => {
     const grid = document.getElementById('catalogo-grid');
-    if (!grid) return;
-    grid.innerHTML = Array(6).fill(0).map(()=>`
-      <div style="background:var(--color-grafito);border:1px solid var(--color-borde);
-                  height:420px;animation:skeleton-pulso 1.5s ease infinite;"></div>`).join('');
-    if (!document.getElementById('skeleton-style')) {
-      const s = document.createElement('style');
-      s.id = 'skeleton-style';
-      s.textContent = '@keyframes skeleton-pulso{0%,100%{opacity:.4}50%{opacity:.7}}';
-      document.head.appendChild(s);
-    }
+    if (grid) grid.innerHTML = '<div class="tarjeta-esqueleto"></div>'.repeat(6);
   };
 
   const mostrarErrorConexion = () => {
     const grid = document.getElementById('catalogo-grid');
     if (!grid) return;
     grid.innerHTML = `
-      <div style="grid-column:1/-1;text-align:center;padding:4rem;border:1px solid var(--color-borde);">
-        <p style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-style:italic;
-                  color:var(--color-blanco-dim);margin-bottom:1rem;">
-          No se pudo conectar con la base de datos
-        </p>
-        <p style="font-size:.875rem;color:var(--color-blanco-dim);opacity:.6;">
-          Verifica la configuración en js/lib/supabase.js
-        </p>
-        <button onclick="ModuloCatalogo.reintentar()" class="btn-secundario" style="margin-top:1.5rem;">
-          Reintentar conexión
-        </button>
+      <div class="catalogo-mensaje">
+        <h3>No pudimos cargar el catálogo</h3>
+        <p>Revisa tu conexión e inténtalo otra vez.</p>
+        <button type="button" onclick="ModuloCatalogo.reintentar()" class="btn-secundario">Reintentar</button>
       </div>`;
   };
 
@@ -172,9 +148,11 @@ const ModuloCatalogo = (() => {
     const contador  = document.getElementById('catalogo-contador');
     if (contador) contador.textContent = `${productos.length} producto${productos.length!==1?'s':''}`;
     if (!productos.length) {
-      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--color-blanco-dim);">
-        <p style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-style:italic;">
-          No hay productos en esta categoría</p></div>`;
+      grid.innerHTML = `<div class="catalogo-mensaje">
+        <h3>Aún no hay piezas en esta categoría</h3>
+        <p>Si ya sabes lo que necesitas, te lo cotizamos a la medida.</p>
+        <a href="#contacto" class="btn-primario" onclick="ModuloContacto.preparar('a_medida')">Cotizar una pieza</a>
+      </div>`;
       return;
     }
     grid.innerHTML = productos.map(generarTarjeta).join('');
@@ -183,7 +161,11 @@ const ModuloCatalogo = (() => {
 
   const activarFiltro = (col) => {
     filtroActivo = col;
-    document.querySelectorAll('.filtro-btn').forEach(b => b.classList.toggle('activo', b.dataset.coleccion===col));
+    document.querySelectorAll('.filtro-btn').forEach(b => {
+      const activo = b.dataset.coleccion===col;
+      b.classList.toggle('activo', activo);
+      b.setAttribute('aria-pressed', String(activo));
+    });
     renderizarCatalogo();
   };
 
@@ -206,98 +188,142 @@ const ModuloCatalogo = (() => {
            obtenerProducto: (id) => todosLosProductos.find(p=>p.id===id), obtenerEstadoStock };
 })();
 
-/* --- Módulo detalle de producto (drawer lateral) --- */
+/* --- Módulo detalle de producto (panel lateral) --- */
 const ModuloProducto = (() => {
+  let origenFoco = null;
+
+  const cerrar = () => {
+    const drawer = document.getElementById('producto-drawer');
+    const overlay = document.getElementById('drawer-overlay');
+    if (!drawer) return;
+    drawer.classList.remove('abierto');
+    overlay?.classList.remove('visible');
+    document.body.style.overflow = '';
+    setTimeout(() => { drawer.remove(); overlay?.remove(); }, 350);
+    origenFoco?.focus({ preventScroll: true });
+  };
+
   const abrirDetalle = async (id) => {
+    origenFoco = document.activeElement;
     const { data, error } = await SupabaseDB.obtenerProductoPorId(id);
-    if (error || !data) return;
+    if (error || !data) {
+      ModuloCarrito.mostrarMensaje('No pudimos abrir esta pieza. Inténtalo otra vez.', 'error');
+      return;
+    }
     mostrarDrawer(data);
   };
+
+  const dato = (nombre, valor) => valor ? `<div><dt>${nombre}</dt><dd>${escHTML(valor)}</dd></div>` : '';
 
   const mostrarDrawer = (p) => {
     document.getElementById('producto-drawer')?.remove();
     document.getElementById('drawer-overlay')?.remove();
     const badge = ModuloCatalogo.obtenerEstadoStock(p.stock_actual);
-    const drawer = document.createElement('div');
+    const categoria = p.coleccion_nombre || p.colecciones?.nombre || ModuloCatalogo.obtenerProducto(p.id)?.coleccion_nombre || '';
+    const materiales = Array.isArray(p.materiales) ? p.materiales.join(', ') : '';
+
+    const drawer = document.createElement('aside');
     drawer.id = 'producto-drawer';
-    drawer.style.cssText = `position:fixed;top:0;right:0;bottom:0;width:min(480px,100vw);
-      background:var(--color-grafito);border-left:1px solid var(--color-borde);
-      z-index:2000;overflow-y:auto;transform:translateX(100%);
-      transition:transform .4s cubic-bezier(.16,1,.3,1);padding:2rem;`;
+    drawer.setAttribute('role', 'dialog');
+    drawer.setAttribute('aria-modal', 'true');
+    drawer.setAttribute('aria-label', p.nombre);
     drawer.innerHTML = `
-      <button onclick="document.getElementById('producto-drawer')?.remove();document.getElementById('drawer-overlay')?.remove();"
-        style="position:absolute;top:1rem;right:1rem;color:var(--color-blanco-dim);font-size:1.5rem;">×</button>
-      <p style="font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--color-dorado);margin-bottom:.5rem;">${escHTML(p.coleccion_nombre)}</p>
-      <h2 style="font-family:'Cormorant Garamond',serif;font-size:2.5rem;font-weight:300;margin-bottom:1rem;">${escHTML(p.nombre)}</h2>
-      <div style="margin-bottom:1.5rem;"><span class="badge-stock ${badge.clase}"><span class="punto"></span>${badge.texto}</span></div>
-      <div style="width:100%;aspect-ratio:1;background:rgba(15,15,15,.5);border:1px solid var(--color-borde);
-                  display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem;">
-        ${p.imagen_url
-          ? `<img src="${escHTML(p.imagen_url)}" style="width:100%;height:100%;object-fit:cover;">`
-          : `<span style="font-family:'Cormorant Garamond',serif;font-style:italic;color:rgba(212,163,115,.2);">${escHTML(p.nombre)}</span>`}
+      <button type="button" class="btn-icono detalle-cerrar" id="detalle-cerrar" aria-label="Cerrar detalle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div class="detalle-imagen cama" data-categoria="${escHTML(categoria)}">
+        ${piezaSVG(categoria)}
+        ${p.imagen_url ? `<img src="${escHTML(p.imagen_url)}" alt="${escHTML(p.nombre)}" onerror="this.remove()">` : ''}
       </div>
-      <p style="color:var(--color-blanco-dim);line-height:1.8;margin-bottom:1.5rem;">${escHTML(p.descripcion)}</p>
-      <div style="border-top:1px solid var(--color-borde);padding-top:1.5rem;margin-bottom:1.5rem;">
-        ${p.dimensiones?`<div style="display:flex;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.05);">
-          <span style="font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--color-blanco-dim);">Dimensiones</span>
-          <span style="font-size:.875rem;">${escHTML(p.dimensiones)}</span></div>`:''}
-        ${p.acabado?`<div style="display:flex;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.05);">
-          <span style="font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--color-blanco-dim);">Acabado</span>
-          <span style="font-size:.875rem;">${escHTML(p.acabado)}</span></div>`:''}
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:1.5rem;border-top:1px solid var(--color-borde);">
-        <div>
-          <div style="font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--color-blanco-dim);margin-bottom:4px;">Precio</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;">
-            <span style="font-size:.875rem;color:var(--color-blanco-dim);">$</span>
-            ${parseFloat(p.precio).toLocaleString('es-MX')}
-            <span style="font-size:.75rem;color:var(--color-blanco-dim);">MXN</span>
-          </div>
-        </div>
+      <span class="tarjeta-coleccion">${escHTML(categoria)}</span>
+      <h2 class="detalle-titulo">${escHTML(p.nombre)}</h2>
+      <span class="badge-stock ${badge.clase}"><span class="punto"></span>${badge.texto}</span>
+      <p class="detalle-descripcion">${escHTML(p.descripcion)}</p>
+      <dl class="detalle-specs">
+        ${dato('Material', materiales)}
+        ${dato('Medidas', p.dimensiones)}
+        ${dato('Acabado', p.acabado)}
+      </dl>
+      <div class="detalle-compra">
+        <div class="detalle-precio">$${parseFloat(p.precio).toLocaleString('es-MX')} <small>MXN</small></div>
         ${badge.disponible
-          ? `<button class="btn-primario" onclick="ModuloCarrito.agregar('${p.id}')">Agregar al carrito</button>`
-          : `<span style="color:#C07070;font-size:.875rem;">No disponible</span>`}
+          ? `<button type="button" class="btn-primario" onclick="ModuloCarrito.agregar('${p.id}')">Agregar al carrito</button>`
+          : '<span class="tarjeta-agotado">No disponible</span>'}
       </div>`;
 
     const overlay = document.createElement('div');
     overlay.id = 'drawer-overlay';
-    overlay.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1999;
-      opacity:0;transition:opacity .3s ease;`;
-    overlay.onclick = () => { drawer.remove(); overlay.remove(); };
-    document.body.appendChild(overlay);
-    document.body.appendChild(drawer);
-    requestAnimationFrame(() => { overlay.style.opacity='1'; drawer.style.transform='translateX(0)'; });
+    overlay.addEventListener('click', cerrar);
+    document.body.append(overlay, drawer);
+    document.body.style.overflow = 'hidden';
+    drawer.querySelector('#detalle-cerrar').addEventListener('click', cerrar);
+    requestAnimationFrame(() => {
+      overlay.classList.add('visible');
+      drawer.classList.add('abierto');
+      drawer.querySelector('#detalle-cerrar').focus({ preventScroll: true });
+    });
   };
 
-  return { abrirDetalle };
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrar(); });
+
+  return { abrirDetalle, cerrar };
 })();
 
 /* --- Formulario de contacto --- */
 const ModuloContacto = (() => {
-  const enviar = async () => {
-    const datos = {
-      nombre:        document.getElementById('nombre')?.value?.trim(),
-      email:         document.getElementById('email')?.value?.trim(),
-      tipo_consulta: document.getElementById('tipo')?.value,
-      mensaje:       document.getElementById('mensaje')?.value?.trim()
-    };
+  const REGLAS = [
+    { id: 'nombre',  msg: 'Escribe tu nombre.',                     ok: (v) => v.length >= 2 },
+    { id: 'email',   msg: 'Escribe un correo válido.',              ok: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+    { id: 'mensaje', msg: 'Cuéntanos qué pieza necesitas.',         ok: (v) => v.length >= 5 }
+  ];
+
+  const validar = () => {
+    let primero = null;
+    REGLAS.forEach(({ id, msg, ok }) => {
+      const campo = document.getElementById(id);
+      const error = document.getElementById(`error-${id}`);
+      const valido = ok(campo.value.trim());
+      campo.setAttribute('aria-invalid', String(!valido));
+      error.textContent = valido ? '' : msg;
+      if (!valido && !primero) primero = campo;
+    });
+    primero?.focus();
+    return !primero;
+  };
+
+  const enviar = async (e) => {
+    e.preventDefault();
+    const estado = document.getElementById('contacto-estado');
+    estado.textContent = '';
+    estado.classList.remove('error');
+    if (!validar()) return;
+
     const btn = document.getElementById('btn-enviar-contacto');
-    if (btn) { btn.textContent='Enviando...'; btn.disabled=true; }
-    const { error } = await SupabaseDB.guardarContacto(datos);
+    btn.textContent = 'Enviando…';
+    btn.disabled = true;
+
+    const { error } = await SupabaseDB.guardarContacto({
+      nombre:        document.getElementById('nombre').value.trim(),
+      email:         document.getElementById('email').value.trim(),
+      tipo_consulta: document.getElementById('tipo').value,
+      mensaje:       document.getElementById('mensaje').value.trim()
+    });
+
+    btn.textContent = 'Enviar consulta';
+    btn.disabled = false;
     if (error) {
-      alert(`Error: ${error.message}`);
-      if (btn) { btn.textContent='Reintentar'; btn.disabled=false; }
+      estado.textContent = 'No pudimos enviar tu mensaje. Inténtalo otra vez o escríbenos a hola@kinara.mx.';
+      estado.classList.add('error');
       return;
     }
-    if (btn) { btn.textContent='✦ Mensaje enviado'; btn.style.background='rgba(100,180,120,.15)'; }
-    ['nombre','email','tipo','mensaje'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    estado.textContent = 'Recibimos tu consulta. Te respondemos por correo en 24 a 48 horas.';
+    e.target.reset();
   };
 
   // Abro el formulario con el tipo de consulta ya elegido
   const preparar = (tipo) => {
     const sel = document.getElementById('tipo');
     if (sel) sel.value = tipo;
-    document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return { enviar, preparar };
@@ -306,6 +332,5 @@ const ModuloContacto = (() => {
 /* --- Inicialización --- */
 document.addEventListener('DOMContentLoaded', async () => {
   if (document.getElementById('catalogo-grid')) await ModuloCatalogo.iniciar();
-  const btn = document.getElementById('btn-enviar-contacto');
-  if (btn) btn.addEventListener('click', ModuloContacto.enviar);
+  document.getElementById('form-contacto')?.addEventListener('submit', ModuloContacto.enviar);
 });

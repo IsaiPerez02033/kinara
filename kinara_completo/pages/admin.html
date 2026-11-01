@@ -31,7 +31,7 @@
   <!-- Importo la tipografía de la marca -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet" />
 
   <style>
     /* -------------------------------------------------------
@@ -40,23 +40,23 @@
        funcional y menos decorativa que el sitio público.
        ------------------------------------------------------- */
     :root {
-      --negro:        #0F0F0F;
-      --grafito:      #1A1A1A;
-      --grafito-2:    #222222;
-      --borde:        #2E2E2E;
-      --borde-2:      #3A3A3A;
-      --blanco:       #F0F0F0;
-      --blanco-dim:   #888880;
-      --dorado:       #D4A373;
-      --dorado-dim:   rgba(212,163,115,0.15);
+      --negro:        #12100E;
+      --grafito:      #1C1916;
+      --grafito-2:    #27231F;
+      --borde:        #342F29;
+      --borde-2:      #453E36;
+      --blanco:       #F6F1E8;
+      --blanco-dim:   #B5AC9E;
+      --dorado:       #FF6A2B;
+      --dorado-dim:   rgba(255,106,43,0.15);
       --verde:        #7BC99A;
       --verde-dim:    rgba(123,201,154,0.1);
       --rojo:         #C07070;
       --rojo-dim:     rgba(192,112,112,0.1);
       --amarillo:     #D4B96A;
       --amarillo-dim: rgba(212,185,106,0.1);
-      --fuente:       'DM Sans', system-ui, sans-serif;
-      --fuente-d:     'Cormorant Garamond', serif;
+      --fuente:       'Bricolage Grotesque', system-ui, sans-serif;
+      --fuente-d:     'Bricolage Grotesque', system-ui, sans-serif;
       --radio:        6px;
       --sidebar-w:    220px;
       --header-h:     56px;
@@ -115,7 +115,7 @@
       text-transform: uppercase;
       padding: 2px 8px;
       background: var(--dorado-dim);
-      border: 1px solid rgba(212,163,115,0.25);
+      border: 1px solid rgba(255,106,43,0.25);
       color: var(--dorado);
       border-radius: 999px;
     }
@@ -176,7 +176,7 @@
     /* Estado activo del ítem del sidebar */
     .sidebar-item.activo,
     .sidebar-item:hover {
-      background: rgba(212,163,115,0.05);
+      background: rgba(255,106,43,0.05);
       color: var(--blanco);
       border-left-color: var(--dorado);
     }
@@ -326,7 +326,7 @@
       border: none;
     }
 
-    .stock-btn:hover { background: rgba(212,163,115,0.15); color: var(--dorado); }
+    .stock-btn:hover { background: rgba(255,106,43,0.15); color: var(--dorado); }
 
     /* Input del número de stock */
     .stock-input {
@@ -360,7 +360,7 @@
 
     .badge-verde   { background: var(--verde-dim);    color: var(--verde);    border: 1px solid rgba(123,201,154,.2); }
     .badge-rojo    { background: var(--rojo-dim);     color: var(--rojo);     border: 1px solid rgba(192,112,112,.2); }
-    .badge-dorado  { background: var(--dorado-dim);   color: var(--dorado);   border: 1px solid rgba(212,163,115,.2); }
+    .badge-dorado  { background: var(--dorado-dim);   color: var(--dorado);   border: 1px solid rgba(255,106,43,.2); }
     .badge-azul    { background: rgba(100,150,200,.1); color: #7AAFD4;        border: 1px solid rgba(100,150,200,.2); }
     .badge-gris    { background: rgba(255,255,255,.05); color: var(--blanco-dim); border: 1px solid var(--borde); }
 
@@ -512,7 +512,7 @@
       text-align: center;
     }
     .auth-box h2 {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: var(--fuente-d);
       font-size: 1.8rem;
       color: var(--dorado);
       margin-bottom: .4rem;
@@ -589,7 +589,7 @@
     <div style="display:flex;align-items:center;gap:1rem;">
       <div class="admin-logo">
         <svg width="10" height="10" viewBox="0 0 12 12">
-          <polygon points="6,0 12,6 6,12 0,6" fill="#D4A373" opacity="0.6"/>
+          <polygon points="6,0 12,6 6,12 0,6" fill="#FF6A2B" opacity="0.6"/>
         </svg>
         KINARA
       </div>
@@ -615,7 +615,7 @@
     <div class="sidebar-grupo">
       <div class="sidebar-titulo-grupo">General</div>
       <div class="sidebar-item activo" onclick="mostrarPanel('dashboard')" id="nav-dashboard">
-        <span class="sidebar-punto" style="background:#D4A373;"></span>
+        <span class="sidebar-punto" style="background:#FF6A2B;"></span>
         Dashboard
       </div>
     </div>
@@ -1036,7 +1036,7 @@
       if (criticos > 0 || agotados > 0) {
         alertaEl.style.display = 'block';
         alertaEl.innerHTML = `
-          <div style="background:rgba(212,163,115,0.08);border:1px solid rgba(212,163,115,0.2);
+          <div style="background:rgba(255,106,43,0.08);border:1px solid rgba(255,106,43,0.2);
                       border-left:3px solid var(--dorado);padding:1rem 1.25rem;border-radius:var(--radio);
                       margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;">
             <div>

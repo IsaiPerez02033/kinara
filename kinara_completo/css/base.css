@@ -1,121 +1,100 @@
 /*
  * ============================================================
  * base.css — Reset y estilos globales de Kinara
- * Establezco aquí los estilos fundamentales que aplican
- * a todos los elementos del sitio: reset, tipografía base,
- * scroll behavior y utilidades globales.
  * ============================================================
  */
 
-/* --- Importo las variables de la marca --- */
-@import './variables.css';
-
-/* -------------------------------------------------------
-   Reset moderno — elimino los estilos por defecto del
-   navegador para tener control total sobre el diseño
-   ------------------------------------------------------- */
 *,
 *::before,
 *::after {
-  /* Incluyo padding y border en el cálculo del tamaño total */
   box-sizing: border-box;
-  /* Elimino márgenes y paddings por defecto de todos los elementos */
   margin: 0;
   padding: 0;
 }
 
-/* Establezco la base tipográfica y el comportamiento del scroll */
 html {
-  /* Activo el scroll suave para navegación entre secciones */
   scroll-behavior: smooth;
-  /* Tamaño base de fuente: 16px (uso rem en todo el sitio) */
   font-size: 16px;
-  /* Evito overflow horizontal en móviles */
-  overflow-x: hidden;
+  background-color: var(--color-negro);
+  -webkit-text-size-adjust: 100%;
 }
 
-/* Configuro el cuerpo del documento con los valores de marca */
 body {
-  /* Aplico el color de fondo principal de Kinara */
   background-color: var(--color-negro);
-  /* Aplico el color de texto base */
   color: var(--color-blanco);
-  /* Fuente de cuerpo para todo el texto base */
   font-family: var(--fuente-cuerpo);
-  /* Peso normal por defecto */
-  font-weight: 300;
-  /* Interlineado cómodo para lectura */
-  line-height: 1.7;
-  /* Activo el antialiasing para texto más nítido */
+  font-weight: 400;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Evito overflow horizontal */
-  overflow-x: hidden;
-  /* Cursor personalizado con el dorado de la marca */
-  cursor: none;
+  /* clip y no hidden: hidden rompería el position: sticky del hero */
+  overflow-x: clip;
 }
 
-/* -------------------------------------------------------
-   Cursor personalizado — reemplaza el cursor del sistema
-   ------------------------------------------------------- */
-/* Oculto el cursor nativo en todos los elementos interactivos */
-a, button, input, select, textarea, label, [role="button"] {
-  cursor: none;
-}
-
-/* -------------------------------------------------------
-   Tipografía base
-   ------------------------------------------------------- */
-/* Encabezados con la fuente de display de la marca */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--fuente-display);
-  font-weight: 300;
-  line-height: 1.15;
-  /* Aplico el color base de los títulos */
-  color: var(--color-blanco);
-  /* Activo las ligaduras tipográficas para mayor elegancia */
-  font-feature-settings: "liga" 1, "kern" 1;
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
 }
 
-/* Párrafos con espaciado entre ellos */
 p {
   color: var(--color-blanco-dim);
-  line-height: 1.8;
+  text-wrap: pretty;
 }
 
-/* Anclas sin decoración por defecto */
 a {
   text-decoration: none;
   color: inherit;
-  /* Transición suave para cambios de color en hover */
   transition: color var(--transicion-rapida);
 }
 
-/* Imágenes responsivas por defecto */
-img {
-  max-width: 100%;
+img, svg, canvas {
   display: block;
-  /* Suavizo la carga con object-fit */
-  object-fit: cover;
+  max-width: 100%;
 }
 
-/* Listas sin estilo por defecto */
-ul, ol {
-  list-style: none;
-}
+img { object-fit: cover; }
+ul, ol { list-style: none; }
 
-/* Botones sin estilo por defecto */
 button {
   background: none;
   border: none;
-  font-family: inherit;
+  font: inherit;
   color: inherit;
+  cursor: pointer;
 }
 
-/* -------------------------------------------------------
-   Utilidades de layout
-   ------------------------------------------------------- */
-/* Contenedor centrado con ancho máximo */
+input, select, textarea { font: inherit; }
+
+section[id] { scroll-margin-top: calc(var(--altura-header) + 8px); }
+
+:focus-visible {
+  outline: 3px solid var(--color-acento-luz);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+::selection {
+  background-color: var(--color-acento);
+  color: var(--color-negro);
+}
+
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 16px;
+  z-index: var(--capa-toast);
+  padding: 12px 20px;
+  background: var(--color-blanco);
+  color: var(--color-negro);
+  border-radius: var(--radio-sm);
+  font-weight: 600;
+}
+
+.skip-link:focus { top: 16px; }
+
 .contenedor {
   width: 100%;
   max-width: var(--ancho-maximo);
@@ -123,107 +102,63 @@ button {
   padding: 0 var(--padding-lateral);
 }
 
-/* Sección con espaciado vertical estándar */
-.seccion {
-  padding: var(--espacio-3xl) 0;
-}
+.seccion { padding: var(--espacio-3xl) 0; }
 
-/* -------------------------------------------------------
-   Utilidades de texto
-   ------------------------------------------------------- */
-/* Etiqueta decorativa de sección (texto pequeño con letra espaciada) */
+/* Etiqueta técnica de sección, como un dato de la impresora */
 .etiqueta-seccion {
-  font-family: var(--fuente-cuerpo);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--fuente-mono);
   font-size: var(--texto-xs);
   font-weight: 500;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--color-dorado);
-  /* Línea decorativa antes del texto */
-  display: flex;
-  align-items: center;
-  gap: var(--espacio-sm);
+  color: var(--color-acento);
 }
 
-/* Línea decorativa de la etiqueta */
 .etiqueta-seccion::before {
   content: '';
-  display: block;
-  width: 40px;
-  height: 1px;
-  background-color: var(--color-dorado);
-  opacity: 0.6;
+  width: 8px;
+  height: 8px;
+  background-color: currentColor;
+  transform: rotate(45deg);
 }
 
-/* Título de sección con el display de la marca */
 .titulo-seccion {
-  font-family: var(--fuente-display);
   font-size: var(--texto-3xl);
-  font-weight: 300;
-  font-style: italic;
-  line-height: 1.1;
   margin-top: var(--espacio-sm);
-  color: var(--color-blanco);
 }
 
-/* Destaco algunas palabras en dorado dentro de los títulos */
-.titulo-seccion .acento {
-  color: var(--color-dorado);
-  font-style: normal;
-}
+.titulo-seccion .acento { color: var(--color-acento); }
 
-/* -------------------------------------------------------
-   Animaciones de entrada — uso la clase .reveal para
-   activar animaciones cuando los elementos entran al viewport
-   ------------------------------------------------------- */
-/* Estado inicial: invisible y desplazado hacia abajo */
-.reveal {
+/* Solo oculto para animar si hay JavaScript: sin él, todo se ve */
+.js .reveal {
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateY(26px);
   transition: opacity var(--transicion-lenta), transform var(--transicion-lenta);
 }
 
-/* Estado activo: visible y en posición normal */
-.reveal.visible {
+.js .reveal.visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
 }
 
-/* Aplico retrasos escalonados para grupos de elementos */
-.reveal:nth-child(1) { transition-delay: 0ms; }
-.reveal:nth-child(2) { transition-delay: 100ms; }
-.reveal:nth-child(3) { transition-delay: 200ms; }
-.reveal:nth-child(4) { transition-delay: 300ms; }
-.reveal:nth-child(5) { transition-delay: 400ms; }
-
-/* -------------------------------------------------------
-   Scrollbar personalizada
-   ------------------------------------------------------- */
-/* Estilo del scrollbar en navegadores webkit */
-::-webkit-scrollbar {
-  width: 4px;
-}
-
-/* Track (fondo) del scrollbar */
-::-webkit-scrollbar-track {
-  background: var(--color-negro);
-}
-
-/* Thumb (indicador) del scrollbar en dorado */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--color-negro); }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-dorado-sombra);
-  border-radius: var(--radio-full);
+  background: var(--color-borde);
+  border-radius: 6px;
+  border: 2px solid var(--color-negro);
 }
+::-webkit-scrollbar-thumb:hover { background: var(--color-acento); }
 
-/* Thumb en hover: más brillante */
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-dorado);
-}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
 
-/* -------------------------------------------------------
-   Selección de texto en dorado
-   ------------------------------------------------------- */
-::selection {
-  background-color: var(--color-dorado);
-  color: var(--color-negro);
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .js .reveal { opacity: 1; transform: none; }
 }

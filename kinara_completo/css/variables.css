@@ -1,104 +1,96 @@
 /*
  * ============================================================
- * variables.css — Kinara Design System
- * Defino aquí todas las variables globales de la marca:
- * colores, tipografía, espaciado y transiciones.
- * Este archivo es el corazón visual de todo el proyecto.
+ * variables.css — Sistema de diseño de Kinara
+ * Defino aquí los colores, la tipografía y el espaciado.
+ * La idea visual es un taller de impresión 3D: grafito cálido,
+ * naranja de filamento y papel para las secciones claras.
  * ============================================================
  */
 
-/* --- Importo las fuentes desde Google Fonts --- */
-/* Uso Cormorant Garamond para los títulos: elegante, con serifa, atemporal */
-/* Uso DM Sans para el cuerpo: legible, moderno, limpio */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+/* Bricolage Grotesque para títulos y texto; JetBrains Mono para datos técnicos */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* -------------------------------------------------------
-   Variables raíz — aplico al documento completo con :root
-   ------------------------------------------------------- */
 :root {
+  /* === SUPERFICIES OSCURAS === */
+  --color-negro:   #12100e;
+  --color-grafito: #1c1916;
+  --color-grafito-2: #27231f;
+  --color-borde:   #3a342e;
 
-  /* === PALETA DE COLORES KINARA === */
-  /* Negro profundo: el fondo sobre el que la luz cobra vida */
-  --color-negro:      #0F0F0F;
-  /* Gris grafito: para superficies secundarias y elementos técnicos */
-  --color-grafito:    #2B2B2B;
-  /* Gris medio: para bordes sutiles y divisores */
-  --color-borde:      #3A3A3A;
-  /* Blanco suave: para texto principal y claridad */
-  --color-blanco:     #F5F5F5;
-  /* Blanco atenuado: para texto secundario y descripciones */
-  --color-blanco-dim: #A8A8A0;
-  /* Dorado cálido: el acento de la marca, la llama encendida */
-  --color-dorado:     #D4A373;
-  /* Dorado claro: para hover states y destellos */
-  --color-dorado-luz: #E8C99A;
-  /* Dorado oscuro: para sombras y bordes del dorado */
-  --color-dorado-sombra: #9A7250;
+  /* === TEXTO SOBRE OSCURO === */
+  --color-blanco:     #f6f1e8;
+  --color-blanco-dim: #b5ac9e;
+
+  /* === ACENTO: FILAMENTO NARANJA === */
+  --color-acento:        #ff6a2b;
+  --color-acento-luz:    #ff8b57;
+  --color-acento-oscuro: #b5420e;  /* Para texto sobre papel: conserva el contraste */
+
+  /* === SECCIONES CLARAS === */
+  --color-papel:     #efe8db;
+  --color-papel-2:   #e4dbca;
+  --color-tinta:     #1b1714;
+  --color-tinta-dim: #5c544a;
+
+  /* === FILAMENTOS: UN COLOR POR CATEGORÍA === */
+  --filamento-lampara:     #f2b65a;
+  --filamento-herramienta: #6fb2c9;
+  --filamento-molde:       #a7c17a;
+  --filamento-juguete:     #b49be0;
+  --filamento-figura:      #f59ab5;
+
+  /* === ESTADOS === */
+  --color-exito: #7bc99a;
+  --color-error: #e5806f;
 
   /* === TIPOGRAFÍA === */
-  /* Fuente de display: para títulos y elementos de marca */
-  --fuente-display: 'Cormorant Garamond', Georgia, serif;
-  /* Fuente de cuerpo: para texto corrido y UI */
-  --fuente-cuerpo:  'DM Sans', system-ui, sans-serif;
+  --fuente-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --fuente-cuerpo:  'Bricolage Grotesque', system-ui, sans-serif;
+  --fuente-mono:    'JetBrains Mono', ui-monospace, monospace;
 
-  /* === TAMAÑOS TIPOGRÁFICOS === */
-  --texto-xs:   0.75rem;   /* 12px — etiquetas pequeñas */
-  --texto-sm:   0.875rem;  /* 14px — texto secundario */
-  --texto-base: 1rem;      /* 16px — texto base */
-  --texto-lg:   1.125rem;  /* 18px — texto destacado */
-  --texto-xl:   1.5rem;    /* 24px — subtítulos */
-  --texto-2xl:  2rem;      /* 32px — títulos de sección */
-  --texto-3xl:  3rem;      /* 48px — títulos grandes */
-  --texto-4xl:  4.5rem;    /* 72px — hero display */
-  --texto-5xl:  6rem;      /* 96px — super display */
+  --texto-xs:   0.75rem;
+  --texto-sm:   0.875rem;
+  --texto-base: 1rem;
+  --texto-lg:   1.125rem;
+  --texto-xl:   1.5rem;
+  --texto-2xl:  clamp(1.75rem, 3vw, 2.25rem);
+  --texto-3xl:  clamp(2.25rem, 5.2vw, 4.25rem);
+  --texto-4xl:  clamp(2.75rem, 7vw, 6rem);
 
   /* === ESPACIADO === */
-  --espacio-xs:  0.5rem;   /* 8px */
-  --espacio-sm:  1rem;     /* 16px */
-  --espacio-md:  1.5rem;   /* 24px */
-  --espacio-lg:  2.5rem;   /* 40px */
-  --espacio-xl:  4rem;     /* 64px */
-  --espacio-2xl: 6rem;     /* 96px */
-  --espacio-3xl: 10rem;    /* 160px */
+  --espacio-xs:  0.5rem;
+  --espacio-sm:  1rem;
+  --espacio-md:  1.5rem;
+  --espacio-lg:  2.5rem;
+  --espacio-xl:  4rem;
+  --espacio-2xl: 6rem;
+  --espacio-3xl: clamp(5rem, 11vw, 9.5rem);
 
-  /* === BORDES Y RADIOS === */
-  --radio-sm:   4px;
-  --radio-md:   8px;
-  --radio-lg:   16px;
+  /* === RADIOS: MÁS CERRADOS POR DENTRO, MÁS SUAVES POR FUERA === */
+  --radio-sm:   8px;
+  --radio-md:   14px;
+  --radio-lg:   22px;
   --radio-full: 999px;
 
   /* === TRANSICIONES === */
-  /* Transición rápida para micro-interacciones */
+  --curva-salida: cubic-bezier(0.16, 1, 0.3, 1);
   --transicion-rapida: 0.2s ease;
-  /* Transición normal para hover y cambios de estado */
-  --transicion-normal: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  /* Transición lenta para animaciones de entrada */
-  --transicion-lenta:  0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  --transicion-normal: 0.35s var(--curva-salida);
+  --transicion-lenta:  0.8s var(--curva-salida);
 
-  /* === SOMBRAS === */
-  /* Sombra sutil para tarjetas en reposo */
-  --sombra-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-  /* Sombra media para elementos elevados */
-  --sombra-md: 0 8px 32px rgba(0, 0, 0, 0.6);
-  /* Sombra grande para modales y overlays */
-  --sombra-lg: 0 24px 64px rgba(0, 0, 0, 0.8);
-  /* Sombra dorada: para resaltar elementos de marca en hover */
-  --sombra-dorada: 0 8px 32px rgba(212, 163, 115, 0.15);
+  /* === SOMBRAS TEÑIDAS CON EL FONDO === */
+  --sombra-md: 0 14px 40px rgba(10, 7, 4, 0.45);
+  --sombra-lg: 0 28px 80px rgba(10, 7, 4, 0.65);
+
+  /* === CAPAS === */
+  --capa-header: 100;
+  --capa-menu: 110;
+  --capa-overlay: 200;
+  --capa-drawer: 210;
+  --capa-toast: 300;
 
   /* === LAYOUT === */
-  /* Ancho máximo del contenido principal */
-  --ancho-maximo: 1400px;
-  /* Padding lateral en desktop */
-  --padding-lateral: 5%;
-  /* Altura del header fijo */
-  --altura-header: 80px;
+  --ancho-maximo: 1320px;
+  --padding-lateral: clamp(1rem, 4vw, 3rem);
+  --altura-header: 76px;
 }
-
-/* -------------------------------------------------------
-   Breakpoints de referencia (los uso en media queries):
-   --bp-sm:  640px  — móvil grande
-   --bp-md:  768px  — tablet
-   --bp-lg:  1024px — desktop pequeño
-   --bp-xl:  1280px — desktop
-   --bp-2xl: 1536px — pantalla grande
-   ------------------------------------------------------- */
