@@ -150,8 +150,14 @@ serve(async (req: Request) => {
       { headers: { "Authorization": `Bearer ${accessToken}` } }
     );
 
+    // Pago inexistente para este token (p. ej. la simulación del panel):
+    // respondo 200 para que MP no reintente sin fin
+    if (respuestaPago.status === 404) {
+      console.warn(`Pago ${pagoId} no encontrado en MP`);
+      return new Response(JSON.stringify({ ok: true, mensaje: "Pago no encontrado" }), { status: 200, headers: HEADERS });
+    }
     if (!respuestaPago.ok) {
-      throw new Error(`No se pudo consultar el pago ${pagoId} en Mercado Pago`);
+      throw new Error(`No se pudo consultar el pago ${pagoId} en Mercado Pago (${respuestaPago.status})`);
     }
 
     const pago = await respuestaPago.json();

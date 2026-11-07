@@ -126,6 +126,9 @@ serve(async (req: Request) => {
       },
       auto_return:        "approved",
       external_reference: pedidoId,
+      // Cada pago avisa directo a nuestra función, sin depender del webhook
+      // configurado en el panel de MP (modo prueba/productivo, otra app)
+      notification_url:   `${supabaseUrl}/functions/v1/webhook-mp?source_news=webhooks`,
       statement_descriptor: "KINARA 3D",
       expires:            true,
       expiration_date_to: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
