@@ -237,6 +237,8 @@
   padding: var(--espacio-2xl) 0;
 }
 
+.cuenta-cargando[hidden] { display: none; }
+
 .cuenta-encabezado {
   display: flex;
   align-items: flex-end;
@@ -334,7 +336,12 @@
   color: var(--color-blanco-dim);
 }
 
-.cuenta-vacio .pieza-svg { color: var(--color-borde); }
+.cuenta-vacio .pieza-svg {
+  position: static;
+  width: 72px;
+  height: 72px;
+  color: var(--color-borde);
+}
 .cuenta-vacio-titulo { font-size: var(--texto-lg); font-weight: 600; color: var(--color-blanco); }
 
 .cuenta-vacio-texto {
