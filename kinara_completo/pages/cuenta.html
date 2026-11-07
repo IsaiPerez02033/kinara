@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<!--
+  cuenta.html — Mi cuenta: pedidos, datos y direcciones
+  Sin sesión manda a acceso.html. Los datos llegan por funciones
+  de Supabase (mis_pedidos, mi_perfil) y por la tabla direcciones,
+  protegida con RLS para que cada quien vea solo lo suyo.
+-->
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex" />
+  <title>Mi cuenta — Kinara</title>
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="../css/variables.css" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/components.css" />
+  <link rel="stylesheet" href="../css/carrito.css" />
+  <link rel="stylesheet" href="../css/cuenta.css" />
+</head>
+
+<body class="pagina-simple">
+
+  <header class="pagina-simple-header cuenta-header">
+    <a href="../index.html" class="logo" aria-label="Kinara, volver al inicio">
+      <img class="logo-marca" src="../assets/images/logo-kinara-marca.svg" alt="" width="32" height="32" />
+      <span class="logo-nombre">KINARA</span>
+    </a>
+    <a href="../index.html#catalogo" class="btn-secundario btn-chico">Volver a la tienda</a>
+  </header>
+
+  <main class="cuenta-page" id="cuenta-page" aria-busy="true">
+
+    <div class="cuenta-cargando" id="cuenta-cargando">
+      <div class="pago-spinner"></div>
+    </div>
+
+    <div class="cuenta-contenido" id="cuenta-contenido" hidden>
+      <section class="cuenta-encabezado">
+        <div>
+          <p class="confirmacion-etiqueta" id="cuenta-desde">Tu cuenta Kinara</p>
+          <h1 class="cuenta-saludo" id="cuenta-saludo">Hola</h1>
+          <p class="cuenta-email" id="cuenta-email"></p>
+        </div>
+        <button type="button" class="acceso-link" id="btn-salir">Cerrar sesión</button>
+      </section>
+
+      <p class="cuenta-aviso" id="cuenta-aviso" hidden></p>
+
+      <div class="cuenta-pestanas" role="tablist" aria-label="Secciones de tu cuenta">
+        <button type="button" role="tab" class="cuenta-pestana" id="tab-pedidos" aria-controls="panel-pedidos" data-panel="pedidos">Pedidos</button>
+        <button type="button" role="tab" class="cuenta-pestana" id="tab-direcciones" aria-controls="panel-direcciones" data-panel="direcciones">Direcciones</button>
+        <button type="button" role="tab" class="cuenta-pestana" id="tab-datos" aria-controls="panel-datos" data-panel="datos">Mis datos</button>
+      </div>
+
+      <!-- PEDIDOS -->
+      <section class="cuenta-panel" id="panel-pedidos" role="tabpanel" aria-labelledby="tab-pedidos">
+        <div id="lista-pedidos" class="lista-pedidos"></div>
+      </section>
+
+      <!-- DIRECCIONES -->
+      <section class="cuenta-panel" id="panel-direcciones" role="tabpanel" aria-labelledby="tab-direcciones" hidden>
+        <div id="lista-direcciones" class="lista-direcciones"></div>
+
+        <button type="button" class="btn-secundario" id="btn-nueva-direccion">Agregar dirección</button>
+
+        <form class="cuenta-form" id="form-direccion" novalidate hidden>
+          <h2 class="cuenta-subtitulo">Nueva dirección</h2>
+          <div class="checkout-campo">
+            <label class="checkout-label" for="dir-etiqueta">Nombre para reconocerla <span class="cuenta-opcional">opcional</span></label>
+            <input type="text" id="dir-etiqueta" class="checkout-input" placeholder="Casa, Oficina, Taller…" maxlength="40" />
+          </div>
+          <div class="checkout-campo">
+            <label class="checkout-label" for="dir-calle">Calle, número y colonia</label>
+            <input type="text" id="dir-calle" class="checkout-input" placeholder="Av. Insurgentes Sur 1234, Col. Del Valle" autocomplete="street-address" maxlength="300" />
+          </div>
+          <div class="checkout-grid-2">
+            <div class="checkout-campo">
+              <label class="checkout-label" for="dir-ciudad">Ciudad</label>
+              <input type="text" id="dir-ciudad" class="checkout-input" placeholder="Ciudad de México" autocomplete="address-level2" maxlength="100" />
+            </div>
+            <div class="checkout-campo">
+              <label class="checkout-label" for="dir-cp">Código postal</label>
+              <input type="text" id="dir-cp" class="checkout-input" placeholder="03100" maxlength="5" inputmode="numeric" autocomplete="postal-code" />
+            </div>
+          </div>
+          <div class="checkout-campo">
+            <label class="checkout-label" for="dir-estado">Estado</label>
+            <select id="dir-estado" class="checkout-input" autocomplete="address-level1"></select>
+          </div>
+          <label class="acceso-aviso">
+            <input type="checkbox" id="dir-predeterminada" />
+            <span>Usarla por defecto al comprar</span>
+          </label>
+          <p class="acceso-mensaje" id="dir-mensaje" role="alert" hidden></p>
+          <div class="cuenta-form-acciones">
+            <button type="submit" class="btn-primario" id="dir-guardar">Guardar dirección</button>
+            <button type="button" class="btn-secundario" id="dir-cancelar">Cancelar</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- DATOS -->
+      <section class="cuenta-panel" id="panel-datos" role="tabpanel" aria-labelledby="tab-datos" hidden>
+        <form class="cuenta-form" id="form-datos" novalidate>
+          <h2 class="cuenta-subtitulo">Datos de contacto</h2>
+          <div class="checkout-campo">
+            <label class="checkout-label" for="dat-nombre">Nombre completo</label>
+            <input type="text" id="dat-nombre" class="checkout-input" autocomplete="name" maxlength="120" />
+          </div>
+          <div class="checkout-campo">
+            <label class="checkout-label" for="dat-telefono">Teléfono</label>
+            <input type="tel" id="dat-telefono" class="checkout-input" autocomplete="tel" placeholder="55 1234 5678" maxlength="30" />
+          </div>
+          <div class="checkout-campo">
+            <label class="checkout-label" for="dat-email">Correo</label>
+            <input type="email" id="dat-email" class="checkout-input" readonly aria-describedby="dat-email-ayuda" />
+            <span class="acceso-ayuda" id="dat-email-ayuda">Para cambiar tu correo escríbenos a hola@kinaramx.com.</span>
+          </div>
+          <p class="acceso-mensaje" id="dat-mensaje" role="status" hidden></p>
+          <button type="submit" class="btn-primario" id="dat-guardar">Guardar cambios</button>
+        </form>
+
+        <form class="cuenta-form" id="form-password" novalidate>
+          <h2 class="cuenta-subtitulo">Contraseña</h2>
+          <div class="checkout-campo">
+            <label class="checkout-label" for="pw-nueva">Contraseña nueva</label>
+            <input type="password" id="pw-nueva" class="checkout-input" autocomplete="new-password" minlength="8" maxlength="72" />
+            <span class="acceso-ayuda">Mínimo 8 caracteres.</span>
+          </div>
+          <p class="acceso-mensaje" id="pw-mensaje" role="status" hidden></p>
+          <button type="submit" class="btn-secundario" id="pw-guardar">Cambiar contraseña</button>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <footer class="pagina-simple-footer">© Kinara · Impresión 3D · México</footer>
+
+  <div id="agregar-toast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
+  <script src="../js/lib/supabase.js"></script>
+  <script src="../js/sesion.js"></script>
+  <script src="../js/cuenta.js"></script>
+</body>
+</html>

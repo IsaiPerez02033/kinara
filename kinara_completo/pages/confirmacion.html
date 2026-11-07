@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="../css/base.css" />
   <link rel="stylesheet" href="../css/components.css" />
   <link rel="stylesheet" href="../css/carrito.css" />
+  <link rel="stylesheet" href="../css/cuenta.css" />
 </head>
 
 <body class="pagina-simple">
@@ -106,6 +107,15 @@
         localStorage.removeItem('kinara_pedido_actual');
       }
 
+      // Con cuenta: el pedido ya está en "Mis pedidos". Sin cuenta: la invito
+      const { data: { session } } = await SupabaseDB.cliente.auth.getSession();
+      const cuentaCTA = session
+        ? `<p class="confirmacion-nota">Sigue el avance de este pedido en <a href="cuenta.html#pedidos">Mis pedidos</a>.</p>`
+        : `<div class="confirmacion-cuenta">
+             <p><strong>Sigue tu pedido desde tu cuenta.</strong> Crea una con el mismo correo de tu compra y este pedido aparecerá ahí.</p>
+             <a href="acceso.html?modo=registro" class="btn-secundario btn-chico">Crear cuenta</a>
+           </div>`;
+
       const numeroPedido = `<div class="confirmacion-id">Pedido #${escHTML(pedidoId?.substring(0,8).toUpperCase())}</div>`;
 
       // Caso: pago confirmado por el webhook
@@ -142,6 +152,7 @@
             <li><span>02</span>Iniciamos la producción de tu pedido.</li>
             <li><span>03</span>Te avisamos cuando tu pieza esté lista para envío.</li>
           </ol>
+          ${cuentaCTA}
           <div class="confirmacion-acciones">
             <a href="../index.html" class="btn-primario">Seguir explorando</a>
             <a href="mailto:hola@kinaramx.com" class="btn-secundario">Contactar a Kinara</a>
@@ -164,6 +175,7 @@
             Actualiza esta página en unos minutos para ver la confirmación.
             Si elegiste OXXO, presenta tu ficha en cualquier tienda para completar el pago.
           </p>
+          ${cuentaCTA}
           <div class="confirmacion-acciones">
             <a href="../index.html" class="btn-primario">Volver al inicio</a>
             <a href="mailto:hola@kinaramx.com" class="btn-secundario">¿Tienes dudas?</a>

@@ -43,6 +43,7 @@
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/carrito.css" />
   <link rel="stylesheet" href="css/sections.css" />
+  <link rel="stylesheet" href="css/cuenta.css" />
 </head>
 
 <body>
@@ -97,6 +98,12 @@
       </nav>
 
       <div class="header-acciones">
+        <a id="btn-cuenta" href="pages/acceso.html" class="btn-icono" aria-label="Iniciar sesión">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>
+          </svg>
+          <span class="cuenta-indicador" aria-hidden="true"></span>
+        </a>
         <button id="btn-carrito" type="button" class="btn-icono" aria-label="Ver carrito de compras">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>
@@ -120,6 +127,7 @@
     <a href="#materiales">Materiales</a>
     <a href="#catalogo">Catálogo</a>
     <a href="#contacto">Contacto</a>
+    <a href="pages/acceso.html" data-enlace-cuenta>Iniciar sesión</a>
     <a href="#contacto" class="btn-primario">Cotizar pieza</a>
   </div>
 
@@ -470,6 +478,7 @@
         </button>
       </div>
       <div class="checkout-modal-cuerpo" id="checkout-modal-cuerpo">
+        <p class="checkout-cuenta" id="checkout-cuenta"></p>
         <div class="checkout-paso-label"><span class="checkout-paso-numero">1</span>Datos de contacto</div>
         <div class="checkout-campo">
           <label class="checkout-label" for="co-nombre">Nombre completo</label>
@@ -524,6 +533,10 @@
           </select>
           <span class="checkout-campo-error" id="err-estado"></span>
         </div>
+        <label class="acceso-aviso" id="co-guardar-dir-campo" hidden>
+          <input type="checkbox" id="co-guardar-dir" />
+          <span>Guardar esta dirección en mi cuenta</span>
+        </label>
         <div class="checkout-paso-label checkout-paso-label--separado"><span class="checkout-paso-numero">3</span>Resumen</div>
         <div class="checkout-resumen">
           <div id="checkout-resumen-items"></div>
@@ -542,6 +555,7 @@
 
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
   <script defer src="js/lib/supabase.js"></script>
+  <script defer src="js/sesion.js"></script>
   <script defer src="js/main.js"></script>
   <script defer src="js/carrito.js"></script>
   <script defer src="js/productos.js"></script>

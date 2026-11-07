@@ -191,6 +191,15 @@ const ModuloCarrito = (() => {
     document.getElementById('carrito-cerrar-btn')?.addEventListener('click', cerrarDrawer);
     document.getElementById('btn-checkout')?.addEventListener('click', ModuloCheckout.abrir);
     document.addEventListener('keydown', e => { if (e.key==='Escape') { cerrarDrawer(); ModuloCheckout.cerrar(); } });
+
+    // "Volver a pedir" y el regreso del login llegan con ?carrito=abierto
+    const params = new URLSearchParams(location.search);
+    if (params.get('carrito') === 'abierto') {
+      const incompleto = params.get('aviso') === 'incompleto';
+      history.replaceState(null, '', location.pathname + location.hash);
+      abrirDrawer();
+      if (incompleto) mostrarMensaje('Algunas piezas ya no tienen stock suficiente', 'error');
+    }
   };
 
   return { iniciar, agregar, cambiarCantidad, eliminar, vaciar, abrirDrawer, cerrarDrawer,
@@ -203,12 +212,88 @@ const ModuloCarrito = (() => {
    ===================================================== */
 const ModuloCheckout = (() => {
 
+  /* --- Datos de la cuenta ---
+     Con sesión lleno lo que esté vacío con su perfil y su dirección
+     predeterminada. El correo queda fijo: el servidor usa el de la cuenta. */
+  let datosCuenta = null;   // { perfil, direcciones } de la sesión actual
+
+  const cargarDatosCuenta = async (usuario) => {
+    if (datosCuenta?.uid === usuario.id) return datosCuenta;
+    await ModuloSesion.asegurarVinculo();
+    const [perfil, dirs] = await Promise.all([
+      SupabaseDB.cliente.rpc('mi_perfil'),
+      SupabaseDB.cliente.from('direcciones').select('*').order('predeterminada', { ascending: false }),
+    ]);
+    datosCuenta = { uid: usuario.id, perfil: perfil.data || null, direcciones: dirs.data || [] };
+    return datosCuenta;
+  };
+
+  const llenarSiVacio = (id, valor) => {
+    const el = document.getElementById(id);
+    if (el && !el.value.trim() && valor) el.value = valor;
+  };
+
+  const prepararCuenta = async () => {
+    const aviso = document.getElementById('checkout-cuenta');
+    const email = document.getElementById('co-email');
+    const guardarCampo = document.getElementById('co-guardar-dir-campo');
+    const usuario = window.ModuloSesion?.usuario();
+
+    if (!usuario) {
+      const volver = encodeURIComponent('/index.html?carrito=abierto');
+      aviso.innerHTML = `¿Ya tienes cuenta? <a href="pages/acceso.html?volver=${volver}">Entra</a> para usar tus datos guardados y seguir tu pedido.`;
+      email.readOnly = false;
+      guardarCampo.hidden = true;
+      return;
+    }
+
+    aviso.textContent = `Comprando como ${usuario.email}. Este pedido quedará en tu cuenta.`;
+    email.value = usuario.email;
+    email.readOnly = ModuloSesion.confirmado();
+
+    try {
+      const { perfil, direcciones } = await cargarDatosCuenta(usuario);
+      llenarSiVacio('co-nombre', perfil?.nombre || usuario.user_metadata?.nombre);
+      llenarSiVacio('co-telefono', perfil?.telefono);
+      const dir = direcciones[0];
+      if (dir) {
+        llenarSiVacio('co-direccion', dir.calle);
+        llenarSiVacio('co-ciudad', dir.ciudad);
+        llenarSiVacio('co-cp', dir.cp);
+        const estado = document.getElementById('co-estado');
+        if (estado && !estado.value) estado.value = dir.estado;
+      }
+      guardarCampo.hidden = !ModuloSesion.confirmado();
+      document.getElementById('co-guardar-dir').checked = !direcciones.length;
+    } catch (e) {
+      console.warn('No se pudieron cargar los datos de la cuenta:', e);
+    }
+  };
+
+  // Guarda la dirección del checkout si el cliente lo pidió y no la tenía
+  const guardarDireccionSiAplica = async (datos) => {
+    const usuario = window.ModuloSesion?.usuario();
+    const marcado = document.getElementById('co-guardar-dir')?.checked;
+    if (!usuario || !marcado || !ModuloSesion.confirmado()) return;
+    const existentes = datosCuenta?.direcciones || [];
+    const igual = existentes.some((d) =>
+      d.calle.trim().toLowerCase() === datos.direccion.toLowerCase() && d.cp === datos.cp);
+    if (igual) return;
+    const { error } = await SupabaseDB.cliente.from('direcciones').insert({
+      calle: datos.direccion, ciudad: datos.ciudad, estado: datos.estado, cp: datos.cp,
+      predeterminada: !existentes.length,
+    });
+    if (error) console.warn('No se pudo guardar la dirección:', error.message);
+    datosCuenta = null;
+  };
+
   /* --- Abrir / cerrar modal --- */
   const abrir = () => {
     if (!ModuloCarrito.contarUnidades()) return;
     ModuloCarrito.cerrarDrawer();
     restaurarFormulario();
     renderizarResumen();
+    prepararCuenta();
     const o = document.getElementById('checkout-overlay');
     if (o) { o.style.display='flex'; requestAnimationFrame(()=>o.classList.add('visible')); }
     document.body.style.overflow = 'hidden';
@@ -277,6 +362,7 @@ const ModuloCheckout = (() => {
     mostrarCargando();
 
     try {
+      await guardarDireccionSiAplica(datos);
       const pago = await crearPago(datos);
       localStorage.setItem('kinara_pedido_actual', pago.pedido_id);
 

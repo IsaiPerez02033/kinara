@@ -1518,9 +1518,12 @@
       document.getElementById('auth-error').textContent = mensaje;
     };
 
-    const entrarSiEsAdmin = async () => {
+    // automatico = revisión al cargar: una sesión de cliente de la tienda
+    // no se cierra, solo se pide entrar con una cuenta de admin
+    const entrarSiEsAdmin = async (automatico = false) => {
       const { data: esAdmin, error } = await SupabaseDB.cliente.rpc('es_admin');
       if (error || esAdmin !== true) {
+        if (automatico) { document.getElementById('auth-email').focus(); return; }
         await SupabaseDB.cliente.auth.signOut();
         mostrarErrorAuth('Esta cuenta no tiene acceso al panel.');
         return;
@@ -1559,7 +1562,7 @@
       // Si ya había una sesión guardada, entro directo
       const { data: { session } } = await SupabaseDB.cliente.auth.getSession();
       if (session) {
-        await entrarSiEsAdmin();
+        await entrarSiEsAdmin(true);
       } else {
         document.getElementById('auth-email').focus();
       }

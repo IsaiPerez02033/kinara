@@ -52,15 +52,15 @@ const SUPABASE_ANON = 'sb_publishable_uUgQWuBlPXr4r_YQOmF2ig_TbcIywn1';       //
 // Este script debe cargarse antes que supabase.js en el HTML
 const { createClient } = window.supabase;
 
-// Creo el cliente global de Supabase con la configuración del proyecto
-// El panel admin define window.KINARA_ADMIN antes de cargar este archivo
+// Creo el cliente global de Supabase con la configuración del proyecto.
+// La sesión se guarda en el navegador: los clientes siguen con su
+// cuenta abierta entre páginas, y los enlaces del correo (confirmar,
+// enlace mágico, recuperar contraseña) traen la sesión en la URL.
 const db = createClient(SUPABASE_URL, SUPABASE_ANON, {
-  // Configuro el comportamiento de autenticación
   auth: {
-    // No persisto la sesión en el sitio público (solo en el admin)
-    persistSession: window.KINARA_ADMIN === true,
-    // No detecto automáticamente sesiones de la URL
-    detectSessionInUrl: false
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
   }
 });
 

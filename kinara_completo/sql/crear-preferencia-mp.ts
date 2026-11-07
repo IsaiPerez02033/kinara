@@ -82,6 +82,19 @@ serve(async (req: Request) => {
 
     supabase = createClient(supabaseUrl, serviceKey);
 
+    // Si compra con sesión iniciada y correo confirmado, el pedido va a su
+    // cuenta y con su correo (el del formulario no puede reemplazarlo).
+    // Sin sesión, o con una llave anónima, sigue como compra de invitado.
+    const jwt = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ?? "";
+    let usuarioId: string | null = null;
+    if (jwt.split(".").length === 3) {
+      const { data: auth } = await supabase.auth.getUser(jwt);
+      if (auth?.user?.email && auth.user.email_confirmed_at) {
+        usuarioId   = auth.user.id;
+        datos.email = auth.user.email;
+      }
+    }
+
     const { data: pedido, error: errorPedido } = await supabase.rpc("crear_pedido_checkout", {
       p_nombre:    datos.nombre,
       p_email:     datos.email,
@@ -99,6 +112,14 @@ serve(async (req: Request) => {
     }
 
     pedidoId = pedido.pedido_id;
+
+    if (usuarioId) {
+      // Ligo el cliente a la cuenta si aún no lo estaba (primera compra)
+      await supabase.from("clientes")
+        .update({ user_id: usuarioId })
+        .eq("email", datos.email.toLowerCase())
+        .is("user_id", null);
+    }
     const retorno = (status: string) =>
       `${siteUrl}/pages/confirmacion.html?status=${status}&pedido=${pedidoId}`;
 

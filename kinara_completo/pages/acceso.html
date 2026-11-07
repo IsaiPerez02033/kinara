@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<!--
+  acceso.html — Entrar, crear cuenta y recuperar contraseña
+  Todo lo maneja Supabase Auth. Modos (?modo=):
+    entrar    correo y contraseña (por defecto)
+    registro  crear cuenta; Supabase manda un correo de confirmación
+    enlace    entrar con un enlace mágico, sin contraseña
+    recuperar mandar el correo para cambiar la contraseña
+    nueva     poner la contraseña nueva (llega del correo de recuperación)
+  ?volver=ruta regresa al cliente a donde estaba (solo rutas del sitio).
+-->
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex" />
+  <title>Tu cuenta — Kinara</title>
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="../css/variables.css" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/components.css" />
+  <link rel="stylesheet" href="../css/carrito.css" />
+  <link rel="stylesheet" href="../css/cuenta.css" />
+</head>
+
+<body class="pagina-simple">
+
+  <header class="pagina-simple-header">
+    <a href="../index.html" class="logo" aria-label="Kinara, volver al inicio">
+      <img class="logo-marca" src="../assets/images/logo-kinara-marca.svg" alt="" width="32" height="32" />
+      <span class="logo-nombre">KINARA</span>
+    </a>
+  </header>
+
+  <main class="confirmacion-page">
+    <div class="acceso-card">
+
+      <div class="acceso-pestanas" role="tablist" aria-label="Acceso a tu cuenta" id="acceso-pestanas">
+        <button type="button" role="tab" class="acceso-pestana" data-modo="entrar" id="tab-entrar" aria-controls="acceso-form">Entrar</button>
+        <button type="button" role="tab" class="acceso-pestana" data-modo="registro" id="tab-registro" aria-controls="acceso-form">Crear cuenta</button>
+      </div>
+
+      <p class="confirmacion-etiqueta" id="acceso-etiqueta">Tu cuenta Kinara</p>
+      <h1 class="acceso-titulo" id="acceso-titulo">Entra a tu cuenta</h1>
+      <p class="acceso-subtitulo" id="acceso-subtitulo">Sigue tus pedidos y compra más rápido con tus datos guardados.</p>
+
+      <form id="acceso-form" class="acceso-form" novalidate>
+        <div class="checkout-campo" data-campo="nombre">
+          <label class="checkout-label" for="ac-nombre">Nombre completo</label>
+          <input type="text" id="ac-nombre" class="checkout-input" autocomplete="name" maxlength="120" />
+        </div>
+
+        <div class="checkout-campo" data-campo="email">
+          <label class="checkout-label" for="ac-email">Correo</label>
+          <input type="email" id="ac-email" class="checkout-input" autocomplete="email" placeholder="tu@email.com" maxlength="200" />
+        </div>
+
+        <div class="checkout-campo" data-campo="password">
+          <div class="acceso-label-fila">
+            <label class="checkout-label" for="ac-password" id="ac-password-label">Contraseña</label>
+            <button type="button" class="acceso-link-chico" data-ir="recuperar" data-solo="entrar">¿La olvidaste?</button>
+          </div>
+          <div class="acceso-password">
+            <input type="password" id="ac-password" class="checkout-input" autocomplete="current-password" minlength="8" maxlength="72" />
+            <button type="button" class="acceso-ver" id="ac-ver" aria-label="Mostrar contraseña" aria-pressed="false">Ver</button>
+          </div>
+          <span class="acceso-ayuda" data-solo="registro nueva">Mínimo 8 caracteres.</span>
+        </div>
+
+        <label class="acceso-aviso" data-campo="aviso">
+          <input type="checkbox" id="ac-aviso" />
+          <span>Acepto que Kinara use mis datos para gestionar mis pedidos y mi cuenta.</span>
+        </label>
+
+        <p class="acceso-mensaje" id="acceso-mensaje" role="alert" hidden></p>
+
+        <button type="submit" class="btn-checkout" id="acceso-enviar">Entrar</button>
+      </form>
+
+      <div class="acceso-alternativas" id="acceso-alternativas">
+        <button type="button" class="acceso-link" data-ir="enlace" data-solo="entrar">Entrar sin contraseña, con un enlace a tu correo</button>
+        <button type="button" class="acceso-link" data-ir="entrar" data-solo="enlace recuperar">Volver a entrar con contraseña</button>
+      </div>
+
+      <div class="acceso-listo" id="acceso-listo" hidden>
+        <div class="confirmacion-icono confirmacion-icono--exito">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
+        </div>
+        <h1 class="acceso-titulo" id="listo-titulo">Revisa tu correo</h1>
+        <p class="acceso-subtitulo" id="listo-texto"></p>
+        <p class="confirmacion-nota">Si no llega en un par de minutos, revisa la carpeta de spam o promociones.</p>
+        <button type="button" class="btn-secundario" id="listo-volver">Usar otro correo</button>
+      </div>
+
+      <p class="acceso-invitado"><a href="../index.html#catalogo">Seguir sin cuenta</a>. También puedes comprar como invitado.</p>
+    </div>
+  </main>
+
+  <footer class="pagina-simple-footer">© Kinara · Impresión 3D · México</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
+  <script src="../js/lib/supabase.js"></script>
+  <script src="../js/acceso.js"></script>
+</body>
+</html>

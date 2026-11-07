@@ -670,3 +670,26 @@
     align-items: stretch;
   }
 }
+
+/* -------------------------------------------------------
+   CUENTA EN EL HEADER
+   El punto aparece cuando hay sesión iniciada
+   ------------------------------------------------------- */
+.cuenta-indicador {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--color-negro);
+  border-radius: 50%;
+  background: var(--color-exito);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity var(--transicion-rapida), transform var(--transicion-normal);
+}
+
+#btn-cuenta.con-sesion .cuenta-indicador {
+  opacity: 1;
+  transform: scale(1);
+}
