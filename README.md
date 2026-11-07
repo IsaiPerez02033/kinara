@@ -7,6 +7,11 @@
 
 ```
 kinara/
+├── README.md                    ← Este archivo (no se publica)
+├── sql/                         ← SQL y Edge Functions (no se publica)
+├── correos/                     ← Plantillas de correo de Supabase Auth (no se publica)
+│
+└── kinara_completo/             ← Lo que publica Netlify (kinaramx.com)
 │
 ├── index.html                   ← Sitio público principal
 │
@@ -27,14 +32,18 @@ kinara/
 │
 ├── pages/
 │   ├── admin.html               ← Panel de administración completo
+│   ├── acceso.html              ← Entrar, crear cuenta, recuperar contraseña
+│   ├── cuenta.html              ← Mi cuenta: pedidos, direcciones y datos
+│   ├── privacidad.html          ← Aviso de privacidad
 │   └── confirmacion.html        ← Página de retorno post-pago de Mercado Pago
 │
-├── sql/
+├── sql/  (en la raíz del repo, fuera del sitio)
 │   ├── 01_schema.sql            ← Tablas, índices, triggers, RLS, vista productos_con_stock
 │   ├── 02_seed.sql              ← 5 colecciones + 12 productos + inventario inicial
 │   ├── 03_webhook_mp.sql        ← Función procesar_pago_confirmado + obtener_resumen_pedido
 │   ├── 04_seguridad_checkout.sql ← Checkout en servidor, pagos idempotentes, admins y permisos
 │   ├── 05_catalogo_impresion_3d.sql ← Categorías y catálogo de impresión 3D (precios provisionales)
+│   ├── 06_cuentas_clientes.sql  ← Cuentas de cliente: direcciones y funciones de Mi cuenta
 │   ├── crear-preferencia-mp.ts  ← Edge Function: crea pedido y preferencia de pago en MP
 │   └── webhook-mp.ts            ← Edge Function: recibe notificaciones de pago de MP
 │
@@ -61,6 +70,7 @@ kinara/
 4. Nueva query → pega `sql/03_webhook_mp.sql` → **Run**
 5. Nueva query → pega `sql/04_seguridad_checkout.sql` → **Run**
 6. Nueva query → pega `sql/05_catalogo_impresion_3d.sql` → **Run**
+7. Nueva query → pega `sql/06_cuentas_clientes.sql` → **Run**
 
 > Si la base ya existía, basta con ejecutar `04_seguridad_checkout.sql` y `05_catalogo_impresion_3d.sql`. Se pueden repetir sin problema.
 

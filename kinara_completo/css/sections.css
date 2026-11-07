@@ -497,9 +497,13 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1px;
-  border-bottom: 1px solid var(--color-borde);
-  background-color: var(--color-borde);
+  /* Recorto las líneas de fuera por los lados y arriba; abajo se quedan */
+  clip-path: inset(0 0 -1px 0);
 }
+
+/* Las líneas las pone cada tarjeta, así un hueco al final de la
+   última fila queda del color de la página y no como celda gris */
+.catalogo-grid > * { box-shadow: 0 0 0 1px var(--color-borde); }
 
 /* -------------------------------------------------------
    CONTACTO
