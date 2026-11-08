@@ -33,11 +33,11 @@ const dinero = (n: unknown) =>
 function plantillaPedido(d: { asunto: string; titulo: string; texto: string; bloque: string; boton: string; url: string; nota: string }) {
   return `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(d.asunto)}</title></head>
-<body style="margin:0;padding:0;background:#f2f0ea;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f0ea;">
+<body style="margin:0;padding:0;background-color:#f2f0ea;background-image:linear-gradient(180deg,#f2f0ea 0%,#f6e4dc 100%);">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f2f0ea;background-image:linear-gradient(180deg,#f2f0ea 0%,#f6e4dc 100%);">
 <tr><td align="center" style="padding:32px 16px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:2px solid #14161a;">
-<tr><td style="background:#1f36b5;padding:20px 28px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #e6e1d6;border-radius:24px;">
+<tr><td style="background-color:#1f36b5;background-image:linear-gradient(120deg,#1f36b5 0%,#3047c4 55%,#5a6fe0 100%);border-radius:24px 24px 0 0;padding:22px 28px;">
 <span style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;letter-spacing:4px;color:#f2f0ea;">KINARA</span>
 <span style="font-family:'Courier New',monospace;font-size:11px;color:#f2f0ea;opacity:.8;padding-left:10px;">IMPRESIÓN 3D</span>
 </td></tr>
@@ -45,8 +45,8 @@ function plantillaPedido(d: { asunto: string; titulo: string; texto: string; blo
 <h1 style="margin:0 0 14px;font-size:24px;line-height:1.25;">${d.titulo}</h1>
 <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#3a3d44;">${d.texto}</p>
 ${d.bloque}
-<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr><td style="background:#c93814;">
-<a href="${esc(d.url)}" style="display:inline-block;padding:14px 26px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;">${d.boton}</a>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr><td style="background-color:#c93814;background-image:linear-gradient(120deg,#c93814 0%,#e05a2e 100%);border-radius:999px;">
+<a href="${esc(d.url)}" style="display:inline-block;padding:14px 28px;border-radius:999px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;">${d.boton}</a>
 </td></tr></table>
 <p style="margin:24px 0 28px;font-size:13px;line-height:1.6;color:#54575d;">${d.nota}</p>
 </td></tr>
@@ -114,7 +114,7 @@ serve(async (req: Request) => {
     const fila = (k: string, v: string) =>
       `<tr><td style="padding:6px 0;color:#54575d;font-size:13px;width:110px;vertical-align:top;">${k}</td><td style="padding:6px 0;font-size:14px;color:#14161a;">${v}</td></tr>`;
     const bloque = `
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f0ea;padding:12px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f3ec;border-radius:16px;padding:12px 16px;">
 ${fila("Paquetería", esc(p.paqueteria || "Paquetería"))}
 ${fila("Guía", `<span style="font-family:'Courier New',monospace;font-weight:700;">${esc(p.numero_guia)}</span>`)}
 ${fila("Dirección", esc(p.direccion_envio))}
