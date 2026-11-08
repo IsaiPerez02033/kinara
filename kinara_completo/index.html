@@ -47,6 +47,8 @@
   <!-- Marco que hay JavaScript antes de pintar: solo así oculto lo que se anima -->
   <script>document.documentElement.classList.add('js');</script>
 
+  <link rel="preload" as="image" href="assets/hero/d/p2s_000.webp" media="(min-width: 861px), (orientation: landscape)" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/hero/m/p2s_000.webp" media="(max-width: 860px) and (orientation: portrait)" fetchpriority="high" />
   <link rel="stylesheet" href="css/variables.css" />
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/components.css" />
@@ -54,6 +56,8 @@
   <link rel="stylesheet" href="css/sections.css" />
   <link rel="stylesheet" href="css/cuenta.css" />
   <link rel="stylesheet" href="css/movimiento.css" />
+  <!-- Chrome, Edge y Brave descargan la página antes del clic; Safari lo ignora -->
+  <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/pages/admin.html*"}},{"not":{"selector_matches":"[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
 </head>
 
 <body>
@@ -143,7 +147,7 @@
 
   <main id="contenido">
 
-    <!-- HERO: la impresora avanza con el scroll (js/hero3d.js) -->
+    <!-- HERO: la P2S imprime conforme haces scroll (js/hero-secuencia.js) -->
     <section id="hero" aria-label="Bienvenida a Kinara">
       <div class="hero-fijo">
         <canvas id="hero-canvas" aria-hidden="true"></canvas>
@@ -599,6 +603,6 @@
   <script defer src="js/main.js"></script>
   <script defer src="js/carrito.js"></script>
   <script defer src="js/productos.js"></script>
-  <script type="module" src="js/hero3d.js"></script>
+  <script defer src="js/hero-secuencia.js"></script>
 </body>
 </html>

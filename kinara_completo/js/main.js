@@ -1,7 +1,7 @@
 /**
  * main.js — Comportamientos globales del sitio Kinara:
  * header, menú móvil, sección activa y animaciones de entrada.
- * La escena 3D del hero vive en hero3d.js.
+ * El hero (la P2S imprimiendo) vive en hero-secuencia.js.
  */
 
 'use strict';
@@ -17,6 +17,28 @@ const ModuloHeader = (() => {
   return { iniciar };
 })();
 
+/* Safari en iPhone pinta sus barras (arriba y abajo) con theme-color:
+   lo cambio al color de la sección que queda bajo la barra superior */
+const ModuloColorBarra = (() => {
+  const iniciar = () => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const bloques = document.querySelectorAll('#hero, .cinta, .seccion, #footer');
+    if (!meta || !bloques.length || !('IntersectionObserver' in window)) return;
+    const color = new Map();
+    bloques.forEach((el) => {
+      const c = getComputedStyle(el).getPropertyValue('--fondo').trim() || getComputedStyle(el).backgroundColor;
+      color.set(el, c);
+    });
+    const obs = new IntersectionObserver((entradas) => {
+      entradas.forEach((e) => {
+        if (e.isIntersecting && color.get(e.target)) meta.setAttribute('content', color.get(e.target));
+      });
+    }, { rootMargin: '0px 0px -99% 0px' });
+    bloques.forEach((el) => obs.observe(el));
+  };
+  return { iniciar };
+})();
+
 const ModuloMenu = (() => {
   const iniciar = () => {
     const menu = document.getElementById('menu-movil');
@@ -24,11 +46,17 @@ const ModuloMenu = (() => {
     const cerrar = document.getElementById('menu-movil-cerrar');
     if (!menu || !abrir || !cerrar) return;
 
+    // El foco solo se mueve si se usa teclado: con el dedo dejaba el anillo pintado en Safari
+    let conTeclado = false;
+    addEventListener('keydown', () => { conTeclado = true; }, { passive: true });
+    addEventListener('pointerdown', () => { conTeclado = false; }, { passive: true });
+
     const fijar = (abierto) => {
       menu.classList.toggle('abierto', abierto);
       abrir.setAttribute('aria-expanded', String(abierto));
       document.body.style.overflow = abierto ? 'hidden' : '';
-      (abierto ? cerrar : abrir).focus({ preventScroll: true });
+      if (conTeclado) (abierto ? cerrar : abrir).focus({ preventScroll: true });
+      else if (!abierto) document.activeElement?.blur();
     };
 
     abrir.addEventListener('click', () => fijar(true));
@@ -96,6 +124,7 @@ const ModuloEnlaces = (() => {
 document.addEventListener('DOMContentLoaded', () => {
   ModuloHeader.iniciar();
   ModuloMenu.iniciar();
+  ModuloColorBarra.iniciar();
   ModuloSeccionActiva.iniciar();
   ModuloAnimaciones.iniciar();
   ModuloEnlaces.iniciar();

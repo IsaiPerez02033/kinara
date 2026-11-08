@@ -18,15 +18,15 @@
 }
 
 html:active-view-transition-type(pagina)::view-transition-old(root) {
-  animation: mov-salir 0.2s ease both;
+  animation: mov-salir 0.14s ease both;
 }
 
 html:active-view-transition-type(pagina)::view-transition-new(root) {
-  animation: mov-entrar 0.38s var(--curva-salida) both;
+  animation: mov-entrar 0.26s var(--curva-salida) both;
 }
 
 @keyframes mov-salir  { to   { opacity: 0; } }
-@keyframes mov-entrar { from { opacity: 0; transform: translateY(10px); } }
+@keyframes mov-entrar { from { opacity: 0; transform: translateY(6px); } }
 
 /* -------------------------------------------------------
    CATÁLOGO: cascada, hover y reacomodo al filtrar

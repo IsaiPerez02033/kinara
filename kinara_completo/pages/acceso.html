@@ -39,6 +39,8 @@
   <link rel="stylesheet" href="../css/carrito.css" />
   <link rel="stylesheet" href="../css/cuenta.css" />
   <link rel="stylesheet" href="../css/movimiento.css" />
+  <!-- Chrome, Edge y Brave descargan la página antes del clic; Safari lo ignora -->
+  <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/pages/admin.html*"}},{"not":{"selector_matches":"[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
 </head>
 
 <body class="pagina-simple">
@@ -130,9 +132,9 @@
 
   <footer class="pagina-simple-footer">© Kinara · Impresión 3D · México · <a href="envios.html" class="footer-legal">Envíos y devoluciones</a> · <a href="privacidad.html" class="footer-legal">Aviso de privacidad</a></footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
-  <script src="../js/movimiento.js"></script>
-  <script src="../js/lib/supabase.js"></script>
-  <script src="../js/acceso.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
+  <script defer src="../js/movimiento.js"></script>
+  <script defer src="../js/lib/supabase.js"></script>
+  <script defer src="../js/acceso.js"></script>
 </body>
 </html>
