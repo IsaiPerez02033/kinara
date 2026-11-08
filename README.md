@@ -31,7 +31,7 @@ kinara/
 │   └── carrito.js               ← Carrito persistente + checkout + Mercado Pago
 │
 ├── pages/
-│   ├── admin.html               ← Panel de administración completo
+│   ├── admin.html               ← Panel de administración (lógica en js/admin.js, estilo en css/admin.css)
 │   ├── acceso.html              ← Entrar, crear cuenta, recuperar contraseña
 │   ├── cuenta.html              ← Mi cuenta: pedidos, direcciones y datos
 │   ├── privacidad.html          ← Aviso de privacidad
@@ -44,6 +44,7 @@ kinara/
 │   ├── 04_seguridad_checkout.sql ← Checkout en servidor, pagos idempotentes, admins y permisos
 │   ├── 05_catalogo_impresion_3d.sql ← Categorías y catálogo de impresión 3D (precios provisionales)
 │   ├── 06_cuentas_clientes.sql  ← Cuentas de cliente: direcciones y funciones de Mi cuenta
+│   ├── 07_admin_productos.sql   ← Productos ocultos, galería de fotos y bucket de Storage
 │   ├── crear-preferencia-mp.ts  ← Edge Function: crea pedido y preferencia de pago en MP
 │   └── webhook-mp.ts            ← Edge Function: recibe notificaciones de pago de MP
 │
@@ -71,6 +72,7 @@ kinara/
 5. Nueva query → pega `sql/04_seguridad_checkout.sql` → **Run**
 6. Nueva query → pega `sql/05_catalogo_impresion_3d.sql` → **Run**
 7. Nueva query → pega `sql/06_cuentas_clientes.sql` → **Run**
+8. Nueva query → pega `sql/07_admin_productos.sql` → **Run**
 
 > Si la base ya existía, basta con ejecutar `04_seguridad_checkout.sql` y `05_catalogo_impresion_3d.sql`. Se pueden repetir sin problema.
 
@@ -141,11 +143,12 @@ SELECT id FROM auth.users WHERE email = 'tu-correo@ejemplo.com';
 Abre `pages/admin.html` desde el sitio publicado o un servidor local e inicia sesión con tu cuenta de administrador.
 
 **Funcionalidades:**
-- **Dashboard**: estadísticas de stock, alertas de piezas críticas, mensajes recientes
-- **Inventario**: controles +/− para actualizar stock en tiempo real (se refleja en el sitio instantáneamente vía websocket)
-- **Productos**: editar nombre, precio, descripción, destacado, nuevo
-- **Pedidos**: ver y cambiar estado (pendiente → pagado → en_produccion → enviado → entregado)
+- **Resumen**: pedidos por preparar, ventas del mes, agotados y mensajes pendientes
+- **Productos**: crear, editar, subir y ordenar fotos, ajustar stock con +/−, ocultar de la tienda o borrar (solo si no tiene pedidos)
+- **Pedidos**: ver productos, datos de envío y notas; cambiar estado (pagado → en producción → enviado → entregado)
 - **Mensajes**: leer consultas del formulario, marcarlas como respondidas
+
+Las fotos se reducen a 1600 px en el navegador y se suben al bucket público `productos` de Supabase Storage; solo un admin puede subir o borrar.
 
 > **Seguridad**: los datos los protege RLS; solo las cuentas de la tabla `admins` pueden leerlos o cambiarlos. Ocultar la página no es necesario.
 
@@ -221,9 +224,7 @@ En paralelo (webhook)
 
 ## Agregar o editar productos
 
-Desde el **panel admin** (`pages/admin.html` → Productos → Editar).
-
-O directamente en Supabase (Table Editor → tabla `productos`). Al agregar un producto nuevo, también agrega su registro de inventario en la tabla `inventario`.
+Desde el **panel admin** (`pages/admin.html` → Productos → Nuevo producto / Editar). Cada producto nuevo nace con su fila de inventario automáticamente. Para quitarlo de la tienda sin perder su historial, apaga “Visible en la tienda”.
 
 ---
 

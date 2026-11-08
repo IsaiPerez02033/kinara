@@ -221,6 +221,7 @@ const ModuloProducto = (() => {
     const badge = ModuloCatalogo.obtenerEstadoStock(p.stock_actual);
     const categoria = p.coleccion_nombre || p.colecciones?.nombre || ModuloCatalogo.obtenerProducto(p.id)?.coleccion_nombre || '';
     const materiales = Array.isArray(p.materiales) ? p.materiales.join(', ') : '';
+    const fotos = p.imagenes?.length ? p.imagenes : (p.imagen_url ? [p.imagen_url] : []);
 
     const drawer = document.createElement('aside');
     drawer.id = 'producto-drawer';
@@ -233,8 +234,11 @@ const ModuloProducto = (() => {
       </button>
       <div class="detalle-imagen cama" data-categoria="${escHTML(categoria)}">
         ${piezaSVG(categoria)}
-        ${p.imagen_url ? `<img src="${escHTML(p.imagen_url)}" alt="${escHTML(p.nombre)}" decoding="async" onerror="this.remove()">` : ''}
+        ${fotos[0] ? `<img id="detalle-foto" src="${escHTML(fotos[0])}" alt="${escHTML(p.nombre)}" decoding="async" onerror="this.remove()">` : ''}
       </div>
+      ${fotos.length > 1 ? `<div class="detalle-galeria" role="group" aria-label="Fotos de ${escHTML(p.nombre)}">
+        ${fotos.map((url, i) => `<button type="button" data-foto="${escHTML(url)}" aria-label="Ver foto ${i + 1}" ${i === 0 ? 'aria-current="true"' : ''}><img src="${escHTML(url)}" alt="" loading="lazy"></button>`).join('')}
+      </div>` : ''}
       <span class="tarjeta-coleccion">${escHTML(categoria)}</span>
       <h2 class="detalle-titulo">${escHTML(p.nombre)}</h2>
       <span class="badge-stock ${badge.clase}"><span class="punto"></span>${badge.texto}</span>
@@ -257,6 +261,13 @@ const ModuloProducto = (() => {
     document.body.append(overlay, drawer);
     document.body.style.overflow = 'hidden';
     drawer.querySelector('#detalle-cerrar').addEventListener('click', cerrar);
+    drawer.querySelector('.detalle-galeria')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-foto]');
+      const principal = drawer.querySelector('#detalle-foto');
+      if (!btn || !principal) return;
+      principal.src = btn.dataset.foto;
+      drawer.querySelectorAll('[data-foto]').forEach((b) => b.toggleAttribute('aria-current', b === btn));
+    });
     requestAnimationFrame(() => {
       overlay.classList.add('visible');
       drawer.classList.add('abierto');

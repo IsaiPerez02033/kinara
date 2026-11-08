@@ -489,6 +489,31 @@
   height: 100%;
 }
 
+.detalle-galeria {
+  display: flex;
+  gap: 0.5rem;
+  margin: calc(var(--espacio-md) * -0.5) 0 var(--espacio-md);
+  overflow-x: auto;
+}
+
+.detalle-galeria button {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radio-sm);
+  background: var(--color-grafito-2);
+  overflow: hidden;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity var(--transicion-rapida), border-color var(--transicion-rapida);
+}
+
+.detalle-galeria button:hover { opacity: 1; }
+.detalle-galeria button[aria-current] { border-color: var(--color-blanco); opacity: 1; }
+.detalle-galeria img { width: 100%; height: 100%; display: block; }
+
 .detalle-titulo {
   margin: 0.35rem 0 0.75rem;
   font-size: clamp(2rem, 6vw, 2.6rem);

@@ -1,1573 +1,254 @@
 <!DOCTYPE html>
 <!--
-  ============================================================
-  admin.html — Panel de Administración de Kinara
-  Esta página es de uso EXCLUSIVO del administrador de la marca.
-  Desde aquí puedo:
-  - Ver y editar el inventario de todos los productos
-  - Gestionar los pedidos recibidos (cambiar estado)
-  - Leer y responder los mensajes de contacto
-  - Editar datos básicos de los productos
-
-  ACCESO: Esta página debe protegerse con una contraseña
-  o con autenticación de Supabase antes de publicarla.
-  No debe ser indexada por motores de búsqueda.
-  ============================================================
+  admin.html — Panel de administración de Kinara
+  Productos (crear, editar, fotos, stock, ocultar), pedidos y mensajes.
+  Esta pantalla solo decide qué se muestra: los permisos reales
+  los aplica Supabase con RLS y la función es_admin().
+  La lógica vive en js/admin.js y el estilo en css/admin.css.
 -->
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <!-- Evito que los motores de búsqueda indexen el panel admin -->
   <meta name="robots" content="noindex, nofollow" />
-  <title>Admin — Kinara</title>
+  <title>Panel — Kinara</title>
 
-  <!-- Favicon pequeño para distinguir la pestaña del admin -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,
-    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>
-      <polygon points='16,2 30,16 16,30 2,16' fill='%23D4A373' opacity='0.5'/>
-    </svg>" />
-
-  <!-- Importo la tipografía de la marca -->
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..700&display=swap" rel="stylesheet" />
-
-  <style>
-    /* -------------------------------------------------------
-       Variables del panel admin — uso un subconjunto de la
-       paleta de la marca con ajustes para una interfaz más
-       funcional y menos decorativa que el sitio público.
-       ------------------------------------------------------- */
-    :root {
-      --negro:        #12100E;
-      --grafito:      #1C1916;
-      --grafito-2:    #27231F;
-      --borde:        #342F29;
-      --borde-2:      #453E36;
-      --blanco:       #F6F1E8;
-      --blanco-dim:   #B5AC9E;
-      --dorado:       #F0B429;
-      --dorado-dim:   rgba(240,180,41,0.15);
-      --verde:        #7BC99A;
-      --verde-dim:    rgba(123,201,154,0.1);
-      --rojo:         #C07070;
-      --rojo-dim:     rgba(192,112,112,0.1);
-      --amarillo:     #D4B96A;
-      --amarillo-dim: rgba(212,185,106,0.1);
-      --fuente:       'Archivo', system-ui, sans-serif;
-      --fuente-d:     'Archivo', system-ui, sans-serif;
-      --radio:        6px;
-      --sidebar-w:    220px;
-      --header-h:     56px;
-    }
-
-    /* Reset básico */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { font-size: 14px; }
-    body {
-      background: var(--negro);
-      color: var(--blanco);
-      font-family: var(--fuente);
-      font-weight: 300;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      min-height: 100vh;
-      min-height: 100dvh;
-    }
-    a { text-decoration: none; color: inherit; }
-    button { font-family: var(--fuente); cursor: pointer; border: none; }
-    input, select, textarea { font-family: var(--fuente); }
-
-    /* -------------------------------------------------------
-       LAYOUT GENERAL — sidebar fijo + área de contenido
-       ------------------------------------------------------- */
-
-    /* Header del panel admin */
-    .admin-header {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      height: var(--header-h);
-      background: var(--grafito);
-      border-bottom: 1px solid var(--borde);
-      display: flex;
-      align-items: center;
-      padding: 0 1.5rem;
-      z-index: 100;
-      gap: 1rem;
-      justify-content: space-between;
-    }
-
-    /* Logo del admin más pequeño */
-    .admin-logo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-family: var(--fuente-d);
-      font-size: 1.1rem;
-      letter-spacing: 0.15em;
-    }
-
-    /* Badge "Admin" en el header */
-    .admin-badge {
-      font-family: var(--fuente);
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      padding: 2px 8px;
-      background: var(--dorado-dim);
-      border: 1px solid rgba(255,106,43,0.25);
-      color: var(--dorado);
-      border-radius: 999px;
-    }
-
-    /* Link de vuelta al sitio */
-    .admin-header-link {
-      font-size: 0.75rem;
-      color: var(--blanco-dim);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: color 0.2s;
-    }
-    .admin-header-link:hover { color: var(--blanco); }
-
-    /* Sidebar de navegación lateral */
-    .admin-sidebar {
-      position: fixed;
-      top: var(--header-h);
-      left: 0;
-      bottom: 0;
-      width: var(--sidebar-w);
-      background: var(--grafito);
-      border-right: 1px solid var(--borde);
-      padding: 1.5rem 0;
-      overflow-y: auto;
-      z-index: 90;
-    }
-
-    /* Grupo de navegación en el sidebar */
-    .sidebar-grupo {
-      margin-bottom: 1.5rem;
-    }
-
-    .sidebar-titulo-grupo {
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--blanco-dim);
-      opacity: 0.5;
-      padding: 0 1.25rem;
-      margin-bottom: 0.5rem;
-    }
-
-    /* Ítem del menú lateral */
-    .sidebar-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.625rem 1.25rem;
-      font-size: 0.875rem;
-      color: var(--blanco-dim);
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-      border-left: 2px solid transparent;
-    }
-
-    /* Estado activo del ítem del sidebar */
-    .sidebar-item.activo,
-    .sidebar-item:hover {
-      background: rgba(255,106,43,0.05);
-      color: var(--blanco);
-      border-left-color: var(--dorado);
-    }
-
-    /* Punto de color del ítem */
-    .sidebar-punto {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    /* Badge con número en el sidebar (para pendientes) */
-    .sidebar-badge {
-      margin-left: auto;
-      font-size: 0.65rem;
-      padding: 1px 6px;
-      background: var(--dorado-dim);
-      color: var(--dorado);
-      border-radius: 999px;
-    }
-
-    /* Área de contenido principal */
-    .admin-contenido {
-      margin-left: var(--sidebar-w);
-      margin-top: var(--header-h);
-      padding: 2rem;
-      min-height: calc(100vh - var(--header-h));
-    }
-
-    /* -------------------------------------------------------
-       COMPONENTES COMUNES DEL ADMIN
-       ------------------------------------------------------- */
-
-    /* Cabecera de cada sección */
-    .seccion-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--borde);
-    }
-
-    .seccion-titulo {
-      font-family: var(--fuente-d);
-      font-size: 1.5rem;
-      font-weight: 300;
-      color: var(--blanco);
-    }
-
-    .seccion-subtitulo {
-      font-size: 0.75rem;
-      color: var(--blanco-dim);
-      margin-top: 2px;
-    }
-
-    /* Tarjeta de estadísticas en el dashboard */
-    .stat-card {
-      background: var(--grafito);
-      border: 1px solid var(--borde);
-      border-radius: var(--radio);
-      padding: 1.25rem;
-    }
-
-    .stat-label {
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--blanco-dim);
-      margin-bottom: 0.5rem;
-    }
-
-    .stat-valor {
-      font-family: var(--fuente-d);
-      font-size: 2rem;
-      font-weight: 300;
-      line-height: 1;
-    }
-
-    .stat-cambio {
-      font-size: 0.75rem;
-      color: var(--blanco-dim);
-      margin-top: 4px;
-    }
-
-    /* Tabla del admin */
-    .admin-tabla {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .admin-tabla th {
-      text-align: left;
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--blanco-dim);
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--borde);
-      font-weight: 400;
-    }
-
-    .admin-tabla td {
-      padding: 0.875rem 1rem;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      font-size: 0.875rem;
-    }
-
-    .admin-tabla tr:hover td {
-      background: rgba(255,255,255,0.02);
-    }
-
-    /* Contenedor de tabla con fondo */
-    .tabla-contenedor {
-      background: var(--grafito);
-      border: 1px solid var(--borde);
-      border-radius: var(--radio);
-      overflow: hidden;
-    }
-
-    /* -------------------------------------------------------
-       CONTROL DE STOCK — Input numérico con botones +/-
-       ------------------------------------------------------- */
-    .stock-control {
-      display: inline-flex;
-      align-items: center;
-      gap: 0;
-      border: 1px solid var(--borde-2);
-      border-radius: var(--radio);
-      overflow: hidden;
-    }
-
-    /* Botón de ajuste de stock */
-    .stock-btn {
-      width: 28px;
-      height: 28px;
-      background: var(--grafito-2);
-      color: var(--blanco);
-      font-size: 1rem;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.15s;
-      cursor: pointer;
-      border: none;
-    }
-
-    .stock-btn:hover { background: rgba(240,180,41,0.15); color: var(--dorado); }
-
-    /* Input del número de stock */
-    .stock-input {
-      width: 48px;
-      height: 28px;
-      background: transparent;
-      border: none;
-      border-left: 1px solid var(--borde-2);
-      border-right: 1px solid var(--borde-2);
-      color: var(--blanco);
-      text-align: center;
-      font-size: 0.875rem;
-      outline: none;
-      -moz-appearance: textfield;
-    }
-    .stock-input::-webkit-inner-spin-button,
-    .stock-input::-webkit-outer-spin-button { -webkit-appearance: none; }
-
-    /* -------------------------------------------------------
-       BADGES DE ESTADO
-       ------------------------------------------------------- */
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 3px 10px;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      letter-spacing: 0.05em;
-    }
-
-    .badge-verde   { background: var(--verde-dim);    color: var(--verde);    border: 1px solid rgba(123,201,154,.2); }
-    .badge-rojo    { background: var(--rojo-dim);     color: var(--rojo);     border: 1px solid rgba(192,112,112,.2); }
-    .badge-dorado  { background: var(--dorado-dim);   color: var(--dorado);   border: 1px solid rgba(255,106,43,.2); }
-    .badge-azul    { background: rgba(100,150,200,.1); color: #7AAFD4;        border: 1px solid rgba(100,150,200,.2); }
-    .badge-gris    { background: rgba(255,255,255,.05); color: var(--blanco-dim); border: 1px solid var(--borde); }
-
-    /* -------------------------------------------------------
-       BOTONES
-       ------------------------------------------------------- */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 0.5rem 1rem;
-      font-size: 0.75rem;
-      letter-spacing: 0.08em;
-      border-radius: var(--radio);
-      transition: all 0.2s;
-      border: 1px solid transparent;
-    }
-
-    .btn-dorado {
-      background: var(--dorado);
-      color: var(--negro);
-      border-color: var(--dorado);
-    }
-    .btn-dorado:hover { background: #E8C99A; }
-
-    .btn-outline {
-      background: transparent;
-      color: var(--blanco-dim);
-      border-color: var(--borde-2);
-    }
-    .btn-outline:hover { border-color: var(--dorado); color: var(--dorado); }
-
-    .btn-peligro {
-      background: var(--rojo-dim);
-      color: var(--rojo);
-      border-color: rgba(192,112,112,.2);
-    }
-    .btn-peligro:hover { background: rgba(192,112,112,.2); }
-
-    .btn-exito {
-      background: var(--verde-dim);
-      color: var(--verde);
-      border-color: rgba(123,201,154,.2);
-    }
-    .btn-exito:hover { background: rgba(123,201,154,.2); }
-
-    /* -------------------------------------------------------
-       SECCIONES (paneles) — se muestran/ocultan con JS
-       ------------------------------------------------------- */
-    .panel-seccion { display: none; }
-    .panel-seccion.activo { display: block; }
-
-    /* -------------------------------------------------------
-       FORMULARIO DE EDICIÓN DE PRODUCTO
-       ------------------------------------------------------- */
-    .form-grupo {
-      margin-bottom: 1rem;
-    }
-
-    .form-label {
-      display: block;
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--dorado);
-      margin-bottom: 0.4rem;
-    }
-
-    .form-input {
-      width: 100%;
-      background: var(--grafito-2);
-      border: 1px solid var(--borde-2);
-      color: var(--blanco);
-      font-family: var(--fuente);
-      font-size: 0.875rem;
-      padding: 0.625rem 0.875rem;
-      border-radius: var(--radio);
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .form-input:focus { border-color: var(--dorado); }
-    .form-input option { background: var(--grafito); }
-
-    /* -------------------------------------------------------
-       NOTIFICACIONES TOAST
-       ------------------------------------------------------- */
-    #toast-container {
-      position: fixed;
-      bottom: 1.5rem;
-      right: 1.5rem;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .toast {
-      padding: 0.75rem 1.25rem;
-      background: var(--grafito);
-      border: 1px solid var(--borde-2);
-      border-radius: var(--radio);
-      font-size: 0.875rem;
-      color: var(--blanco);
-      animation: toast-entrar 0.3s ease;
-      max-width: 300px;
-    }
-
-    .toast.exito  { border-left: 3px solid var(--verde);  }
-    .toast.error  { border-left: 3px solid var(--rojo);   }
-
-    @keyframes toast-entrar {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* -------------------------------------------------------
-       RESPONSIVE básico
-       ------------------------------------------------------- */
-    @media (max-width: 900px) {
-      .admin-sidebar   { width: 180px; }
-      .admin-contenido { margin-left: 180px; }
-    }
-
-    @media (max-width: 600px) {
-      .admin-sidebar   { display: none; }
-      .admin-contenido { margin-left: 0; }
-    }
-
-    /* -------------------------------------------------------
-       PANTALLA DE AUTENTICACIÓN
-       ------------------------------------------------------- */
-    #auth-overlay {
-      position: fixed;
-      inset: 0;
-      background: var(--negro);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #auth-overlay.oculto { display: none; }
-    .auth-box {
-      background: var(--grafito);
-      border: 1px solid var(--borde-2);
-      border-radius: 12px;
-      padding: 2.5rem 2rem;
-      width: 100%;
-      max-width: 380px;
-      text-align: center;
-    }
-    .auth-box h2 {
-      font-family: var(--fuente-d);
-      font-size: 1.8rem;
-      color: var(--dorado);
-      margin-bottom: .4rem;
-    }
-    .auth-box p {
-      color: var(--blanco-dim);
-      font-size: .85rem;
-      margin-bottom: 1.8rem;
-    }
-    .auth-input {
-      width: 100%;
-      padding: .75rem 1rem;
-      background: var(--grafito-2);
-      border: 1px solid var(--borde-2);
-      border-radius: 8px;
-      color: var(--blanco);
-      font-size: 1rem;
-      margin-bottom: 1rem;
-      box-sizing: border-box;
-      text-align: center;
-    }
-    .auth-input:focus { outline: 1px solid var(--dorado); }
-    .auth-btn {
-      width: 100%;
-      padding: .85rem;
-      background: var(--dorado);
-      color: var(--negro);
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: .95rem;
-      cursor: pointer;
-      transition: opacity .2s;
-    }
-    .auth-btn:hover { opacity: .85; }
-    .auth-error {
-      color: #e05;
-      font-size: .82rem;
-      margin-top: .75rem;
-      min-height: 1.2rem;
-    }
-    .auth-attempts {
-      color: var(--blanco-dim);
-      font-size: .78rem;
-      margin-top: .5rem;
-    }
-  </style>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="../css/variables.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
 </head>
 
-<body>
+<body class="admin">
 
-  <!-- =====================================================
-       OVERLAY DE AUTENTICACIÓN
-       Se muestra hasta que un administrador inicia sesión con
-       Supabase Auth. Los permisos reales los aplica RLS.
-       ===================================================== -->
-  <div id="auth-overlay">
-    <form class="auth-box" id="auth-form">
-      <img src="../assets/images/logo-kinara-marca-blanco.svg" alt="" width="56" height="56" style="display:block;margin:0 auto 0.75rem" />
-      <h2>Kinara Admin</h2>
-      <p>Inicia sesión con tu cuenta de administrador</p>
-      <input id="auth-email" class="auth-input" type="email" placeholder="Correo" autocomplete="username" required />
-      <input id="auth-password" class="auth-input" type="password" placeholder="Contraseña" autocomplete="current-password" required />
-      <button class="auth-btn" id="auth-btn" type="submit">Acceder</button>
-      <div class="auth-error" id="auth-error" role="alert"></div>
+  <!-- ACCESO -->
+  <div class="a-acceso" id="acceso">
+    <form class="a-acceso-caja" id="acceso-form" novalidate>
+      <div class="a-acceso-marca">
+        <img src="../assets/images/logo-kinara-marca-blanco.svg" alt="" width="36" height="36" />
+        <strong>KINARA</strong>
+      </div>
+      <h1>Panel de la tienda</h1>
+      <p>Entra con tu cuenta de administrador.</p>
+      <div class="a-campo">
+        <label class="a-label" for="acceso-email">Correo</label>
+        <input id="acceso-email" class="a-input" type="email" autocomplete="username" required />
+      </div>
+      <div class="a-campo">
+        <label class="a-label" for="acceso-password">Contraseña</label>
+        <input id="acceso-password" class="a-input" type="password" autocomplete="current-password" required />
+      </div>
+      <p class="a-acceso-error" id="acceso-error" role="alert"></p>
+      <button class="a-btn a-btn-primario" id="acceso-btn" type="submit">Entrar</button>
+      <a class="a-btn a-btn-claro" href="acceso.html?modo=recuperar">Olvidé mi contraseña</a>
     </form>
   </div>
 
+  <!-- PANEL -->
+  <div class="a-app" id="app" hidden>
+    <aside class="a-lateral">
+      <a class="a-marca" href="../index.html" aria-label="Ir a la tienda">
+        <img src="../assets/images/logo-kinara-marca-blanco.svg" alt="" width="28" height="28" />
+        <strong>KINARA</strong>
+        <span>Panel</span>
+      </a>
 
-  <!-- =====================================================
-       HEADER DEL PANEL ADMIN
-       ===================================================== -->
-  <header class="admin-header">
-    <!-- Logo y badge -->
-    <div style="display:flex;align-items:center;gap:1rem;">
-      <div class="admin-logo">
-        <img src="../assets/images/logo-kinara-marca-blanco.svg" alt="" width="26" height="26" />
-        KINARA
+      <nav class="a-nav" aria-label="Secciones del panel">
+        <button type="button" class="a-nav-item" data-panel="resumen" style="--color-seccion: var(--ocre)">Resumen</button>
+        <button type="button" class="a-nav-item" data-panel="productos" style="--color-seccion: var(--cobalto)">Productos</button>
+        <button type="button" class="a-nav-item" data-panel="pedidos" style="--color-seccion: var(--bermellon)">
+          Pedidos <span class="a-nav-contador" id="contador-pedidos" hidden></span>
+        </button>
+        <button type="button" class="a-nav-item" data-panel="mensajes" style="--color-seccion: var(--pino)">
+          Mensajes <span class="a-nav-contador" id="contador-mensajes" hidden></span>
+        </button>
+      </nav>
+
+      <div class="a-lateral-pie">
+        <span class="a-usuario" id="usuario-email"></span>
+        <a href="../index.html" target="_blank" rel="noopener">Ver tienda ↗</a>
+        <button type="button" id="btn-salir">Cerrar sesión</button>
       </div>
-      <span class="admin-badge">Panel Admin</span>
-    </div>
+    </aside>
 
-    <!-- Enlace de vuelta al sitio -->
-    <div style="display:flex;align-items:center;gap:1.5rem;">
-    <button type="button" class="admin-header-link" onclick="cerrarSesion()" style="background:none;border:none;cursor:pointer;">Cerrar sesión</button>
-    <a href="../index.html" class="admin-header-link">
-      ← Ver sitio público
-    </a>
-    </div>
-  </header>
+    <main class="a-main" id="contenido">
 
-
-  <!-- =====================================================
-       SIDEBAR DE NAVEGACIÓN
-       ===================================================== -->
-  <nav class="admin-sidebar" aria-label="Navegación del panel admin">
-
-    <!-- Grupo: Dashboard -->
-    <div class="sidebar-grupo">
-      <div class="sidebar-titulo-grupo">General</div>
-      <div class="sidebar-item activo" onclick="mostrarPanel('dashboard')" id="nav-dashboard">
-        <span class="sidebar-punto" style="background:#FF6A2B;"></span>
-        Dashboard
-      </div>
-    </div>
-
-    <!-- Grupo: Catálogo -->
-    <div class="sidebar-grupo">
-      <div class="sidebar-titulo-grupo">Catálogo</div>
-      <div class="sidebar-item" onclick="mostrarPanel('inventario')" id="nav-inventario">
-        <span class="sidebar-punto" style="background:#7BC99A;"></span>
-        Inventario
-      </div>
-      <div class="sidebar-item" onclick="mostrarPanel('productos')" id="nav-productos">
-        <span class="sidebar-punto" style="background:#7AAFD4;"></span>
-        Productos
-      </div>
-    </div>
-
-    <!-- Grupo: Ventas -->
-    <div class="sidebar-grupo">
-      <div class="sidebar-titulo-grupo">Ventas</div>
-      <div class="sidebar-item" onclick="mostrarPanel('pedidos')" id="nav-pedidos">
-        <span class="sidebar-punto" style="background:#D4B96A;"></span>
-        Pedidos
-        <span class="sidebar-badge" id="badge-pedidos-pendientes">0</span>
-      </div>
-    </div>
-
-    <!-- Grupo: Comunicación -->
-    <div class="sidebar-grupo">
-      <div class="sidebar-titulo-grupo">Comunicación</div>
-      <div class="sidebar-item" onclick="mostrarPanel('contactos')" id="nav-contactos">
-        <span class="sidebar-punto" style="background:#C07070;"></span>
-        Mensajes
-        <span class="sidebar-badge" id="badge-contactos-pendientes">0</span>
-      </div>
-    </div>
-  </nav>
-
-
-  <!-- =====================================================
-       ÁREA DE CONTENIDO PRINCIPAL
-       ===================================================== -->
-  <main class="admin-contenido">
-
-    <!-- ===================================================
-         PANEL: DASHBOARD
-         Resumen de métricas clave de la operación.
-         ================================================= -->
-    <section id="panel-dashboard" class="panel-seccion activo">
-
-      <div class="seccion-header">
-        <div>
-          <h1 class="seccion-titulo">Dashboard</h1>
-          <p class="seccion-subtitulo" id="dashboard-fecha">Cargando...</p>
-        </div>
-        <button class="btn btn-outline" onclick="cargarTodo()">↻ Actualizar</button>
-      </div>
-
-      <!-- Grid de estadísticas -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;" id="stats-grid">
-        <!-- Las cards se generan dinámicamente con JS -->
-        <div class="stat-card"><div class="stat-label">Cargando...</div></div>
-      </div>
-
-      <!-- Alerta de stock crítico -->
-      <div id="alerta-stock-critico" style="display:none;"></div>
-
-      <!-- Grid inferior: últimos pedidos + últimos mensajes -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
-
-        <!-- Últimos pedidos -->
-        <div class="tabla-contenedor">
-          <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--borde);">
-            <h3 style="font-size:0.875rem;font-weight:400;">Pedidos recientes</h3>
+      <!-- RESUMEN -->
+      <section class="a-panel" id="panel-resumen" hidden>
+        <header class="a-cabecera">
+          <div>
+            <h1 class="a-titulo">Resumen</h1>
+            <p class="a-subtitulo" id="resumen-fecha"></p>
           </div>
-          <div id="dashboard-pedidos-recientes" style="padding:0.75rem 0;">
-            <p style="text-align:center;color:var(--blanco-dim);font-size:0.875rem;padding:1.5rem;">
-              Cargando...
-            </p>
-          </div>
+          <button type="button" class="a-btn" data-recargar>Actualizar</button>
+        </header>
+
+        <div class="a-cifras" id="resumen-cifras">
+          <div class="a-cargando" style="grid-column: 1 / -1; height: 160px"></div>
         </div>
 
-        <!-- Últimos mensajes -->
-        <div class="tabla-contenedor">
-          <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--borde);">
-            <h3 style="font-size:0.875rem;font-weight:400;">Mensajes sin responder</h3>
+        <div class="a-columnas">
+          <div class="a-caja">
+            <h2 class="a-caja-titulo">Pedidos recientes <button type="button" data-ir="pedidos">Ver todos</button></h2>
+            <div id="resumen-pedidos"></div>
           </div>
-          <div id="dashboard-mensajes" style="padding:0.75rem 0;">
-            <p style="text-align:center;color:var(--blanco-dim);font-size:0.875rem;padding:1.5rem;">
-              Cargando...
-            </p>
+          <div class="a-caja">
+            <h2 class="a-caja-titulo">Mensajes sin responder <button type="button" data-ir="mensajes">Ver todos</button></h2>
+            <div id="resumen-mensajes"></div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
+      <!-- PRODUCTOS -->
+      <section class="a-panel" id="panel-productos" hidden>
+        <header class="a-cabecera">
+          <div>
+            <h1 class="a-titulo">Productos</h1>
+            <p class="a-subtitulo" id="productos-conteo"></p>
+          </div>
+          <button type="button" class="a-btn a-btn-primario" id="btn-nuevo">+ Nuevo producto</button>
+        </header>
 
-    <!-- ===================================================
-         PANEL: INVENTARIO
-         Control de stock de cada producto.
-         ================================================= -->
-    <section id="panel-inventario" class="panel-seccion">
-
-      <div class="seccion-header">
-        <div>
-          <h1 class="seccion-titulo">Inventario</h1>
-          <p class="seccion-subtitulo">Gestiona el stock de cada producto en tiempo real</p>
-        </div>
-        <div style="display:flex;gap:0.75rem;">
-          <!-- Selector de filtro por categoría -->
-          <select class="form-input" style="width:180px;" onchange="filtrarInventario(this.value)" id="filtro-inventario-col">
-            <option value="Todos">Todas las categorías</option>
-            <option value="Lámparas">Lámparas</option>
-            <option value="Herramientas">Herramientas</option>
-            <option value="Moldes">Moldes</option>
-            <option value="Juguetes">Juguetes</option>
-            <option value="Figuras">Figuras</option>
+        <div class="a-barra">
+          <input type="search" class="a-input a-buscar" id="productos-buscar" placeholder="Buscar por nombre" aria-label="Buscar productos" />
+          <select class="a-input" id="productos-categoria" aria-label="Filtrar por categoría">
+            <option value="">Todas las categorías</option>
           </select>
+          <div class="a-segmento" role="group" aria-label="Visibilidad">
+            <button type="button" data-vis="todos" aria-pressed="true">Todos</button>
+            <button type="button" data-vis="visibles" aria-pressed="false">En tienda</button>
+            <button type="button" data-vis="ocultos" aria-pressed="false">Ocultos</button>
+          </div>
         </div>
-      </div>
 
-      <!-- Tabla de inventario -->
-      <div class="tabla-contenedor">
-        <table class="admin-tabla">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Categoría</th>
-              <th>Stock actual</th>
-              <th>Estado</th>
-              <th>Actualizar stock</th>
-              <th>Última actualización</th>
-            </tr>
-          </thead>
-          <tbody id="inventario-tbody">
-            <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--blanco-dim);">Cargando...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-
-    <!-- ===================================================
-         PANEL: PRODUCTOS
-         Edición básica de datos de cada producto.
-         ================================================= -->
-    <section id="panel-productos" class="panel-seccion">
-
-      <div class="seccion-header">
-        <div>
-          <h1 class="seccion-titulo">Productos</h1>
-          <p class="seccion-subtitulo">Edita los datos de cada producto del catálogo</p>
+        <div class="a-tabla">
+          <div class="a-tabla-cabeza" aria-hidden="true">
+            <span></span><span>Producto</span><span>Categoría</span><span>Precio</span><span>Stock</span><span>En tienda</span><span></span>
+          </div>
+          <div id="productos-lista"></div>
         </div>
-      </div>
+      </section>
 
-      <!-- Tabla de productos con botón de edición -->
-      <div class="tabla-contenedor">
-        <table class="admin-tabla">
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Categoría</th>
-              <th>Precio (MXN)</th>
-              <th>Destacado</th>
-              <th>Nuevo</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="productos-tbody">
-            <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--blanco-dim);">Cargando...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+      <!-- PEDIDOS -->
+      <section class="a-panel" id="panel-pedidos" hidden>
+        <header class="a-cabecera">
+          <div>
+            <h1 class="a-titulo">Pedidos</h1>
+            <p class="a-subtitulo" id="pedidos-conteo"></p>
+          </div>
+          <div class="a-segmento" role="group" aria-label="Filtrar pedidos" id="pedidos-filtro">
+            <button type="button" data-estado="" aria-pressed="true">Todos</button>
+            <button type="button" data-estado="pagado" aria-pressed="false">Pagados</button>
+            <button type="button" data-estado="en_produccion" aria-pressed="false">En producción</button>
+            <button type="button" data-estado="enviado" aria-pressed="false">Enviados</button>
+            <button type="button" data-estado="pendiente" aria-pressed="false">Sin pagar</button>
+          </div>
+        </header>
+        <div class="a-lista" id="pedidos-lista"></div>
+      </section>
 
-
-    <!-- ===================================================
-         PANEL: PEDIDOS
-         Gestión de órdenes de compra.
-         ================================================= -->
-    <section id="panel-pedidos" class="panel-seccion">
-
-      <div class="seccion-header">
-        <div>
-          <h1 class="seccion-titulo">Pedidos</h1>
-          <p class="seccion-subtitulo">Gestiona todas las órdenes de compra</p>
-        </div>
-        <!-- Filtros por estado -->
-        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-          <button class="btn btn-outline activo-filtro" onclick="filtrarPedidos(null,this)" data-estado="">Todos</button>
-          <button class="btn btn-outline" onclick="filtrarPedidos('pendiente',this)" data-estado="pendiente">Pendientes</button>
-          <button class="btn btn-outline" onclick="filtrarPedidos('pagado',this)" data-estado="pagado">Pagados</button>
-          <button class="btn btn-outline" onclick="filtrarPedidos('en_produccion',this)" data-estado="en_produccion">En producción</button>
-          <button class="btn btn-outline" onclick="filtrarPedidos('enviado',this)" data-estado="enviado">Enviados</button>
-        </div>
-      </div>
-
-      <!-- Tabla de pedidos -->
-      <div class="tabla-contenedor">
-        <table class="admin-tabla">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Cliente</th>
-              <th>Total</th>
-              <th>Estado</th>
-              <th>Fecha</th>
-              <th>Cambiar estado</th>
-            </tr>
-          </thead>
-          <tbody id="pedidos-tbody">
-            <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--blanco-dim);">
-              Los pedidos aparecerán aquí cuando se implementen los pagos (Fase 3)
-            </td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-
-    <!-- ===================================================
-         PANEL: MENSAJES DE CONTACTO
-         Inbox de mensajes del formulario del sitio.
-         ================================================= -->
-    <section id="panel-contactos" class="panel-seccion">
-
-      <div class="seccion-header">
-        <div>
-          <h1 class="seccion-titulo">Mensajes</h1>
-          <p class="seccion-subtitulo">Consultas recibidas desde el formulario del sitio web</p>
-        </div>
-        <!-- Filtro respondidos/pendientes -->
-        <div style="display:flex;gap:0.5rem;">
-          <button class="btn btn-outline activo-filtro" onclick="filtrarContactos(false,this)">Sin responder</button>
-          <button class="btn btn-outline" onclick="filtrarContactos(true,this)">Respondidos</button>
-        </div>
-      </div>
-
-      <!-- Lista de mensajes como cards -->
-      <div id="contactos-lista" style="display:flex;flex-direction:column;gap:0.75rem;">
-        <p style="text-align:center;color:var(--blanco-dim);padding:2rem;">Cargando mensajes...</p>
-      </div>
-    </section>
-  </main>
-
-
-  <!-- =====================================================
-       MODAL DE EDICIÓN DE PRODUCTO
-       ===================================================== -->
-  <div id="modal-producto" style="display:none;position:fixed;inset:0;z-index:500;
-       background:rgba(0,0,0,0.7);align-items:center;justify-content:center;">
-    <div style="background:var(--grafito);border:1px solid var(--borde);border-radius:var(--radio);
-                padding:2rem;width:min(500px,90vw);max-height:90vh;overflow-y:auto;">
-
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
-        <h2 style="font-family:var(--fuente-d);font-size:1.3rem;font-weight:300;">Editar producto</h2>
-        <button onclick="cerrarModal()" style="color:var(--blanco-dim);font-size:1.25rem;background:none;">×</button>
-      </div>
-
-      <!-- Campos del formulario de edición -->
-      <input type="hidden" id="editar-id" />
-
-      <div class="form-grupo">
-        <label class="form-label">Nombre</label>
-        <input type="text" id="editar-nombre" class="form-input" />
-      </div>
-
-      <div class="form-grupo">
-        <label class="form-label">Descripción</label>
-        <textarea id="editar-descripcion" class="form-input" rows="3"></textarea>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-        <div class="form-grupo">
-          <label class="form-label">Precio (MXN)</label>
-          <input type="number" id="editar-precio" class="form-input" min="0" step="0.01" />
-        </div>
-        <div class="form-grupo">
-          <label class="form-label">Acabado</label>
-          <input type="text" id="editar-acabado" class="form-input" />
-        </div>
-      </div>
-
-      <div class="form-grupo">
-        <label class="form-label">Dimensiones</label>
-        <input type="text" id="editar-dimensiones" class="form-input" />
-      </div>
-
-      <!-- Toggles de destacado y nuevo -->
-      <div style="display:flex;gap:2rem;margin-bottom:1.5rem;">
-        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;">
-          <input type="checkbox" id="editar-destacado" style="accent-color:var(--dorado);" />
-          Destacado en el catálogo
-        </label>
-        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;">
-          <input type="checkbox" id="editar-nuevo" style="accent-color:var(--dorado);" />
-          Marcar como nuevo
-        </label>
-      </div>
-
-      <!-- Botones del modal -->
-      <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
-        <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
-        <button class="btn btn-dorado" onclick="guardarProducto()">Guardar cambios</button>
-      </div>
-    </div>
+      <!-- MENSAJES -->
+      <section class="a-panel" id="panel-mensajes" hidden>
+        <header class="a-cabecera">
+          <div>
+            <h1 class="a-titulo">Mensajes</h1>
+            <p class="a-subtitulo">Lo que llega del formulario de contacto</p>
+          </div>
+          <div class="a-segmento" role="group" aria-label="Filtrar mensajes" id="mensajes-filtro">
+            <button type="button" data-respondido="false" aria-pressed="true">Sin responder</button>
+            <button type="button" data-respondido="true" aria-pressed="false">Respondidos</button>
+          </div>
+        </header>
+        <div class="a-lista" id="mensajes-lista"></div>
+      </section>
+    </main>
   </div>
 
+  <!-- EDITOR DE PRODUCTO -->
+  <div class="a-velo" id="editor-velo" hidden></div>
+  <form class="a-editor" id="editor" role="dialog" aria-modal="true" aria-labelledby="editor-titulo" novalidate hidden>
+    <div class="a-editor-cabeza">
+      <h2 id="editor-titulo">Nuevo producto</h2>
+      <button type="button" class="a-btn-icono" data-cerrar-editor aria-label="Cerrar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
 
-  <!-- =====================================================
-       CONTENEDOR DE TOASTS (notificaciones)
-       ===================================================== -->
-  <div id="toast-container" aria-live="polite"></div>
+    <div class="a-editor-cuerpo">
+      <section class="a-editor-seccion">
+        <h3>Fotos</h3>
+        <div class="a-fotos" id="editor-fotos"></div>
+        <p class="a-ayuda">La primera es la principal. Usa fotos cuadradas con buena luz; se reducen solas a 1600 px.</p>
+      </section>
 
+      <section class="a-editor-seccion">
+        <h3>Datos</h3>
+        <div class="a-campo">
+          <label class="a-label" for="ed-nombre">Nombre</label>
+          <input id="ed-nombre" class="a-input" maxlength="120" required />
+        </div>
+        <div class="a-dos">
+          <div class="a-campo">
+            <label class="a-label" for="ed-categoria">Categoría</label>
+            <select id="ed-categoria" class="a-input" required></select>
+          </div>
+          <div class="a-campo">
+            <label class="a-label" for="ed-precio">Precio <em>(MXN, con IVA)</em></label>
+            <input id="ed-precio" class="a-input mono" type="number" min="0" step="1" inputmode="decimal" required />
+          </div>
+        </div>
+        <div class="a-campo">
+          <label class="a-label" for="ed-descripcion">Descripción</label>
+          <textarea id="ed-descripcion" class="a-input" maxlength="1500"></textarea>
+        </div>
+        <div class="a-dos">
+          <div class="a-campo">
+            <label class="a-label" for="ed-dimensiones">Medidas</label>
+            <input id="ed-dimensiones" class="a-input" placeholder="12 × 8 × 20 cm" maxlength="80" />
+          </div>
+          <div class="a-campo">
+            <label class="a-label" for="ed-acabado">Acabado</label>
+            <input id="ed-acabado" class="a-input" placeholder="Mate, color a elegir" maxlength="80" />
+          </div>
+        </div>
+        <div class="a-dos">
+          <div class="a-campo">
+            <label class="a-label" for="ed-materiales">Materiales <em>(separados por coma)</em></label>
+            <input id="ed-materiales" class="a-input" placeholder="PLA, PETG" maxlength="160" />
+          </div>
+          <div class="a-campo">
+            <label class="a-label" for="ed-stock">Piezas en stock</label>
+            <input id="ed-stock" class="a-input mono" type="number" min="0" step="1" inputmode="numeric" />
+          </div>
+        </div>
+      </section>
 
-  <!-- =====================================================
-       SCRIPTS
-       ===================================================== -->
+      <section class="a-editor-seccion">
+        <h3>En la tienda</h3>
+        <label class="a-switch"><input type="checkbox" id="ed-activo" />
+          <span>Visible en la tienda<small>Si lo apagas, nadie lo ve ni lo puede comprar.</small></span></label>
+        <label class="a-switch"><input type="checkbox" id="ed-destacado" />
+          <span>Destacado<small>Aparece primero en el catálogo.</small></span></label>
+        <label class="a-switch"><input type="checkbox" id="ed-nuevo" />
+          <span>Marcar como nuevo</span></label>
+      </section>
 
+      <p class="a-error-form" id="editor-error" role="alert" hidden></p>
+    </div>
 
-  <!-- Pido a supabase.js que conserve la sesión de Auth -->
-  <script>window.KINARA_ADMIN = true;</script>
+    <div class="a-editor-pie">
+      <button type="button" class="a-btn a-btn-peligro a-btn-chico" id="ed-eliminar" hidden>Eliminar</button>
+      <button type="button" class="a-btn a-empuja" data-cerrar-editor>Cancelar</button>
+      <button type="submit" class="a-btn a-btn-primario" id="ed-guardar">Guardar</button>
+    </div>
+  </form>
 
-  <!-- SDK de Supabase desde CDN -->
+  <div class="a-toasts" id="toasts" aria-live="polite"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
-
-  <!-- Cliente Supabase de la marca -->
   <script src="../js/lib/supabase.js"></script>
-
-  <!-- Lógica del panel admin -->
-  <script>
-    'use strict';
-
-    /* -------------------------------------------------------
-       NAVEGACIÓN ENTRE PANELES
-       Muestro y oculto las secciones del admin según el
-       ítem del sidebar que el usuario selecciona.
-       ------------------------------------------------------- */
-    const mostrarPanel = (nombre) => {
-      // Oculto todos los paneles
-      document.querySelectorAll('.panel-seccion').forEach(p => p.classList.remove('activo'));
-      // Desactivo todos los ítems del sidebar
-      document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('activo'));
-      // Muestro el panel solicitado
-      document.getElementById(`panel-${nombre}`)?.classList.add('activo');
-      // Activo el ítem del sidebar correspondiente
-      document.getElementById(`nav-${nombre}`)?.classList.add('activo');
-      // Cargo los datos del panel si es necesario
-      cargarDatosPanel(nombre);
-    };
-
-    /* -------------------------------------------------------
-       CARGA DE DATOS POR PANEL
-       ------------------------------------------------------- */
-    const cargarDatosPanel = async (panel) => {
-      switch (panel) {
-        case 'dashboard':   await cargarDashboard();   break;
-        case 'inventario':  await cargarInventario();  break;
-        case 'productos':   await cargarProductosAdmin(); break;
-        case 'pedidos':     await cargarPedidosAdmin(); break;
-        case 'contactos':   await cargarContactosAdmin(); break;
-      }
-    };
-
-    /* Recargo todos los datos */
-    const cargarTodo = () => cargarDatosPanel(obtenerPanelActivo());
-
-    const obtenerPanelActivo = () => {
-      const activo = document.querySelector('.panel-seccion.activo');
-      return activo?.id?.replace('panel-', '') || 'dashboard';
-    };
-
-    /* -------------------------------------------------------
-       DASHBOARD
-       ------------------------------------------------------- */
-    const cargarDashboard = async () => {
-      // Actualizo la fecha del header
-      document.getElementById('dashboard-fecha').textContent =
-        new Date().toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-
-      // Cargo productos con stock para las estadísticas
-      const { data: productos } = await SupabaseDB.obtenerProductos();
-
-      if (!productos) return;
-
-      // Calculo las estadísticas
-      const total      = productos.length;
-      const agotados   = productos.filter(p => p.estado_stock === 'agotado').length;
-      const criticos   = productos.filter(p => p.estado_stock === 'pocas').length;
-      const activos    = total - agotados;
-
-      // Renderizo las tarjetas de estadísticas
-      document.getElementById('stats-grid').innerHTML = `
-        <div class="stat-card">
-          <div class="stat-label">Total productos</div>
-          <div class="stat-valor" style="color:var(--blanco);">${total}</div>
-          <div class="stat-cambio">En catálogo</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Disponibles</div>
-          <div class="stat-valor" style="color:var(--verde);">${activos}</div>
-          <div class="stat-cambio">Con stock > 0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Stock crítico</div>
-          <div class="stat-valor" style="color:var(--dorado);">${criticos}</div>
-          <div class="stat-cambio">≤ 3 piezas</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Agotadas</div>
-          <div class="stat-valor" style="color:var(--rojo);">${agotados}</div>
-          <div class="stat-cambio">Stock = 0</div>
-        </div>
-      `;
-
-      // Muestro alerta si hay productos críticos
-      const alertaEl = document.getElementById('alerta-stock-critico');
-      if (criticos > 0 || agotados > 0) {
-        alertaEl.style.display = 'block';
-        alertaEl.innerHTML = `
-          <div style="background:rgba(255,106,43,0.08);border:1px solid rgba(255,106,43,0.2);
-                      border-left:3px solid var(--dorado);padding:1rem 1.25rem;border-radius:var(--radio);
-                      margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;">
-            <div>
-              <p style="font-size:0.875rem;color:var(--blanco);font-weight:500;">
-                Atención: ${criticos} productos con stock crítico y ${agotados} agotados
-              </p>
-              <p style="font-size:0.75rem;color:var(--blanco-dim);margin-top:2px;">
-                Actualiza el inventario para mantener el catálogo al día
-              </p>
-            </div>
-            <button class="btn btn-outline" onclick="mostrarPanel('inventario')" style="white-space:nowrap;">
-              Ver inventario
-            </button>
-          </div>
-        `;
-      } else {
-        alertaEl.style.display = 'none';
-      }
-
-      // Últimos mensajes pendientes
-      const { data: contactos } = await SupabaseDB.obtenerContactosPendientes();
-      const mensajesEl = document.getElementById('dashboard-mensajes');
-      if (!contactos || contactos.length === 0) {
-        mensajesEl.innerHTML = '<p style="text-align:center;color:var(--blanco-dim);font-size:0.875rem;padding:1.5rem;">No hay mensajes pendientes ✦</p>';
-      } else {
-        mensajesEl.innerHTML = contactos.slice(0,5).map(c => `
-          <div style="padding:0.75rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.04);">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div>
-                <span style="font-size:0.875rem;color:var(--blanco);">${escHTML(c.nombre)}</span>
-                <span style="font-size:0.75rem;color:var(--blanco-dim);margin-left:0.5rem;">${escHTML(c.email)}</span>
-              </div>
-              <span style="font-size:0.7rem;color:var(--blanco-dim);">${formatearFecha(c.created_at)}</span>
-            </div>
-            <p style="font-size:0.8rem;color:var(--blanco-dim);margin-top:4px;
-                      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHTML(c.mensaje)}</p>
-          </div>
-        `).join('');
-      }
-
-      // Actualizo el badge del sidebar
-      if (contactos) {
-        document.getElementById('badge-contactos-pendientes').textContent = contactos.length;
-      }
-
-      // Pedidos recientes
-      const { data: pedidos } = await SupabaseDB.obtenerPedidos();
-      document.getElementById('dashboard-pedidos-recientes').innerHTML = pedidos?.length
-        ? pedidos.slice(0,5).map(p => `
-            <div style="padding:0.75rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.04);display:flex;justify-content:space-between;align-items:center;gap:1rem;">
-              <span style="font-size:0.875rem;color:var(--blanco);">${escHTML(p.contacto_nombre || p.clientes?.nombre || 'Invitado')}</span>
-              <span style="font-size:0.875rem;">$${parseFloat(p.total).toLocaleString('es-MX')}</span>
-              ${badgeEstadoPedido(p.estado)}
-            </div>`).join('')
-        : '<p style="text-align:center;color:var(--blanco-dim);font-size:0.875rem;padding:1.5rem;">No hay pedidos todavía</p>';
-    };
-
-    /* -------------------------------------------------------
-       INVENTARIO
-       ------------------------------------------------------- */
-    let productosInventario = []; // Cache local para filtrar sin volver a consultar
-
-    const cargarInventario = async () => {
-      const { data, error } = await SupabaseDB.obtenerProductos();
-      if (error) { mostrarToast('Error al cargar inventario', 'error'); return; }
-      productosInventario = data || [];
-      renderizarInventario(productosInventario);
-    };
-
-    const filtrarInventario = (col) => {
-      const filtrados = col === 'Todos'
-        ? productosInventario
-        : productosInventario.filter(p => p.coleccion_nombre?.includes(col));
-      renderizarInventario(filtrados);
-    };
-
-    const renderizarInventario = (productos) => {
-      const tbody = document.getElementById('inventario-tbody');
-      if (!tbody) return;
-
-      if (!productos || productos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--blanco-dim);">Sin productos</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = productos.map(p => {
-        // Determino el badge de estado del stock
-        const [clsBadge, txtBadge] = p.estado_stock === 'agotado'
-          ? ['badge-rojo',   'Agotado']
-          : p.estado_stock === 'pocas'
-          ? ['badge-dorado', 'Stock bajo']
-          : ['badge-verde',  'OK'];
-
-        return `
-          <tr>
-            <td>
-              <div style="font-size:0.875rem;font-weight:400;color:var(--blanco);">${escHTML(p.nombre)}</div>
-              <div style="font-size:0.75rem;color:var(--blanco-dim);margin-top:2px;">${escHTML(p.dimensiones)}</div>
-            </td>
-            <td><span style="font-size:0.75rem;color:var(--blanco-dim);">${escHTML(p.coleccion_nombre)}</span></td>
-            <td>
-              <span style="font-size:1.1rem;font-weight:400;color:var(--blanco);">${p.stock_actual}</span>
-              <span style="font-size:0.75rem;color:var(--blanco-dim);"> piezas</span>
-            </td>
-            <td><span class="badge ${clsBadge}">${txtBadge}</span></td>
-            <td>
-              <!-- Control de stock con botones +/- -->
-              <div style="display:flex;align-items:center;gap:0.75rem;">
-                <div class="stock-control">
-                  <button class="stock-btn" onclick="ajustarStock('${p.id}', -1)">−</button>
-                  <input type="number" class="stock-input" value="${p.stock_actual}"
-                         id="stock-input-${p.id}" min="0"
-                         onchange="guardarStock('${p.id}', this.value)" />
-                  <button class="stock-btn" onclick="ajustarStock('${p.id}', 1)">+</button>
-                </div>
-                <button class="btn btn-outline" style="padding:4px 10px;font-size:0.7rem;"
-                        onclick="guardarStock('${p.id}', document.getElementById('stock-input-${p.id}').value)">
-                  Guardar
-                </button>
-              </div>
-            </td>
-            <td style="font-size:0.75rem;color:var(--blanco-dim);">${formatearFecha(p.stock_actualizado_en)}</td>
-          </tr>
-        `;
-      }).join('');
-    };
-
-    /* Ajusto el stock en el input sin guardarlo todavía */
-    const ajustarStock = (id, delta) => {
-      const input = document.getElementById(`stock-input-${id}`);
-      if (!input) return;
-      const nuevoValor = Math.max(0, parseInt(input.value || 0) + delta);
-      input.value = nuevoValor;
-    };
-
-    /* Guardo el nuevo stock en Supabase */
-    const guardarStock = async (id, nuevoStock) => {
-      const stock = parseInt(nuevoStock);
-      if (isNaN(stock) || stock < 0) {
-        mostrarToast('El stock no puede ser negativo', 'error');
-        return;
-      }
-
-      const { error } = await SupabaseDB.actualizarStock(id, stock);
-
-      if (error) {
-        mostrarToast('Error al actualizar el stock', 'error');
-        return;
-      }
-
-      // Actualizo el cache local
-      const producto = productosInventario.find(p => p.id === id);
-      if (producto) {
-        producto.stock_actual = stock;
-        producto.estado_stock = stock === 0 ? 'agotado' : stock <= 3 ? 'pocas' : 'disponible';
-      }
-
-      mostrarToast(`Stock actualizado a ${stock} piezas`, 'exito');
-    };
-
-    /* -------------------------------------------------------
-       PRODUCTOS
-       ------------------------------------------------------- */
-    let productosAdmin = [];
-
-    const cargarProductosAdmin = async () => {
-      const { data, error } = await SupabaseDB.obtenerProductos();
-      if (error) { mostrarToast('Error al cargar productos', 'error'); return; }
-      productosAdmin = data || [];
-      renderizarProductosAdmin(productosAdmin);
-    };
-
-    const renderizarProductosAdmin = (productos) => {
-      const tbody = document.getElementById('productos-tbody');
-      if (!tbody) return;
-
-      tbody.innerHTML = productos.map(p => `
-        <tr>
-          <td><span style="color:var(--blanco);">${escHTML(p.nombre)}</span></td>
-          <td><span style="font-size:0.75rem;color:var(--blanco-dim);">${escHTML(p.coleccion_nombre)}</span></td>
-          <td style="font-family:var(--fuente-d);font-size:1rem;">$${parseFloat(p.precio).toLocaleString('es-MX')}</td>
-          <td>
-            <span class="badge ${p.destacado ? 'badge-dorado' : 'badge-gris'}">
-              ${p.destacado ? '✦ Sí' : 'No'}
-            </span>
-          </td>
-          <td>
-            <span class="badge ${p.nuevo ? 'badge-verde' : 'badge-gris'}">
-              ${p.nuevo ? 'Nuevo' : 'No'}
-            </span>
-          </td>
-          <td>
-            <button class="btn btn-outline" onclick="abrirEditarProducto('${p.id}')">
-              Editar
-            </button>
-          </td>
-        </tr>
-      `).join('');
-    };
-
-    /* Abro el modal de edición con los datos del producto */
-    const abrirEditarProducto = (id) => {
-      const p = productosAdmin.find(x => x.id === id);
-      if (!p) return;
-
-      // Relleno los campos del formulario con los datos actuales
-      document.getElementById('editar-id').value          = p.id;
-      document.getElementById('editar-nombre').value      = p.nombre || '';
-      document.getElementById('editar-descripcion').value = p.descripcion || '';
-      document.getElementById('editar-precio').value      = p.precio || 0;
-      document.getElementById('editar-acabado').value     = p.acabado || '';
-      document.getElementById('editar-dimensiones').value = p.dimensiones || '';
-      document.getElementById('editar-destacado').checked = p.destacado || false;
-      document.getElementById('editar-nuevo').checked     = p.nuevo || false;
-
-      // Muestro el modal
-      document.getElementById('modal-producto').style.display = 'flex';
-    };
-
-    const cerrarModal = () => {
-      document.getElementById('modal-producto').style.display = 'none';
-    };
-
-    /* Guardo los cambios del producto en Supabase */
-    const guardarProducto = async () => {
-      const id = document.getElementById('editar-id').value;
-
-      const campos = {
-        nombre:       document.getElementById('editar-nombre').value.trim(),
-        descripcion:  document.getElementById('editar-descripcion').value.trim(),
-        precio:       parseFloat(document.getElementById('editar-precio').value),
-        acabado:      document.getElementById('editar-acabado').value.trim(),
-        dimensiones:  document.getElementById('editar-dimensiones').value.trim(),
-        destacado:    document.getElementById('editar-destacado').checked,
-        nuevo:        document.getElementById('editar-nuevo').checked
-      };
-
-      const { error } = await SupabaseDB.actualizarProducto(id, campos);
-
-      if (error) {
-        mostrarToast('Error al guardar cambios', 'error');
-        return;
-      }
-
-      // Actualizo el cache local
-      const idx = productosAdmin.findIndex(p => p.id === id);
-      if (idx !== -1) Object.assign(productosAdmin[idx], campos);
-
-      cerrarModal();
-      renderizarProductosAdmin(productosAdmin);
-      mostrarToast('Producto actualizado correctamente', 'exito');
-    };
-
-    /* -------------------------------------------------------
-       PEDIDOS
-       ------------------------------------------------------- */
-    const cargarPedidosAdmin = async () => {
-      const { data, error } = await SupabaseDB.obtenerPedidos();
-      if (error) { mostrarToast('Error al cargar pedidos', 'error'); return; }
-      renderizarPedidos(data || []);
-    };
-
-    const renderizarPedidos = (data) => {
-      const tbody = document.getElementById('pedidos-tbody');
-      if (!tbody) return;
-
-      if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--blanco-dim);">No hay pedidos en esta categoría</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = data.map(p => `
-        <tr>
-          <td style="font-size:0.75rem;color:var(--blanco-dim);">${p.id.substring(0,8)}...</td>
-          <td>
-            ${escHTML(p.contacto_nombre || p.clientes?.nombre || 'Invitado')}
-            <div style="font-size:0.75rem;color:var(--blanco-dim);">${escHTML(p.clientes?.email)} ${escHTML(p.contacto_telefono)}</div>
-            <div style="font-size:0.75rem;color:var(--blanco-dim);">${escHTML(p.direccion_envio)}</div>
-            ${p.notas ? `<div style="font-size:0.75rem;color:var(--dorado);white-space:pre-line;margin-top:4px;">${escHTML(p.notas)}</div>` : ''}
-          </td>
-          <td style="font-family:var(--fuente-d);font-size:1rem;">$${parseFloat(p.total).toLocaleString('es-MX')}</td>
-          <td>${badgeEstadoPedido(p.estado)}</td>
-          <td style="font-size:0.75rem;color:var(--blanco-dim);">${formatearFecha(p.created_at)}</td>
-          <td>
-            <select class="form-input" style="font-size:0.75rem;padding:4px 8px;"
-                    onchange="cambiarEstadoPedido('${p.id}', this.value)">
-              <option value="pendiente"    ${p.estado==='pendiente'?'selected':''}>Pendiente</option>
-              <option value="pagado"       ${p.estado==='pagado'?'selected':''}>Pagado</option>
-              <option value="en_produccion"${p.estado==='en_produccion'?'selected':''}>En producción</option>
-              <option value="enviado"      ${p.estado==='enviado'?'selected':''}>Enviado</option>
-              <option value="entregado"    ${p.estado==='entregado'?'selected':''}>Entregado</option>
-              <option value="cancelado"    ${p.estado==='cancelado'?'selected':''}>Cancelado</option>
-            </select>
-          </td>
-        </tr>
-      `).join('');
-    };
-
-    const badgeEstadoPedido = (estado) => {
-      const mapa = {
-        pendiente:     ['badge-gris',   'Pendiente'],
-        pagado:        ['badge-verde',  'Pagado'],
-        en_produccion: ['badge-azul',   'En producción'],
-        enviado:       ['badge-dorado', 'Enviado'],
-        entregado:     ['badge-verde',  'Entregado'],
-        cancelado:     ['badge-rojo',   'Cancelado']
-      };
-      const [cls, txt] = mapa[estado] || ['badge-gris', estado];
-      return `<span class="badge ${cls}">${txt}</span>`;
-    };
-
-    const cambiarEstadoPedido = async (id, estado) => {
-      const { error } = await SupabaseDB.actualizarEstadoPedido(id, estado);
-      if (error) { mostrarToast('Error al actualizar el pedido', 'error'); cargarPedidosAdmin(); return; }
-      mostrarToast(`Estado cambiado a: ${estado}`, 'exito');
-    };
-
-    const filtrarPedidos = async (estado, btn) => {
-      document.querySelectorAll('[data-estado]').forEach(b => b.classList.remove('activo-filtro'));
-      btn.classList.add('activo-filtro');
-      const { data, error } = await SupabaseDB.obtenerPedidos(estado || null);
-      if (error) { mostrarToast('Error al cargar pedidos', 'error'); return; }
-      renderizarPedidos(data || []);
-    };
-
-    /* -------------------------------------------------------
-       MENSAJES DE CONTACTO
-       ------------------------------------------------------- */
-    let mostrandoRespondidos = false;
-
-    const cargarContactosAdmin = async () => {
-      const { data, error } = await SupabaseDB.obtenerContactosPendientes();
-      if (error) { mostrarToast('Error al cargar mensajes', 'error'); return; }
-      renderizarContactos(data || []);
-      document.getElementById('badge-contactos-pendientes').textContent = (data || []).length;
-    };
-
-    const filtrarContactos = async (respondidos, btn) => {
-      document.querySelectorAll('[onclick*="filtrarContactos"]').forEach(b => b.classList.remove('activo-filtro'));
-      btn.classList.add('activo-filtro');
-      mostrandoRespondidos = respondidos;
-
-      // Hago la consulta correspondiente
-      let data;
-      if (respondidos) {
-        const res = await SupabaseDB.cliente.from('contactos').select('*').eq('respondido', true).order('created_at', { ascending: false });
-        data = res.data;
-      } else {
-        const res = await SupabaseDB.obtenerContactosPendientes();
-        data = res.data;
-      }
-
-      renderizarContactos(data || []);
-    };
-
-    const renderizarContactos = (contactos) => {
-      const lista = document.getElementById('contactos-lista');
-      if (!lista) return;
-
-      if (!contactos.length) {
-        lista.innerHTML = '<p style="text-align:center;color:var(--blanco-dim);padding:2rem;">No hay mensajes en esta categoría ✦</p>';
-        return;
-      }
-
-      lista.innerHTML = contactos.map(c => `
-        <div style="background:var(--grafito);border:1px solid var(--borde);
-                    border-radius:var(--radio);padding:1.25rem;" id="contacto-${c.id}">
-
-          <!-- Cabecera del mensaje -->
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.75rem;">
-            <div>
-              <span style="font-size:0.875rem;font-weight:500;color:var(--blanco);">${escHTML(c.nombre)}</span>
-              <a href="mailto:${encodeURIComponent(c.email)}" style="font-size:0.75rem;color:var(--dorado);margin-left:0.75rem;">${escHTML(c.email)}</a>
-            </div>
-            <div style="display:flex;align-items:center;gap:0.75rem;">
-              <!-- Tipo de consulta -->
-              <span class="badge badge-gris">${escHTML(TIPOS_CONSULTA[c.tipo_consulta] || c.tipo_consulta || 'Otro')}</span>
-              <!-- Fecha -->
-              <span style="font-size:0.7rem;color:var(--blanco-dim);">${formatearFecha(c.created_at)}</span>
-            </div>
-          </div>
-
-          <!-- Cuerpo del mensaje -->
-          <p style="font-size:0.875rem;color:var(--blanco-dim);line-height:1.7;
-                    padding:0.875rem;background:rgba(0,0,0,0.2);border-radius:var(--radio);
-                    margin-bottom:0.875rem;">${escHTML(c.mensaje)}</p>
-
-          <!-- Notas del admin (si existen) -->
-          ${c.notas_admin ? `
-            <div style="font-size:0.8rem;color:var(--verde);padding:0.5rem 0.875rem;
-                        background:var(--verde-dim);border-radius:var(--radio);margin-bottom:0.75rem;">
-              Nota: ${escHTML(c.notas_admin)}
-            </div>` : ''}
-
-          <!-- Acciones -->
-          ${!c.respondido ? `
-            <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
-              <a href="mailto:${encodeURIComponent(c.email)}?subject=Re: Consulta Kinara" class="btn btn-dorado">
-                Responder por email
-              </a>
-              <button class="btn btn-exito" onclick="marcarRespondido('${c.id}')">
-                Marcar como respondido
-              </button>
-              <input placeholder="Nota interna (opcional)..." id="nota-${c.id}"
-                     style="flex:1;min-width:180px;padding:6px 10px;background:var(--grafito-2);
-                            border:1px solid var(--borde-2);color:var(--blanco);font-family:var(--fuente);
-                            font-size:0.8rem;border-radius:var(--radio);outline:none;" />
-            </div>` : `
-            <span class="badge badge-verde">✦ Respondido</span>
-          `}
-        </div>
-      `).join('');
-    };
-
-    const marcarRespondido = async (id) => {
-      const nota = document.getElementById(`nota-${id}`)?.value?.trim() || '';
-      const { error } = await SupabaseDB.marcarContactoRespondido(id, nota);
-
-      if (error) { mostrarToast('Error al actualizar el mensaje', 'error'); return; }
-
-      // Elimino el card del DOM con animación
-      const card = document.getElementById(`contacto-${id}`);
-      if (card) {
-        card.style.transition = 'opacity .3s ease, max-height .3s ease';
-        card.style.opacity = '0';
-        card.style.overflow = 'hidden';
-        card.style.maxHeight = card.offsetHeight + 'px';
-        setTimeout(() => { card.style.maxHeight = '0'; card.style.padding = '0'; }, 50);
-        setTimeout(() => card.remove(), 350);
-      }
-
-      // Actualizo el badge del sidebar
-      const badgeEl = document.getElementById('badge-contactos-pendientes');
-      if (badgeEl) badgeEl.textContent = Math.max(0, parseInt(badgeEl.textContent) - 1);
-
-      mostrarToast('Mensaje marcado como respondido', 'exito');
-    };
-
-    /* -------------------------------------------------------
-       UTILIDADES
-       ------------------------------------------------------- */
-
-    /* Formateo una fecha para mostrarla amigablemente */
-    // Nombres legibles de los tipos del formulario de contacto
-    const TIPOS_CONSULTA = {
-      producto: 'Producto', figura: 'Figura personalizada', a_medida: 'Pieza a medida',
-      volumen: 'Volumen', personalizado: 'Personalizado', arquitecto: 'Arquitecto', otro: 'Otro'
-    };
-
-    const formatearFecha = (fecha) => {
-      if (!fecha) return '—';
-      return new Date(fecha).toLocaleDateString('es-MX', {
-        day: '2-digit', month: 'short', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      });
-    };
-
-    /* Muestro un toast de notificación */
-    const mostrarToast = (mensaje, tipo = 'exito') => {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = `toast ${tipo}`;
-      toast.textContent = mensaje;
-      container.appendChild(toast);
-      // Elimino el toast después de 3 segundos
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity .3s ease';
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
-    };
-
-    /* -------------------------------------------------------
-       AUTENTICACIÓN E INICIALIZACIÓN
-       Esta pantalla solo controla lo que se muestra: quien
-       protege los datos es RLS con la función es_admin().
-       ------------------------------------------------------- */
-    const mostrarErrorAuth = (mensaje) => {
-      document.getElementById('auth-error').textContent = mensaje;
-    };
-
-    // automatico = revisión al cargar: una sesión de cliente de la tienda
-    // no se cierra, solo se pide entrar con una cuenta de admin
-    const entrarSiEsAdmin = async (automatico = false) => {
-      const { data: esAdmin, error } = await SupabaseDB.cliente.rpc('es_admin');
-      if (error || esAdmin !== true) {
-        if (automatico) { document.getElementById('auth-email').focus(); return; }
-        await SupabaseDB.cliente.auth.signOut();
-        mostrarErrorAuth('Esta cuenta no tiene acceso al panel.');
-        return;
-      }
-      document.getElementById('auth-overlay').classList.add('oculto');
-      mostrarErrorAuth('');
-      cargarDashboard();
-    };
-
-    const cerrarSesion = async () => {
-      await SupabaseDB.cliente.auth.signOut();
-      window.location.reload();
-    };
-
-    document.getElementById('auth-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('auth-btn');
-      btn.disabled = true;
-      mostrarErrorAuth('');
-
-      const { error } = await SupabaseDB.cliente.auth.signInWithPassword({
-        email:    document.getElementById('auth-email').value.trim(),
-        password: document.getElementById('auth-password').value
-      });
-
-      if (error) {
-        mostrarErrorAuth('Correo o contraseña incorrectos.');
-      } else {
-        document.getElementById('auth-password').value = '';
-        await entrarSiEsAdmin();
-      }
-      btn.disabled = false;
-    });
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      // Si ya había una sesión guardada, entro directo
-      const { data: { session } } = await SupabaseDB.cliente.auth.getSession();
-      if (session) {
-        await entrarSiEsAdmin(true);
-      } else {
-        document.getElementById('auth-email').focus();
-      }
-    });
-  </script>
-
+  <script src="../js/admin.js"></script>
 </body>
 </html>
