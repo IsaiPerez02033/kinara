@@ -238,6 +238,24 @@
 
 .categoria-a .pieza-svg { top: 7%; right: 8%; height: 62%; }
 
+/* Foto recortada de la pieza real, con su sombra */
+.categoria .pieza-foto {
+  position: absolute;
+  top: 0;
+  right: 2%;
+  width: auto;
+  height: 74%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  pointer-events: none;
+  transition: transform 0.5s var(--curva-salida);
+}
+
+.categoria-a .pieza-foto { top: 4%; right: 50%; height: 76%; transform: translateX(50%); }
+
+.categoria h3,
+.categoria p { z-index: 1; }
+
 .categoria h3 {
   position: relative;
   font-size: clamp(1.5rem, 2.4vw, 2.15rem);
@@ -409,6 +427,14 @@
 }
 
 .figuras-arte.cama { background-color: var(--rubor); }
+
+.figuras-arte .figuras-foto {
+  position: absolute;
+  inset: 18% 15%;
+  width: 70%;
+  height: 64%;
+  object-fit: contain;
+}
 
 .figuras-arte .pieza-svg {
   position: absolute;
@@ -605,6 +631,8 @@
    ------------------------------------------------------- */
 @media (hover: hover) {
   .categoria:hover .pieza-svg { transform: translateY(-6px); }
+  .categoria:hover .pieza-foto { transform: translateY(-8px) scale(1.02); }
+  .categoria-a:hover .pieza-foto { transform: translateX(50%) translateY(-8px) scale(1.02); }
   .categoria-medida:hover .flecha-circulo { background-color: var(--hueso); color: var(--tinta); }
   .filtro-btn:hover { color: var(--color-blanco); }
   .contacto-datos a:hover { color: var(--ocre); }
@@ -642,6 +670,7 @@
   .categoria-f { grid-column: span 2; }
   .categoria { padding: 1rem; }
   .categoria-a .pieza-svg { height: 58%; }
+  .categoria-a .pieza-foto { height: 70%; }
   .categoria-medida { min-height: 170px; }
 }
 
@@ -733,6 +762,11 @@
   .categoria-c .pieza-svg,
   .categoria-d .pieza-svg,
   .categoria-e .pieza-svg { height: 44%; }
+
+  .categoria-b .pieza-foto,
+  .categoria-c .pieza-foto,
+  .categoria-d .pieza-foto,
+  .categoria-e .pieza-foto { top: -4%; right: -6%; height: 70%; }
 
   .figuras-texto { padding-top: var(--espacio-xl); padding-bottom: var(--espacio-xl); }
 

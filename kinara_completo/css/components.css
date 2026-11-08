@@ -45,9 +45,8 @@
   height: 60px;
   padding: 0 0.5rem 0 clamp(1rem, 2vw, 1.4rem);
   border-radius: var(--radio-full);
-  background-color: rgba(243, 242, 238, 0.84);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  backdrop-filter: blur(16px) saturate(1.4);
+  /* Casi opaco y sin backdrop-filter: el desenfoque se recalculaba en cada cuadro del scroll */
+  background-color: rgba(243, 242, 238, 0.95);
   box-shadow: 0 12px 34px rgba(31, 43, 42, 0.16), inset 0 0 0 1px rgba(31, 43, 42, 0.08);
 }
 
