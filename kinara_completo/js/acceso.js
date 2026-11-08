@@ -1,5 +1,5 @@
 /**
- * acceso.js — Entrar, crear cuenta y recuperar contraseña (pages/acceso.html)
+ * acceso.js — Entrar (correo o Google), crear cuenta y recuperar contraseña (pages/acceso.html)
  * Toda la seguridad la pone Supabase Auth: contraseñas cifradas,
  * confirmación de correo y límites de intentos. Aquí solo armo la pantalla.
  */
@@ -58,6 +58,8 @@
   };
 
   let modo = MODOS[params.get('modo')] ? params.get('modo') : 'entrar';
+  // El botón de Google solo aparece si Google está activado en Supabase
+  let googleActivo = false;
 
   /* --- Mensajes --- */
   const mostrarMensaje = (texto, tipo = 'error') => {
@@ -111,6 +113,7 @@
     document.querySelectorAll('[data-solo]').forEach((el) => {
       el.hidden = !el.dataset.solo.split(' ').includes(modo);
     });
+    if (!googleActivo) $('acceso-google').hidden = true;
 
     const pass = $('ac-password');
     pass.autocomplete = modo === 'entrar' ? 'current-password' : 'new-password';
@@ -135,6 +138,7 @@
   const mostrarListo = (titulo, texto) => {
     $('acceso-form').hidden = true;
     $('acceso-pestanas').hidden = true;
+    $('acceso-google').hidden = true;
     $('acceso-alternativas').querySelectorAll('button').forEach((b) => { b.hidden = true; });
     $('acceso-titulo').parentElement.querySelectorAll('#acceso-etiqueta, #acceso-titulo, #acceso-subtitulo')
       .forEach((el) => { el.hidden = true; });
@@ -248,8 +252,32 @@
     }
   };
 
+  /* --- Entrar con Google ---
+     Google regresa a esta misma página con la sesión en la URL;
+     al detectarla, el arranque de abajo manda al cliente a su destino. */
+  const entrarConGoogle = async () => {
+    const boton = $('acceso-google-btn');
+    boton.disabled = true;
+    mostrarMensaje('');
+    const vuelta = new URL(location.pathname, location.origin);
+    if (params.get('volver')) vuelta.searchParams.set('volver', params.get('volver'));
+    const { error } = await auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: vuelta.href, queryParams: { prompt: 'select_account' } },
+    });
+    if (error) {
+      mostrarMensaje(traducirError(error));
+      boton.disabled = false;
+    }
+  };
+
+  // Si Google o el cliente cancelan, Supabase regresa con el error en la URL
+  const errorDeVuelta = new URLSearchParams(location.hash.slice(1)).get('error_description')
+    || params.get('error_description');
+
   /* --- Eventos --- */
   $('acceso-form').addEventListener('submit', enviar);
+  $('acceso-google-btn').addEventListener('click', entrarConGoogle);
 
   document.querySelectorAll('.acceso-pestana').forEach((b) => {
     b.addEventListener('click', () => cambiarModo(b.dataset.modo));
@@ -283,6 +311,22 @@
 
   /* --- Inicio --- */
   pintar();
+  fetch(`${SUPABASE_URL}/auth/v1/settings`, { headers: { apikey: SUPABASE_ANON } })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((ajustes) => {
+      if (!ajustes?.external?.google) return;
+      googleActivo = true;
+      if (!$('acceso-form').hidden) {
+        const g = $('acceso-google');
+        g.hidden = !g.dataset.solo.split(' ').includes(modo);
+      }
+    })
+    .catch(() => {});
+  if (errorDeVuelta) {
+    mostrarMensaje(/cancel|denied/i.test(errorDeVuelta)
+      ? 'Cancelaste la entrada con Google. Puedes intentarlo otra vez o usar tu correo.'
+      : 'No pudimos entrar con Google. Intenta de nuevo o usa tu correo.');
+  }
   auth.getSession().then(({ data }) => {
     const session = data?.session;
     if (modo === 'nueva') {
