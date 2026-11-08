@@ -760,6 +760,18 @@
       var(--fondo) var(--fundido),
       var(--fondo) calc(100% - var(--fundido)),
       var(--fondo-abajo, var(--fondo)) 100%);
+  /* Donde se puede, el paso va en oklab y con curva: sin bandas ni cortes */
+  background-image:
+    var(--brillo, linear-gradient(transparent, transparent)),
+    linear-gradient(in oklab 180deg,
+      var(--fondo-arriba, var(--fondo)) 0,
+      color-mix(in oklab, var(--fondo-arriba, var(--fondo)) 55%, var(--fondo)) calc(var(--fundido) * 0.3),
+      color-mix(in oklab, var(--fondo-arriba, var(--fondo)) 15%, var(--fondo)) calc(var(--fundido) * 0.7),
+      var(--fondo) var(--fundido),
+      var(--fondo) calc(100% - var(--fundido)),
+      color-mix(in oklab, var(--fondo-abajo, var(--fondo)) 15%, var(--fondo)) calc(100% - var(--fundido) * 0.7),
+      color-mix(in oklab, var(--fondo-abajo, var(--fondo)) 55%, var(--fondo)) calc(100% - var(--fundido) * 0.3),
+      var(--fondo-abajo, var(--fondo)) 100%);
 }
 
 /* La cinta sale del azul del hero y ya va aclarando */
@@ -787,20 +799,33 @@
 #materiales {
   --fondo: var(--pino);
   --fondo-arriba: color-mix(in oklab, var(--hueso) 50%, var(--pino));
-  /* Verde y rojo mezclados dan café: el paso va por un verde casi negro */
-  --fondo-abajo: color-mix(in oklab, var(--pino) 40%, var(--tinta));
+  /* Salvia y terracota son tonos tierra: se mezclan directo, sin pasar por oscuro */
+  --fondo-abajo: color-mix(in oklab, var(--pino) 50%, var(--bermellon));
 }
 
 #figuras {
   --fondo: var(--bermellon);
-  --fondo-arriba: color-mix(in oklab, var(--pino) 40%, var(--tinta));
+  --fondo-arriba: color-mix(in oklab, var(--pino) 50%, var(--bermellon));
   --fondo-abajo: color-mix(in oklab, var(--bermellon) 50%, var(--hueso));
 }
 
-/* El dibujo de la derecha se disuelve arriba y abajo en vez de cortar */
-.figuras-arte {
-  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 var(--espacio-3xl), #000 calc(100% - var(--espacio-3xl)), transparent 100%);
-  mask-image: linear-gradient(180deg, transparent 0, #000 var(--espacio-3xl), #000 calc(100% - var(--espacio-3xl)), transparent 100%);
+/* El panel de la derecha nace del mismo color con el que arranca la
+   sección y llega a piedra con curva: sin franja café de por medio */
+.figuras-arte.cama {
+  --largo: calc(var(--espacio-3xl) * 2.2);
+  --arriba: color-mix(in oklab, var(--pino) 50%, var(--bermellon));
+  --abajo: color-mix(in oklab, var(--bermellon) 50%, var(--hueso));
+  background-image: linear-gradient(180deg, var(--arriba) 0, var(--rubor) var(--largo), var(--rubor) calc(100% - var(--largo)), var(--abajo) 100%);
+  background-image: linear-gradient(in oklab 180deg,
+    var(--arriba) 0,
+    color-mix(in oklab, var(--arriba) 80%, var(--rubor)) calc(var(--largo) * 0.25),
+    color-mix(in oklab, var(--arriba) 45%, var(--rubor)) calc(var(--largo) * 0.55),
+    color-mix(in oklab, var(--arriba) 12%, var(--rubor)) calc(var(--largo) * 0.82),
+    var(--rubor) var(--largo),
+    var(--rubor) calc(100% - var(--largo)),
+    color-mix(in oklab, var(--abajo) 15%, var(--rubor)) calc(100% - var(--largo) * 0.7),
+    color-mix(in oklab, var(--abajo) 55%, var(--rubor)) calc(100% - var(--largo) * 0.3),
+    var(--abajo) 100%);
 }
 
 #catalogo {
