@@ -437,10 +437,11 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--espacio-sm);
-  padding: 0.35rem 0;
-  border-top: 1px solid var(--tinta);
-  border-bottom: 1px solid var(--tinta);
-  background-color: var(--color-negro);
+  padding: 0.35rem;
+  border-radius: var(--radio-full);
+  background-color: color-mix(in oklab, var(--color-negro) 88%, transparent);
+  backdrop-filter: blur(14px);
+  box-shadow: inset 0 0 0 1px var(--color-borde);
 }
 
 .filtros-coleccion {
@@ -478,9 +479,9 @@
 
 .select-personalizado {
   min-height: 40px;
-  padding: 0.35rem 0.75rem;
+  padding: 0.35rem 1.1rem;
   border: 1px solid var(--color-borde);
-  border-radius: var(--radio-sm);
+  border-radius: var(--radio-full);
   background-color: var(--color-grafito);
   color: var(--color-blanco);
   /* Con menos de 16px, iOS hace zoom a la página al tocarlo */
@@ -493,18 +494,19 @@
   color: var(--color-blanco-dim);
 }
 
-/* Las tarjetas comparten filete, como una hoja de catálogo */
+/* Tarjetas sueltas y redondas, con aire entre ellas */
 .catalogo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1px;
-  /* Recorto las líneas de fuera por los lados y arriba; abajo se quedan */
-  clip-path: inset(0 0 -1px 0);
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  margin-top: var(--espacio-md);
 }
 
-/* Las líneas las pone cada tarjeta, así un hueco al final de la
-   última fila queda del color de la página y no como celda gris */
-.catalogo-grid > * { box-shadow: 0 0 0 1px var(--color-borde); }
+.catalogo-grid > * {
+  border-radius: var(--radio-lg);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--color-borde);
+}
 
 /* -------------------------------------------------------
    CONTACTO

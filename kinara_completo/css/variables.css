@@ -54,10 +54,10 @@
   --espacio-2xl: 6rem;
   --espacio-3xl: clamp(5rem, 10vw, 8.5rem);
 
-  /* === RADIOS: CASI RECTOS, COMO UNA PIEZA MAQUINADA === */
-  --radio-sm:   2px;
-  --radio-md:   2px;
-  --radio-lg:   3px;
+  /* === RADIOS: TODO SUAVE, SIN ESQUINAS === */
+  --radio-sm:   12px;
+  --radio-md:   18px;
+  --radio-lg:   24px;
   --radio-full: 999px; /* botones y controles: siempre redondos */
 
   /* === TRANSICIONES === */

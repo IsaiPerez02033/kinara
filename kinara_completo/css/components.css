@@ -239,7 +239,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 9px;
+  padding: 3px 10px;
+  border-radius: var(--radio-full);
   background-color: rgba(242, 240, 234, 0.92);
   font-family: var(--fuente-mono);
   font-size: 0.7rem;
@@ -334,7 +335,8 @@
   top: 0.75rem;
   right: 0.75rem;
   z-index: 2;
-  padding: 3px 9px;
+  padding: 3px 10px;
+  border-radius: var(--radio-full);
   background-color: var(--color-acento);
   color: var(--color-negro);
   font-family: var(--fuente-mono);
@@ -383,9 +385,9 @@
 }
 
 .chip-material {
-  padding: 1px 7px;
+  padding: 1px 8px;
   border: 1px solid var(--color-borde);
-  border-radius: 5px;
+  border-radius: var(--radio-full);
   font-family: var(--fuente-mono);
   font-size: 0.68rem;
   color: var(--color-blanco-dim);
