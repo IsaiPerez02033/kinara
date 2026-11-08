@@ -22,11 +22,8 @@
   transition: background-color var(--transicion-normal), border-color var(--transicion-normal);
 }
 
-#header.solido {
-  background-color: var(--hueso);
-  border-bottom-color: rgba(20, 22, 26, 0.2);
-}
-
+/* Arriba: barra de ancho completo sobre el hero.
+   Al hacer scroll: cápsula flotante de papel translúcido. */
 .header-inner {
   display: flex;
   align-items: center;
@@ -34,8 +31,30 @@
   gap: var(--espacio-md);
   width: 100%;
   max-width: var(--ancho-maximo);
+  height: 100%;
   margin: 0 auto;
   padding: 0 var(--padding-lateral);
+  border-radius: 0;
+  transition: max-width 0.5s var(--curva-salida), height 0.5s var(--curva-salida),
+              padding 0.5s var(--curva-salida), border-radius 0.5s var(--curva-salida),
+              background-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+#header.solido .header-inner {
+  max-width: min(1180px, calc(100% - 2 * clamp(0.6rem, 2vw, 1.5rem)));
+  height: 60px;
+  padding: 0 0.5rem 0 clamp(1rem, 2vw, 1.4rem);
+  border-radius: var(--radio-full);
+  background-color: rgba(242, 240, 234, 0.84);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: 0 12px 34px rgba(20, 22, 26, 0.16), inset 0 0 0 1px rgba(20, 22, 26, 0.08);
+}
+
+#header.solido .logo-marca { width: 28px; height: 28px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .header-inner { transition: none; }
 }
 
 .logo {

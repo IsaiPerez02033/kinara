@@ -58,7 +58,7 @@
   --radio-sm:   2px;
   --radio-md:   2px;
   --radio-lg:   3px;
-  --radio-full: 3px;
+  --radio-full: 999px; /* botones y controles: siempre redondos */
 
   /* === TRANSICIONES === */
   --curva-salida: cubic-bezier(0.16, 1, 0.3, 1);

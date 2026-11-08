@@ -457,7 +457,8 @@
 .filtro-btn {
   flex-shrink: 0;
   min-height: 40px;
-  padding: 0.4rem 0.8rem;
+  padding: 0.4rem 1rem;
+  border-radius: var(--radio-full);
   font-size: var(--texto-sm);
   font-weight: 500;
   color: var(--color-blanco-dim);
@@ -733,4 +734,85 @@
 
   /* El badge de stock ya ocupa la parte de arriba */
   .tarjeta-nuevo { top: auto; bottom: 0.75rem; }
+}
+
+/* -------------------------------------------------------
+   TRANSICIONES ENTRE SECCIONES
+   Cada sección se funde con la siguiente: en su relleno de
+   abajo va hacia la mezcla de su color y el que sigue, y la
+   siguiente arranca exactamente en esa mezcla. El fundido
+   vive dentro del relleno, así nunca queda texto encima.
+   ------------------------------------------------------- */
+.seccion,
+.cinta,
+#footer {
+  --fundido: var(--espacio-3xl);
+  background-color: var(--fondo);
+  background-image:
+    var(--brillo, linear-gradient(transparent, transparent)),
+    linear-gradient(180deg,
+      var(--fondo-arriba, var(--fondo)) 0,
+      var(--fondo) var(--fundido),
+      var(--fondo) calc(100% - var(--fundido)),
+      var(--fondo-abajo, var(--fondo)) 100%);
+}
+
+/* La cinta sale del azul del hero y ya va aclarando */
+.cinta {
+  --fondo: var(--cobalto);
+  --fundido: 0px;
+  --fondo-abajo: color-mix(in oklab, var(--cobalto) 62%, var(--hueso));
+  background-image: linear-gradient(180deg, var(--cobalto), var(--fondo-abajo));
+}
+
+#categorias {
+  --fondo: var(--hueso);
+  --fondo-arriba: color-mix(in oklab, var(--cobalto) 62%, var(--hueso));
+  --fundido: calc(var(--espacio-3xl) * 0.9);
+  --brillo: radial-gradient(60% 40% at 92% 18%, color-mix(in oklab, var(--ocre) 22%, transparent), transparent 70%);
+}
+
+#proceso {
+  --fondo: var(--hueso);
+  --fondo-abajo: color-mix(in oklab, var(--hueso) 50%, var(--pino));
+  --brillo: radial-gradient(55% 45% at 6% 60%, color-mix(in oklab, var(--rubor) 45%, transparent), transparent 70%);
+  border-top: 0;
+}
+
+#materiales {
+  --fondo: var(--pino);
+  --fondo-arriba: color-mix(in oklab, var(--hueso) 50%, var(--pino));
+  --fondo-abajo: color-mix(in oklab, var(--pino) 50%, var(--bermellon));
+}
+
+#figuras {
+  --fondo: var(--bermellon);
+  --fondo-arriba: color-mix(in oklab, var(--pino) 50%, var(--bermellon));
+  --fondo-abajo: color-mix(in oklab, var(--bermellon) 50%, var(--hueso));
+}
+
+/* El dibujo de la derecha se disuelve arriba y abajo en vez de cortar */
+.figuras-arte {
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 var(--espacio-3xl), #000 calc(100% - var(--espacio-3xl)), transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 var(--espacio-3xl), #000 calc(100% - var(--espacio-3xl)), transparent 100%);
+}
+
+#catalogo {
+  --fondo: var(--hueso);
+  --fondo-arriba: color-mix(in oklab, var(--bermellon) 50%, var(--hueso));
+  --fondo-abajo: color-mix(in oklab, var(--hueso) 50%, var(--cobalto));
+  --brillo: radial-gradient(50% 18% at 100% 8%, color-mix(in oklab, var(--rubor) 50%, transparent), transparent 70%);
+}
+
+#contacto {
+  --fondo: var(--cobalto);
+  --fondo-arriba: color-mix(in oklab, var(--hueso) 50%, var(--cobalto));
+  --fondo-abajo: color-mix(in oklab, var(--cobalto) 50%, var(--tinta));
+  --brillo: radial-gradient(50% 50% at 85% 40%, color-mix(in oklab, #4a63e0 55%, transparent), transparent 70%);
+}
+
+#footer {
+  --fondo: var(--tinta);
+  --fondo-arriba: color-mix(in oklab, var(--cobalto) 50%, var(--tinta));
+  --fundido: var(--espacio-2xl);
 }
