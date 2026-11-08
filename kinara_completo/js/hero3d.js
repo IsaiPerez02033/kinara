@@ -272,6 +272,11 @@ const crearEscena = (THREE) => {
   let tope = Math.min(devicePixelRatio, tactil ? 1.5 : 2);
   let cuadros = 0;
   let marcaCuadros = 0;
+  let ultimoCuadro = 0;
+  let listo = false;
+  // Último estado dibujado: si nada cambió, no vuelvo a dibujar
+  const previo = { avance: -1, y: 0, x: 0, z: 0, mouse: 0, ancho: 0 };
+  const lectura = { pieza: '', capa: '', avance: '' };
   const reloj = new THREE.Clock();
   const objetivo = new THREE.Vector3();
 
@@ -303,7 +308,7 @@ const crearEscena = (THREE) => {
     camara.updateProjectionMatrix();
   };
 
-  const dibujar = () => {
+  const dibujar = (forzar = true) => {
     const t = reloj.getElapsedTime();
     const p = avance;
 
@@ -365,42 +370,72 @@ const crearEscena = (THREE) => {
     camara.position.set(Math.sin(angulo) * distancia, 3.5 + mouseSuave * 0.05, Math.cos(angulo) * distancia);
     camara.lookAt(0, 1.45, 0);
 
+    // Con la pieza terminada y la cámara quieta la imagen no cambia: no la vuelvo a dibujar
+    const quieto = !imprimiendo
+      && p === previo.avance
+      && anchoPrevio === previo.ancho
+      && Math.abs(portal.position.y - previo.y) < 1e-4
+      && Math.abs(cabezal.position.x - previo.x) < 1e-4
+      && Math.abs(cabezal.position.z - previo.z) < 1e-4
+      && Math.abs(mouseSuave - previo.mouse) < 1e-4;
+    if (quieto && !forzar) return;
+    Object.assign(previo, {
+      avance: p, y: portal.position.y, x: cabezal.position.x, z: cabezal.position.z,
+      mouse: mouseSuave, ancho: anchoPrevio,
+    });
+
     // El carrete y el filamento cambian al color de la pieza
     filamento.material.color.setHex(actual.color);
     naranja.color.setHex(actual.color);
 
     renderer.render(escena, camara);
 
-    // Lectura de la impresora
+    // Lectura de la impresora: solo toco el DOM cuando cambia el texto
     if (lecturaPieza) {
-      lecturaPieza.textContent = actual.nombre;
-      lecturaCapa.textContent = `capa ${String(Math.round(hecho * actual.capas)).padStart(3, '0')}/${actual.capas}`;
-      lecturaAvance.style.transform = `scaleX(${hecho})`;
+      const capa = `capa ${String(Math.round(hecho * actual.capas)).padStart(3, '0')}/${actual.capas}`;
+      const barra = `scaleX(${hecho.toFixed(3)})`;
+      if (lectura.pieza !== actual.nombre) lecturaPieza.textContent = lectura.pieza = actual.nombre;
+      if (lectura.capa !== capa) lecturaCapa.textContent = lectura.capa = capa;
+      if (lectura.avance !== barra) lecturaAvance.style.transform = lectura.avance = barra;
     }
   };
 
-  const ciclo = () => {
+  const ciclo = (ahora) => {
     raf = 0;
     if (!activa) return;
-    dibujar();
-    vigilarRendimiento();
     if (!animacionReducida) raf = requestAnimationFrame(ciclo);
+    // En pantallas de 120 Hz dibujo a 60: el movimiento se ve igual con la mitad de trabajo
+    if (ahora && ahora - ultimoCuadro < 15) return;
+    ultimoCuadro = ahora || performance.now();
+    dibujar(false);
+    vigilarRendimiento(ultimoCuadro);
   };
 
-  // Si el equipo no alcanza 30 cuadros por segundo, bajo la resolución una vez
-  const vigilarRendimiento = () => {
+  // Si el equipo no sostiene ~45 cuadros por segundo, bajo la resolución por pasos (2 → 1.5 → 1)
+  const vigilarRendimiento = (ahora) => {
     if (tope <= 1) return;
-    const ahora = performance.now();
     if (!marcaCuadros) marcaCuadros = ahora;
     cuadros += 1;
-    if (cuadros < 60) return;
-    const lento = (ahora - marcaCuadros) / cuadros > 33;
+    if (cuadros < 45) return;
+    const lento = (ahora - marcaCuadros) / cuadros > 22;
     cuadros = 0;
     marcaCuadros = ahora;
     if (!lento || document.hidden) return;
-    tope = 1;
+    tope = tope > 1.5 ? 1.5 : 1;
     anchoPrevio = 0;
     ajustar();
+  };
+
+  // Compilo todos los materiales al inicio, fuera del hilo principal cuando se puede,
+  // para que no haya un tirón cuando aparece cada pieza a media bajada
+  const precompilar = async () => {
+    const visibles = piezas.map((pz) => pz.grupo.visible);
+    piezas.forEach((pz) => { pz.grupo.visible = true; });
+    try {
+      if (renderer.compileAsync) await renderer.compileAsync(escena, camara);
+      else renderer.compile(escena, camara);
+    } catch (e) { /* si falla, se compila al dibujar como antes */ }
+    piezas.forEach((pz, i) => { pz.grupo.visible = visibles[i]; });
   };
 
   if (!tactil) {
@@ -414,11 +449,18 @@ const crearEscena = (THREE) => {
       activa = v;
       cuadros = 0;
       marcaCuadros = 0;
-      if (v && !raf && !animacionReducida) raf = requestAnimationFrame(ciclo);
+      if (v && listo && !raf && !animacionReducida) raf = requestAnimationFrame(ciclo);
     },
     dibujar,
-    remedir: () => { anchoPrevio = 0; ajustar(); },
-    iniciar: () => { ajustar(); dibujar(); ciclo(); canvas.classList.add('listo'); },
+    remedir: () => { anchoPrevio = 0; ajustar(); if (listo) dibujar(); },
+    iniciar: async () => {
+      ajustar();
+      await precompilar();
+      listo = true;
+      dibujar();
+      if (activa && !raf) ciclo();
+      canvas.classList.add('listo');
+    },
   };
 };
 
