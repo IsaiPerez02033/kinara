@@ -55,6 +55,24 @@ const ModuloSesion = (() => {
     btn.classList.add('con-foto');
   };
 
+  // "¡Hola, nombre!" junto a la foto o el ícono de cuenta
+  const pintarHola = (btn) => {
+    const primerNombre = usuario ? nombreDe(usuario).split(/\s+/)[0] : '';
+    let hola = btn.querySelector('.cuenta-hola');
+    if (!primerNombre) {
+      hola?.remove();
+      btn.classList.remove('con-nombre');
+      return;
+    }
+    if (!hola) {
+      hola = document.createElement('span');
+      hola.className = 'cuenta-hola';
+      btn.append(hola);
+    }
+    hola.textContent = `¡Hola, ${primerNombre}!`;
+    btn.classList.add('con-nombre');
+  };
+
   // acceso.js deja la marca al entrar; aquí se saluda una sola vez
   const darBienvenida = () => {
     let marca = null;
@@ -91,6 +109,7 @@ const ModuloSesion = (() => {
       btn.setAttribute('aria-label', conSesion ? 'Mi cuenta' : 'Iniciar sesión');
       btn.classList.toggle('con-sesion', conSesion);
       pintarFoto(btn);
+      pintarHola(btn);
     }
     document.querySelectorAll('[data-enlace-cuenta]').forEach((a) => {
       a.href = ruta(conSesion ? 'cuenta.html' : 'acceso.html');

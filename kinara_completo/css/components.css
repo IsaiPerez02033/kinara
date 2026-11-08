@@ -755,6 +755,35 @@
 
 #btn-cuenta.con-foto svg { display: none; }
 
+/* Con sesión, el botón crece para saludar: "¡Hola, Isai!" */
+#btn-cuenta.con-nombre {
+  width: auto;
+  gap: 0.55rem;
+  padding: 0 0.95rem 0 7px;
+}
+
+#btn-cuenta.con-nombre:not(.con-foto) { padding-left: 10px; }
+
+/* El punto de sesión se queda pegado a la foto, no al final del botón */
+#btn-cuenta.con-nombre .cuenta-indicador { right: auto; left: 28px; top: 6px; }
+#btn-cuenta.con-nombre:not(.con-foto) .cuenta-indicador { left: 26px; top: 9px; }
+
+.cuenta-hola {
+  max-width: 9rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--texto-sm);
+  font-weight: 600;
+}
+
+/* Entre tableta y escritorio chico el menú ocupa el espacio; en teléfonos chicos tampoco cabe */
+@media (min-width: 1025px) and (max-width: 1239px), (max-width: 419px) {
+  #btn-cuenta.con-nombre { width: 44px; padding: 0; gap: 0; }
+  #btn-cuenta.con-nombre .cuenta-indicador { left: auto; right: 9px; top: 9px; }
+  .cuenta-hola { display: none; }
+}
+
 #btn-cuenta.con-sesion .cuenta-indicador {
   opacity: 1;
   transform: scale(1);
