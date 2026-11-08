@@ -11,6 +11,12 @@ const SIMBOLOS_CATEGORIA = {
   'Lámparas': 'pieza-lampara', Herramientas: 'pieza-herramienta', Moldes: 'pieza-molde',
   Juguetes: 'pieza-juguete', Figuras: 'pieza-figura'
 };
+// Estrellas de calificación (1 a 5, con medias)
+const estrellasHTML = (valor, clase = '') => {
+  const v = Math.max(0, Math.min(5, Number(valor) || 0));
+  return `<span class="estrellas ${clase}" style="--valor:${(v / 5) * 100}%" aria-hidden="true">★★★★★</span>`;
+};
+
 const piezaSVG = (categoria) =>
   `<svg class="pieza-svg" viewBox="0 0 120 120" aria-hidden="true"><use href="#${SIMBOLOS_CATEGORIA[categoria] || 'pieza-medida'}"/></svg>`;
 
@@ -19,11 +25,16 @@ const ModuloCatalogo = (() => {
   let filtroActivo = 'Todos';
   let ordenActivo  = 'destacado';
   let canalTiempoReal = null;
+  let resenas = new Map();   // producto_id → { promedio, total }
 
   /* --- Carga inicial desde Supabase --- */
   const cargarProductos = async () => {
     mostrarCargando();
-    const { data, error } = await SupabaseDB.obtenerProductos();
+    const [{ data, error }, resumen] = await Promise.all([
+      SupabaseDB.obtenerProductos(),
+      SupabaseDB.cliente.rpc('resumen_resenas').then((r) => r, () => ({ data: null })),
+    ]);
+    resenas = new Map((resumen?.data || []).map((r) => [r.producto_id, { promedio: Number(r.promedio), total: r.total }]));
     if (error) { mostrarErrorConexion(); return; }
     if (data)  { todosLosProductos = data; renderizarCatalogo(); }
   };
@@ -94,6 +105,11 @@ const ModuloCatalogo = (() => {
         <div class="tarjeta-cuerpo">
           <span class="tarjeta-coleccion">${escHTML(p.coleccion_nombre)}</span>
           <h3 class="tarjeta-nombre">${escHTML(p.nombre)}</h3>
+          ${resenas.get(p.id) ? `
+            <p class="tarjeta-resenas">
+              ${estrellasHTML(resenas.get(p.id).promedio)}
+              <span>${resenas.get(p.id).promedio.toFixed(1)} · ${resenas.get(p.id).total} ${resenas.get(p.id).total === 1 ? 'reseña' : 'reseñas'}</span>
+            </p>` : ''}
           <p class="tarjeta-descripcion">${escHTML(p.descripcion)}</p>
           ${Array.isArray(p.materiales) && p.materiales.length ? `
             <div class="tarjeta-materiales">
@@ -151,7 +167,7 @@ const ModuloCatalogo = (() => {
       grid.innerHTML = `<div class="catalogo-mensaje">
         <h3>Aún no hay piezas en esta categoría</h3>
         <p>Si ya sabes lo que necesitas, te lo cotizamos a la medida.</p>
-        <a href="#contacto" class="btn-primario" onclick="ModuloContacto.preparar('a_medida')">Cotizar una pieza</a>
+        <a href="pages/cotizar.html" class="btn-primario">Cotizar una pieza</a>
       </div>`;
       return;
     }
@@ -185,7 +201,8 @@ const ModuloCatalogo = (() => {
   };
 
   return { iniciar, activarFiltro, cambiarOrden, reintentar,
-           obtenerProducto: (id) => todosLosProductos.find(p=>p.id===id), obtenerEstadoStock };
+           obtenerProducto: (id) => todosLosProductos.find(p=>p.id===id), obtenerEstadoStock,
+           resumenResenas: (id) => resenas.get(id) };
 })();
 
 /* --- Módulo detalle de producto (panel lateral) --- */
@@ -248,8 +265,14 @@ const ModuloProducto = (() => {
         ${dato('Medidas', p.dimensiones)}
         ${dato('Acabado', p.acabado)}
       </dl>
+      <section class="detalle-resenas" aria-labelledby="detalle-resenas-titulo">
+        <h3 class="detalle-resenas-titulo" id="detalle-resenas-titulo">Reseñas</h3>
+        <div id="detalle-resenas-lista"><div class="tarjeta-esqueleto detalle-resenas-cargando"></div></div>
+      </section>
       <div class="detalle-compra">
-        <div class="detalle-precio">$${parseFloat(p.precio).toLocaleString('es-MX')} <small>MXN</small></div>
+        <div class="detalle-precio">$${parseFloat(p.precio).toLocaleString('es-MX')} <small>MXN</small>
+          ${typeof ModuloCarrito !== 'undefined' && ModuloCarrito.textoIva(Number(p.precio)) ? `<span class="detalle-iva">${ModuloCarrito.textoIva(Number(p.precio))}</span>` : ''}
+        </div>
         ${badge.disponible
           ? `<button type="button" class="btn-primario" onclick="ModuloCarrito.agregar('${p.id}')">Agregar al carrito</button>`
           : '<span class="tarjeta-agotado">No disponible</span>'}
@@ -273,6 +296,41 @@ const ModuloProducto = (() => {
       drawer.classList.add('abierto');
       drawer.querySelector('#detalle-cerrar').focus({ preventScroll: true });
     });
+    pintarResenas(p.id, drawer);
+  };
+
+  /* --- Reseñas de compradores --- */
+  const pintarResenas = async (id, drawer) => {
+    const caja = drawer.querySelector('#detalle-resenas-lista');
+    const { data, error } = await SupabaseDB.cliente.rpc('resenas_de_producto', { p_producto_id: id });
+    if (!caja.isConnected) return;
+    if (error) { caja.innerHTML = '<p class="detalle-resenas-vacio">No pudimos cargar las reseñas.</p>'; return; }
+    const lista = data || [];
+    if (!lista.length) {
+      caja.innerHTML = `<p class="detalle-resenas-vacio">Aún no hay reseñas. Si ya recibiste esta pieza, cuéntanos qué tal en <a href="pages/cuenta.html#pedidos">Mis pedidos</a>.</p>`;
+      return;
+    }
+    const promedio = lista.reduce((s, r) => s + r.calificacion, 0) / lista.length;
+    const fecha = (f) => new Date(f).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
+    caja.innerHTML = `
+      <p class="detalle-resenas-resumen">
+        ${estrellasHTML(promedio, 'estrellas--grande')}
+        <strong>${promedio.toFixed(1)}</strong>
+        <span>${lista.length} ${lista.length === 1 ? 'reseña' : 'reseñas'} de compradores</span>
+      </p>
+      <ul class="resenas-lista">
+        ${lista.map((r) => `
+          <li class="resena">
+            <p class="resena-cabeza">
+              ${estrellasHTML(r.calificacion)}
+              <span class="sr-only">${r.calificacion} de 5</span>
+              ${r.titulo ? `<strong>${escHTML(r.titulo)}</strong>` : ''}
+            </p>
+            <p class="resena-texto">${escHTML(r.texto)}</p>
+            <p class="resena-autor">${escHTML(r.autor)} · ${fecha(r.fecha)} · <span class="resena-verificada">Compra verificada</span></p>
+            ${r.respuesta ? `<p class="resena-respuesta"><strong>Kinara:</strong> ${escHTML(r.respuesta)}</p>` : ''}
+          </li>`).join('')}
+      </ul>`;
   };
 
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrar(); });

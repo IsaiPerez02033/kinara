@@ -392,6 +392,7 @@ const SupabaseDB = (() => {
           pedido_items (
             cantidad,
             precio_unitario,
+            concepto,
             productos (nombre, imagen_url)
           )
         `)

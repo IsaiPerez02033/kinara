@@ -752,3 +752,59 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* -------------------------------------------------------
+   IVA Y MONEDERO KINARA
+   ------------------------------------------------------- */
+.carrito-iva,
+.checkout-iva,
+.pedido-iva {
+  margin-top: 0.2rem;
+  font-size: var(--texto-xs);
+  color: var(--color-blanco-dim);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pedido-iva { margin: -0.9rem 0 var(--espacio-md); }
+
+.carrito-monedero {
+  margin: 0.55rem 0 0;
+  padding: 0.55rem 0.8rem;
+  border-radius: var(--radio-sm);
+  background: linear-gradient(120deg, color-mix(in oklab, var(--pino) 14%, transparent), color-mix(in oklab, var(--ocre) 16%, transparent));
+  font-size: var(--texto-xs);
+  line-height: 1.4;
+}
+
+.carrito-iva[hidden],
+.carrito-monedero[hidden],
+.checkout-iva[hidden],
+.checkout-monedero[hidden],
+.checkout-resumen-descuento[hidden] { display: none; }
+
+.checkout-resumen-descuento span:last-child { color: var(--color-exito); font-weight: 600; }
+
+.checkout-monedero {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin-bottom: 0.75rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: var(--radio-md);
+  background: linear-gradient(120deg, color-mix(in oklab, var(--pino) 16%, var(--color-negro)), color-mix(in oklab, var(--ocre) 22%, var(--color-negro)));
+  cursor: pointer;
+}
+
+.checkout-monedero input {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.1rem;
+  appearance: auto;
+  -webkit-appearance: checkbox;
+  accent-color: var(--pino);
+}
+
+.checkout-monedero strong { display: block; font-size: var(--texto-sm); }
+.checkout-monedero small { display: block; font-size: var(--texto-xs); color: var(--color-blanco-dim); }

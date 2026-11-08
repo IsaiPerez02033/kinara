@@ -69,6 +69,8 @@
 
       <div class="cuenta-pestanas" role="tablist" aria-label="Secciones de tu cuenta">
         <button type="button" role="tab" class="cuenta-pestana" id="tab-pedidos" aria-controls="panel-pedidos" data-panel="pedidos">Pedidos</button>
+        <button type="button" role="tab" class="cuenta-pestana" id="tab-cotizaciones" aria-controls="panel-cotizaciones" data-panel="cotizaciones">Cotizaciones</button>
+        <button type="button" role="tab" class="cuenta-pestana" id="tab-monedero" aria-controls="panel-monedero" data-panel="monedero">Monedero</button>
         <button type="button" role="tab" class="cuenta-pestana" id="tab-direcciones" aria-controls="panel-direcciones" data-panel="direcciones">Direcciones</button>
         <button type="button" role="tab" class="cuenta-pestana" id="tab-datos" aria-controls="panel-datos" data-panel="datos">Mis datos</button>
       </div>
@@ -76,6 +78,24 @@
       <!-- PEDIDOS -->
       <section class="cuenta-panel" id="panel-pedidos" role="tabpanel" aria-labelledby="tab-pedidos">
         <div id="lista-pedidos" class="lista-pedidos"></div>
+      </section>
+
+      <!-- COTIZACIONES -->
+      <section class="cuenta-panel" id="panel-cotizaciones" role="tabpanel" aria-labelledby="tab-cotizaciones" hidden>
+        <div id="lista-cotizaciones" class="lista-pedidos"></div>
+        <a href="cotizar.html" class="btn-secundario" id="btn-nueva-cotizacion">Cotizar otra pieza</a>
+      </section>
+
+      <!-- MONEDERO -->
+      <section class="cuenta-panel" id="panel-monedero" role="tabpanel" aria-labelledby="tab-monedero" hidden>
+        <div class="monedero-tarjeta">
+          <p class="monedero-etiqueta">Monedero Kinara</p>
+          <p class="monedero-saldo" id="monedero-saldo">$0</p>
+          <p class="monedero-vence" id="monedero-vence"></p>
+        </div>
+        <ul class="monedero-reglas" id="monedero-reglas"></ul>
+        <h2 class="cuenta-subtitulo">Movimientos</h2>
+        <ul class="monedero-movimientos" id="monedero-movimientos"></ul>
       </section>
 
       <!-- DIRECCIONES -->

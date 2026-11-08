@@ -6,6 +6,9 @@
 // y genero la preferencia de pago. El navegador no elige el precio,
 // el pedido al que se aplica el pago ni las URLs de retorno.
 //
+// También cobra cotizaciones a medida (cotizacion_id, solo con sesión)
+// y aplica el Monedero Kinara si el cliente lo pide (usar_monedero).
+//
 // Secrets: MERCADOPAGO_ACCESS_TOKEN y SITE_URL
 // (SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY ya los provee Supabase)
 // ============================================================
@@ -44,18 +47,24 @@ function validar(body: any) {
     direccion.length < 10 || ciudad.length < 2 || !estado || !/^\d{5}$/.test(cp)
   ) return null;
 
-  if (!Array.isArray(items) || items.length === 0 || items.length > 50) return null;
+  // Una cotización no trae piezas: el precio lo puso el admin
+  const cotizacionId = body?.cotizacion_id ? String(body.cotizacion_id) : null;
+  if (cotizacionId && !UUID_RE.test(cotizacionId)) return null;
 
-  const itemsValidos = items.every((i: any) =>
-    UUID_RE.test(String(i?.id)) &&
-    Number.isInteger(i?.cantidad) && i.cantidad >= 1 && i.cantidad <= 100
-  );
-  if (!itemsValidos) return null;
+  if (!cotizacionId) {
+    if (!Array.isArray(items) || items.length === 0 || items.length > 50) return null;
+    const itemsValidos = items.every((i: any) =>
+      UUID_RE.test(String(i?.id)) &&
+      Number.isInteger(i?.cantidad) && i.cantidad >= 1 && i.cantidad <= 100
+    );
+    if (!itemsValidos) return null;
+  }
 
   return {
-    nombre, email, telefono,
+    nombre, email, telefono, cotizacionId,
+    usarMonedero: body?.usar_monedero === true,
     direccionCompleta: `${direccion}, ${ciudad}, ${estado} CP ${cp}`,
-    items: items.map((i: any) => ({ id: i.id, cantidad: i.cantidad })),
+    items: cotizacionId ? [] : items.map((i: any) => ({ id: i.id, cantidad: i.cantidad })),
   };
 }
 
@@ -95,13 +104,30 @@ serve(async (req: Request) => {
       }
     }
 
-    const { data: pedido, error: errorPedido } = await supabase.rpc("crear_pedido_checkout", {
-      p_nombre:    datos.nombre,
-      p_email:     datos.email,
-      p_telefono:  datos.telefono,
-      p_direccion: datos.direccionCompleta,
-      p_items:     datos.items,
-    });
+    // Las cotizaciones son de una cuenta: sin sesión no se pueden pagar
+    if (datos.cotizacionId && !usuarioId) {
+      return respuesta(401, { error: "Entra a tu cuenta para pagar tu cotización" });
+    }
+
+    const { data: pedido, error: errorPedido } = datos.cotizacionId
+      ? await supabase.rpc("crear_pedido_cotizacion", {
+          p_cotizacion_id: datos.cotizacionId,
+          p_user_id:       usuarioId,
+          p_email:         datos.email,
+          p_nombre:        datos.nombre,
+          p_telefono:      datos.telefono,
+          p_direccion:     datos.direccionCompleta,
+          p_usar_monedero: datos.usarMonedero,
+        })
+      : await supabase.rpc("crear_pedido_checkout", {
+          p_nombre:        datos.nombre,
+          p_email:         datos.email,
+          p_telefono:      datos.telefono,
+          p_direccion:     datos.direccionCompleta,
+          p_items:         datos.items,
+          p_usar_monedero: datos.usarMonedero,
+          p_user_id:       usuarioId,
+        });
 
     if (errorPedido) {
       // Los errores CHECKOUT: son mensajes para el cliente (stock, producto retirado)
@@ -125,7 +151,7 @@ serve(async (req: Request) => {
 
     const [primerNombre, ...apellidos] = datos.nombre.split(/\s+/);
 
-    const items = pedido.items.map((i: any) => ({
+    let items = pedido.items.map((i: any) => ({
       id:          i.id,
       title:       i.titulo,
       unit_price:  Number(i.precio),
@@ -146,6 +172,21 @@ serve(async (req: Request) => {
         currency_id: "MXN",
         category_id: "services",
       });
+    }
+
+    // Mercado Pago no acepta renglones negativos: con monedero va un solo
+    // renglón por el total, y el detalle queda en el pedido y en el correo.
+    const descuento = Number(pedido.descuento ?? 0);
+    if (descuento > 0) {
+      const piezas = pedido.items.reduce((s: number, i: any) => s + i.cantidad, 0);
+      items = [{
+        id:          String(pedidoId),
+        title:       `Pedido Kinara #${String(pedidoId).slice(0, 8).toUpperCase()} (${piezas} ${piezas === 1 ? "pieza" : "piezas"}, envío y monedero)`,
+        unit_price:  Number(pedido.total),
+        quantity:    1,
+        currency_id: "MXN",
+        category_id: "others",
+      }];
     }
 
     const preferencia = {
@@ -194,7 +235,7 @@ serve(async (req: Request) => {
       ? (pref.sandbox_init_point ?? pref.init_point)
       : pref.init_point;
 
-    return respuesta(200, { pedido_id: pedidoId, url_pago: urlPago, total: pedido.total, envio });
+    return respuesta(200, { pedido_id: pedidoId, url_pago: urlPago, total: pedido.total, envio, descuento });
 
   } catch (e) {
     console.error("Error en crear-preferencia-mp:", e);

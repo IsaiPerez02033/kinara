@@ -788,3 +788,134 @@
   opacity: 1;
   transform: scale(1);
 }
+
+/* -------------------------------------------------------
+   RESEÑAS E IVA EN EL CATÁLOGO
+   ------------------------------------------------------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Cinco estrellas grises con una capa de color recortada al promedio */
+.estrellas {
+  position: relative;
+  display: inline-block;
+  font-size: 0.95rem;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  color: var(--color-borde);
+}
+
+.estrellas::before {
+  content: '★★★★★';
+  position: absolute;
+  inset: 0;
+  width: var(--valor, 0%);
+  overflow: hidden;
+  color: var(--ocre);
+}
+
+.estrellas--grande { font-size: 1.25rem; }
+
+.tarjeta-resenas {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: -0.15rem 0 0.4rem;
+  font-size: var(--texto-xs);
+  color: var(--color-blanco-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.detalle-iva {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: var(--texto-xs);
+  font-weight: 400;
+  color: var(--color-blanco-dim);
+}
+
+.detalle-resenas {
+  margin-top: var(--espacio-md);
+  padding-top: var(--espacio-md);
+  border-top: 1px solid var(--color-borde);
+}
+
+.detalle-resenas-titulo {
+  margin-bottom: 0.75rem;
+  font-size: var(--texto-lg);
+}
+
+.detalle-resenas-cargando { min-height: 72px; border-radius: var(--radio-md); }
+
+.detalle-resenas-vacio {
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+}
+
+.detalle-resenas-vacio a,
+.carrito-monedero a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
+.detalle-resenas-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+}
+
+.detalle-resenas-resumen strong {
+  font-size: var(--texto-lg);
+  color: var(--color-blanco);
+}
+
+.resenas-lista {
+  display: grid;
+  gap: 0.7rem;
+  list-style: none;
+}
+
+.resena {
+  padding: 0.9rem 1rem;
+  border-radius: var(--radio-md);
+  background: var(--color-grafito);
+}
+
+.resena-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+  font-size: var(--texto-sm);
+}
+
+.resena-texto {
+  font-size: var(--texto-sm);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.resena-autor {
+  margin-top: 0.45rem;
+  font-size: var(--texto-xs);
+  color: var(--color-blanco-dim);
+}
+
+.resena-verificada { color: var(--color-exito); font-weight: 600; }
+
+.resena-respuesta {
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radio-sm);
+  background: var(--color-grafito-2);
+  font-size: var(--texto-xs);
+  line-height: 1.5;
+}

@@ -97,16 +97,22 @@ const ModuloCarrito = (() => {
   let reglas = null;
   const cargarReglas = async () => {
     try {
-      const { data, error } = await SupabaseDB.cliente
-        .from('ajustes_tienda')
-        .select('envio_costo, envio_gratis_desde, pedido_minimo')
+      const tabla = () => SupabaseDB.cliente.from('ajustes_tienda');
+      let { data, error } = await tabla()
+        .select('envio_costo, envio_gratis_desde, pedido_minimo, iva_tasa, iva_desglosar, monedero_pct, monedero_uso_max_pct')
         .maybeSingle();
+      // Sin las columnas de IVA y monedero (antes de 11_*.sql) sigue con el envío
+      if (error) ({ data, error } = await tabla().select('envio_costo, envio_gratis_desde, pedido_minimo').maybeSingle());
       if (error || !data) return;
       reglas = {
         costo:  Number(data.envio_costo),
         gratis: Number(data.envio_gratis_desde),
         minimo: Number(data.pedido_minimo),
+        iva:    data.iva_desglosar ? Number(data.iva_tasa) : 0,
+        monederoPct: Number(data.monedero_pct ?? 0),
+        usoMaxPct:   Number(data.monedero_uso_max_pct ?? 0),
       };
+      document.dispatchEvent(new CustomEvent('kinara:reglas', { detail: reglas }));
       pintarEnvio();
     } catch (_) { /* sin reglas, el carrito se ve como antes */ }
   };
@@ -114,8 +120,19 @@ const ModuloCarrito = (() => {
     (!reglas || sub <= 0 || sub >= reglas.gratis) ? 0 : reglas.costo;
   const faltaMinimo = (sub = calcularTotal()) =>
     reglas ? Math.max(0, reglas.minimo - sub) : 0;
+  // Los precios ya incluyen IVA: esto es cuánto de un total es IVA
+  const ivaDe = (total) => (!reglas?.iva ? 0 : Math.round((total - total / (1 + reglas.iva)) * 100) / 100);
+  const textoIva = (total) => {
+    const iva = ivaDe(total);
+    return iva > 0 ? `Incluye IVA (${Math.round(reglas.iva * 100)}%): $${formatearPrecio(iva)}` : '';
+  };
+  // Lo que gana en el monedero: % de lo pagado en piezas
+  const monederoGanado = (piezas) => (!reglas?.monederoPct ? 0 : Math.round(piezas * reglas.monederoPct) / 100);
   const contarUnidades   = () => items.reduce((s, i) => s + i.cantidad, 0);
-  const formatearPrecio  = (p) => parseFloat(p).toLocaleString('es-MX', {minimumFractionDigits:0});
+  const formatearPrecio  = (p) => {
+    const v = parseFloat(p);
+    return v.toLocaleString('es-MX', { minimumFractionDigits: Number.isInteger(Math.round(v * 100) / 100) ? 0 : 2, maximumFractionDigits: 2 });
+  };
 
   /* --- UI: abrir / cerrar drawer --- */
   const abrirDrawer = () => {
@@ -198,6 +215,20 @@ const ModuloCarrito = (() => {
     const tv = $('carrito-total-valor');
     if (tv) tv.textContent = `$${formatearPrecio(sub + envio)} MXN`;
 
+    const ivaEl = $('carrito-iva');
+    if (ivaEl) {
+      ivaEl.textContent = items.length ? textoIva(sub + envio) : '';
+      ivaEl.hidden = !ivaEl.textContent;
+    }
+    const monEl = $('carrito-monedero');
+    if (monEl) {
+      const gana = items.length ? monederoGanado(sub) : 0;
+      monEl.innerHTML = gana > 0
+        ? `Con esta compra ganas <strong>$${formatearPrecio(gana)}</strong> en tu <a href="pages/cuenta.html#monedero">Monedero Kinara</a>.`
+        : '';
+      monEl.hidden = !gana;
+    }
+
     const btn = $('btn-checkout');
     if (btn) btn.disabled = !items.length || falta > 0;
 
@@ -266,7 +297,8 @@ const ModuloCarrito = (() => {
   };
 
   return { iniciar, agregar, cambiarCantidad, eliminar, vaciar, abrirDrawer, cerrarDrawer,
-           calcularTotal, calcularEnvio, faltaMinimo, hayReglas: () => !!reglas,
+           calcularTotal, calcularEnvio, faltaMinimo, hayReglas: () => !!reglas, reglas: () => reglas,
+           ivaDe, textoIva, monederoGanado,
            contarUnidades, obtenerItems:()=>items, formatearPrecio, mostrarMensaje };
 })();
 
@@ -280,6 +312,10 @@ const ModuloCheckout = (() => {
      Con sesión lleno lo que esté vacío con su perfil y su dirección
      predeterminada. El correo queda fijo: el servidor usa el de la cuenta. */
   let datosCuenta = null;   // { perfil, direcciones } de la sesión actual
+
+  // Qué se paga: el carrito o una cotización aceptada (?cotizacion=<id>)
+  let cotizacion = null;
+  let monedero = null;      // { saldo, uso_max_pct } con sesión confirmada
 
   const cargarDatosCuenta = async (usuario) => {
     if (datosCuenta?.uid === usuario.id) return datosCuenta;
@@ -308,6 +344,8 @@ const ModuloCheckout = (() => {
       aviso.innerHTML = `¿Ya tienes cuenta? <a href="pages/acceso.html?volver=${volver}">Entra</a> para usar tus datos guardados y seguir tu pedido.`;
       email.readOnly = false;
       guardarCampo.hidden = true;
+      monedero = null;
+      renderizarResumen();
       return;
     }
 
@@ -332,6 +370,25 @@ const ModuloCheckout = (() => {
     } catch (e) {
       console.warn('No se pudieron cargar los datos de la cuenta:', e);
     }
+    await cargarMonedero();
+  };
+
+  /* --- Monedero Kinara ---
+     Solo se usa con correo confirmado; el servidor vuelve a calcular el
+     saldo y el tope antes de cobrar. */
+  const cargarMonedero = async () => {
+    monedero = null;
+    if (ModuloSesion.confirmado()) {
+      const { data } = await SupabaseDB.cliente.rpc('mi_monedero');
+      if (Number(data?.saldo) > 0) monedero = { saldo: Number(data.saldo), usoMax: Number(data.uso_max_pct) };
+    }
+    renderizarResumen();
+  };
+
+  const descuentoMonedero = (piezas) => {
+    const usar = document.getElementById('co-usar-monedero');
+    if (!monedero || !usar?.checked) return 0;
+    return Math.min(monedero.saldo, Math.round(piezas * monedero.usoMax) / 100);
   };
 
   // Guarda la dirección del checkout si el cliente lo pidió y no la tenía
@@ -354,7 +411,34 @@ const ModuloCheckout = (() => {
   /* --- Abrir / cerrar modal --- */
   const abrir = () => {
     if (!ModuloCarrito.contarUnidades() || ModuloCarrito.faltaMinimo() > 0) return;
+    cotizacion = null;
+    mostrarModal();
+  };
+
+  // Paga una cotización ya aceptada: mismo formulario, otras piezas
+  const abrirCotizacion = async (id) => {
+    const usuario = await ModuloSesion.listo;
+    if (!usuario) {
+      location.href = `pages/acceso.html?volver=${encodeURIComponent('/index.html?cotizacion=' + id)}`;
+      return;
+    }
+    const { data, error } = await SupabaseDB.cliente.from('cotizaciones')
+      .select('id, titulo, cantidad, precio_unitario, costo_envio, estado, vence_at')
+      .eq('id', id).maybeSingle();
+    if (error || !data) { ModuloCarrito.mostrarMensaje('No encontramos esa cotización', 'error'); return; }
+    if (data.estado !== 'cotizada') { ModuloCarrito.mostrarMensaje('Esta cotización ya no se puede pagar', 'error'); return; }
+    if (data.vence_at && new Date(data.vence_at) < new Date()) {
+      ModuloCarrito.mostrarMensaje('Esta cotización venció. Escríbenos y la actualizamos.', 'error');
+      return;
+    }
+    cotizacion = data;
+    mostrarModal();
+  };
+
+  const mostrarModal = () => {
     ModuloCarrito.cerrarDrawer();
+    const titulo = document.getElementById('checkout-titulo');
+    if (titulo) titulo.textContent = cotizacion ? 'Pagar mi cotización' : 'Datos de envío';
     restaurarFormulario();
     renderizarResumen();
     prepararCuenta();
@@ -377,20 +461,49 @@ const ModuloCheckout = (() => {
     const c = document.getElementById('checkout-resumen-items');
     const t = document.getElementById('checkout-total');
     if (!c) return;
-    c.innerHTML = ModuloCarrito.obtenerItems().map(i =>
+    const fmt = ModuloCarrito.formatearPrecio;
+    const lineas = cotizacion
+      ? [{ nombre: `Pieza a medida: ${cotizacion.titulo}`, cantidad: cotizacion.cantidad, precio: Number(cotizacion.precio_unitario) }]
+      : ModuloCarrito.obtenerItems();
+    c.innerHTML = lineas.map(i =>
       `<div class="checkout-resumen-fila">
         <span>${escHTML(i.nombre)} × ${i.cantidad}</span>
-        <span>$${ModuloCarrito.formatearPrecio(i.precio*i.cantidad)}</span>
+        <span>$${fmt(i.precio*i.cantidad)}</span>
       </div>`).join('');
-    const sub = ModuloCarrito.calcularTotal();
-    const envio = ModuloCarrito.calcularEnvio(sub);
+    const sub = lineas.reduce((s, i) => s + i.precio * i.cantidad, 0);
+    const envio = cotizacion ? Number(cotizacion.costo_envio) : ModuloCarrito.calcularEnvio(sub);
     const fila = document.getElementById('checkout-envio-fila');
     if (fila) {
-      fila.hidden = !ModuloCarrito.hayReglas();
-      document.getElementById('checkout-envio').textContent =
-        envio > 0 ? `$${ModuloCarrito.formatearPrecio(envio)}` : 'Gratis';
+      fila.hidden = !cotizacion && !ModuloCarrito.hayReglas();
+      document.getElementById('checkout-envio').textContent = envio > 0 ? `$${fmt(envio)}` : 'Gratis';
     }
-    if (t) t.textContent = `$${ModuloCarrito.formatearPrecio(sub + envio)} MXN`;
+
+    const campo = document.getElementById('co-monedero-campo');
+    if (campo) {
+      campo.hidden = !monedero;
+      if (monedero) {
+        const tope = Math.round(sub * monedero.usoMax) / 100;
+        document.getElementById('co-monedero-titulo').textContent =
+          `Usar $${fmt(Math.min(monedero.saldo, tope))} de mi Monedero Kinara`;
+        document.getElementById('co-monedero-texto').textContent = monedero.saldo > tope
+          ? `Tienes $${fmt(monedero.saldo)}. En cada compra puedes usar hasta el ${monedero.usoMax}% de las piezas.`
+          : `Tienes $${fmt(monedero.saldo)} de saldo.`;
+      }
+    }
+    const descuento = descuentoMonedero(sub);
+    const filaDesc = document.getElementById('checkout-descuento-fila');
+    if (filaDesc) {
+      filaDesc.hidden = !descuento;
+      document.getElementById('checkout-descuento').textContent = `−$${fmt(descuento)}`;
+    }
+
+    const total = sub + envio - descuento;
+    if (t) t.textContent = `$${fmt(total)} MXN`;
+    const iva = document.getElementById('checkout-iva');
+    if (iva) {
+      iva.textContent = ModuloCarrito.textoIva(total);
+      iva.hidden = !iva.textContent;
+    }
   };
 
   /* --- Validar formulario --- */
@@ -436,7 +549,11 @@ const ModuloCheckout = (() => {
     try {
       await guardarDireccionSiAplica(datos);
       const pago = await crearPago(datos);
-      localStorage.setItem('kinara_pedido_actual', pago.pedido_id);
+      if (cotizacion) {
+        try { sessionStorage.setItem('kinara:pago_cotizacion', pago.pedido_id); } catch (_) {}
+      } else {
+        localStorage.setItem('kinara_pedido_actual', pago.pedido_id);
+      }
 
       // Redirigir a Mercado Pago
       window.location.href = pago.url_pago;
@@ -452,9 +569,13 @@ const ModuloCheckout = (() => {
    * pedido y URLs de retorno se deciden en el servidor.
    */
   const crearPago = async (datos) => {
+    const usarMonedero = !!monedero && document.getElementById('co-usar-monedero')?.checked;
     const { data, error } = await SupabaseDB.cliente.functions.invoke('crear-preferencia-mp', {
       body: {
-        items: ModuloCarrito.obtenerItems().map(i=>({ id:i.id, cantidad:i.cantidad })),
+        ...(cotizacion
+          ? { cotizacion_id: cotizacion.id }
+          : { items: ModuloCarrito.obtenerItems().map(i=>({ id:i.id, cantidad:i.cantidad })) }),
+        usar_monedero: usarMonedero,
         cliente: { nombre:datos.nombre, email:datos.email, telefono:datos.telefono },
         envio: { direccion:datos.direccion, ciudad:datos.ciudad, estado:datos.estado, cp:datos.cp }
       }
@@ -520,9 +641,18 @@ const ModuloCheckout = (() => {
     document.getElementById('checkout-cerrar-btn')?.addEventListener('click', cerrar);
     document.getElementById('btn-pagar')?.addEventListener('click', procesarPago);
     document.getElementById('checkout-overlay')?.addEventListener('click', e => { if(e.target===e.currentTarget) cerrar(); });
+    document.getElementById('co-usar-monedero')?.addEventListener('change', renderizarResumen);
+    document.addEventListener('kinara:reglas', renderizarResumen);
+
+    // "Ver y pagar" desde Mi cuenta o el correo de la cotización
+    const id = new URLSearchParams(location.search).get('cotizacion');
+    if (/^[0-9a-f-]{36}$/i.test(id || '')) {
+      history.replaceState(null, '', location.pathname + location.hash);
+      abrirCotizacion(id);
+    }
   };
 
-  return { abrir, cerrar, iniciar, restaurarFormulario };
+  return { abrir, abrirCotizacion, cerrar, iniciar, restaurarFormulario };
 })();
 
 

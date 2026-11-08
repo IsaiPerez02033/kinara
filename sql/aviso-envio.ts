@@ -6,7 +6,7 @@
 //
 // INSTALACIÓN:
 // 1. Supabase → Edge Functions → New Function, nombre exacto "aviso-envio"
-// 2. Pega este archivo completo y despliega (deja "Verify JWT" encendido)
+// 2. Pega este archivo completo y despliega y apaga "Verify JWT with legacy secret"
 // 3. Secrets: RESEND_API_KEY y SITE_URL (SITE_URL ya existe)
 //
 // La plantilla de correo es la misma que usa webhook-mp.ts para
@@ -24,11 +24,14 @@ const CORS = {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/* ---------- Plantilla de correo de pedido (igual en webhook-mp.ts) ---------- */
+/* ---------- Plantilla de correo de pedido (igual en webhook-mp.ts y aviso-cotizacion.ts) ---------- */
 const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
-const dinero = (n: unknown) =>
-  "$" + Number(n ?? 0).toLocaleString("es-MX", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const dinero = (n: unknown) => {
+  const v = Number(n ?? 0);
+  const dec = Number.isInteger(Math.round(v * 100) / 100) ? 0 : 2;
+  return "$" + v.toLocaleString("es-MX", { minimumFractionDigits: dec, maximumFractionDigits: 2 });
+};
 
 function plantillaPedido(d: { asunto: string; titulo: string; texto: string; bloque: string; boton: string; url: string; nota: string }) {
   return `<!DOCTYPE html>

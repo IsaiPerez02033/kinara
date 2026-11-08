@@ -64,9 +64,14 @@
         <button type="button" class="a-nav-item" data-panel="pedidos" style="--color-seccion: var(--bermellon)">
           Pedidos <span class="a-nav-contador" id="contador-pedidos" hidden></span>
         </button>
+        <button type="button" class="a-nav-item" data-panel="cotizaciones" style="--color-seccion: var(--rubor)">
+          Cotizaciones <span class="a-nav-contador" id="contador-cotizaciones" hidden></span>
+        </button>
         <button type="button" class="a-nav-item" data-panel="mensajes" style="--color-seccion: var(--pino)">
           Mensajes <span class="a-nav-contador" id="contador-mensajes" hidden></span>
         </button>
+        <button type="button" class="a-nav-item" data-panel="resenas" style="--color-seccion: var(--ocre)">Reseñas</button>
+        <button type="button" class="a-nav-item" data-panel="ajustes" style="--color-seccion: var(--cobalto)">Ajustes</button>
       </nav>
 
       <div class="a-lateral-pie">
@@ -165,6 +170,80 @@
           </div>
         </header>
         <div class="a-lista" id="mensajes-lista"></div>
+      </section>
+
+      <!-- COTIZACIONES -->
+      <section class="a-panel" id="panel-cotizaciones" hidden>
+        <header class="a-cabecera">
+          <div>
+            <h1 class="a-titulo">Cotizaciones</h1>
+            <p class="a-subtitulo">Piezas a medida que piden los clientes con su cuenta</p>
+          </div>
+          <div class="a-segmento" role="group" aria-label="Filtrar cotizaciones" id="cotizaciones-filtro">
+            <button type="button" data-cot="nueva" aria-pressed="true">Por responder</button>
+            <button type="button" data-cot="cotizada" aria-pressed="false">Enviadas</button>
+            <button type="button" data-cot="pagada" aria-pressed="false">Pagadas</button>
+            <button type="button" data-cot="" aria-pressed="false">Todas</button>
+          </div>
+        </header>
+        <div class="a-lista" id="cotizaciones-lista"></div>
+      </section>
+
+      <!-- RESEÑAS -->
+      <section class="a-panel" id="panel-resenas" hidden>
+        <header class="a-cabecera">
+          <div>
+            <h1 class="a-titulo">Reseñas</h1>
+            <p class="a-subtitulo">Se publican solas. Oculta las que no cumplan y responde las que quieras.</p>
+          </div>
+        </header>
+        <div class="a-lista" id="resenas-lista"></div>
+      </section>
+
+      <!-- AJUSTES -->
+      <section class="a-panel" id="panel-ajustes" hidden>
+        <header class="a-cabecera">
+          <div>
+            <h1 class="a-titulo">Ajustes de la tienda</h1>
+            <p class="a-subtitulo">Envío, IVA y Monedero Kinara. Aplican a los pagos nuevos.</p>
+          </div>
+        </header>
+        <form class="a-ajustes" id="form-ajustes" novalidate>
+          <fieldset class="a-caja">
+            <legend class="a-caja-titulo">Envío y pedido mínimo</legend>
+            <div class="a-tres">
+              <label class="a-campo"><span class="a-label">Costo de envío</span>
+                <input class="a-input mono" name="envio_costo" type="number" min="0" step="1" inputmode="decimal" required></label>
+              <label class="a-campo"><span class="a-label">Envío gratis desde</span>
+                <input class="a-input mono" name="envio_gratis_desde" type="number" min="0" step="1" inputmode="decimal" required></label>
+              <label class="a-campo"><span class="a-label">Pedido mínimo en piezas</span>
+                <input class="a-input mono" name="pedido_minimo" type="number" min="0" step="1" inputmode="decimal" required></label>
+            </div>
+          </fieldset>
+          <fieldset class="a-caja">
+            <legend class="a-caja-titulo">IVA</legend>
+            <div class="a-tres">
+              <label class="a-campo"><span class="a-label">Tasa (%)</span>
+                <input class="a-input mono" name="iva_pct" type="number" min="0" max="99" step="1" inputmode="numeric" required></label>
+            </div>
+            <label class="a-switch"><input type="checkbox" name="iva_desglosar" />
+              <span>Desglosar el IVA<small>Muestra "Incluye IVA" en la tienda, Mi cuenta y los correos. Los precios siempre lo incluyen.</small></span></label>
+          </fieldset>
+          <fieldset class="a-caja">
+            <legend class="a-caja-titulo">Monedero Kinara</legend>
+            <div class="a-tres">
+              <label class="a-campo"><span class="a-label">Regresa (% de las piezas)</span>
+                <input class="a-input mono" name="monedero_pct" type="number" min="0" max="30" step="0.5" inputmode="decimal" required></label>
+              <label class="a-campo"><span class="a-label">Uso máximo por compra (%)</span>
+                <input class="a-input mono" name="monedero_uso_max_pct" type="number" min="0" max="100" step="1" inputmode="numeric" required></label>
+              <label class="a-campo"><span class="a-label">Vigencia (meses)</span>
+                <input class="a-input mono" name="monedero_vigencia_meses" type="number" min="1" max="60" step="1" inputmode="numeric" required></label>
+            </div>
+            <p class="a-ayuda">Pon 0% para pausar el monedero: nadie gana saldo nuevo, pero el que ya tienen se puede usar.</p>
+          </fieldset>
+          <p class="a-error-form" id="ajustes-error" role="alert" hidden></p>
+          <div><button type="submit" class="a-btn a-btn-primario" id="ajustes-guardar">Guardar ajustes</button></div>
+        </form>
       </section>
     </main>
   </div>

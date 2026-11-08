@@ -32,11 +32,13 @@
     filtroVis: 'todos',
     filtroPedidos: '',
     filtroRespondidos: false,
+    filtroCot: 'nueva',
+    ajustes: null,
     editor: null
   };
 
   /* ---------- Utilidades ---------- */
-  const dinero = (n) => '$' + Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  const dinero = (n) => { const v = Number(n || 0); return '$' + v.toLocaleString('es-MX', { minimumFractionDigits: Number.isInteger(Math.round(v * 100) / 100) ? 0 : 2, maximumFractionDigits: 2 }); };
   const fecha = (f, conHora = true) => f
     ? new Date(f).toLocaleString('es-MX', { day: 'numeric', month: 'short', ...(conHora ? { hour: '2-digit', minute: '2-digit' } : { year: 'numeric' }) })
     : '—';
@@ -60,12 +62,15 @@
   };
 
   /* ---------- Navegación ---------- */
-  const PANELES = ['resumen', 'productos', 'pedidos', 'mensajes'];
+  const PANELES = ['resumen', 'productos', 'pedidos', 'cotizaciones', 'mensajes', 'resenas', 'ajustes'];
   const CARGAR = {
     resumen: () => cargarResumen(),
     productos: () => cargarProductos(),
     pedidos: () => cargarPedidos(),
-    mensajes: () => cargarMensajes()
+    cotizaciones: () => cargarCotizaciones(),
+    mensajes: () => cargarMensajes(),
+    resenas: () => cargarResenas(),
+    ajustes: () => cargarAjustes()
   };
 
   const mostrarPanel = (nombre, { empujar = true } = {}) => {
@@ -555,7 +560,7 @@
     lista.innerHTML = data.map((p) => {
       const nombre = p.contacto_nombre || p.clientes?.nombre || 'Invitado';
       const items = (p.pedido_items || []).map((it) => `
-        <li><span>${it.cantidad} × ${escHTML(it.productos?.nombre || 'Producto')}</span><span class="mono">${dinero(it.precio_unitario * it.cantidad)}</span></li>`).join('');
+        <li><span>${it.cantidad} × ${escHTML(it.productos?.nombre || it.concepto || 'Producto')}</span><span class="mono">${dinero(it.precio_unitario * it.cantidad)}</span></li>`).join('');
       return `
         <article class="a-tarjeta" style="--color-tarjeta: ${COLOR_ESTADO[p.estado] || 'var(--a-linea-2)'}">
           <div class="a-tarjeta-cabeza">
@@ -576,7 +581,10 @@
             <div>
               <ul class="a-items">${items || '<li class="a-tenue">Sin productos</li>'}</ul>
               ${Number(p.costo_envio) > 0 ? `<div class="a-pedido-envio"><span>Envío</span><span class="mono">${dinero(p.costo_envio)}</span></div>` : ''}
+              ${Number(p.descuento_monedero) > 0 ? `<div class="a-pedido-envio"><span>Monedero</span><span class="mono">−${dinero(p.descuento_monedero)}</span></div>` : ''}
               <div class="a-pedido-total"><span>Total</span><span class="mono">${dinero(p.total)}</span></div>
+              ${Number(p.iva_incluido) > 0 ? `<div class="a-pedido-envio a-tenue"><span>IVA incluido</span><span class="mono">${dinero(p.iva_incluido)}</span></div>` : ''}
+              ${p.cotizacion_id ? '<div class="a-pedido-envio a-tenue"><span>Cotización a medida</span><span></span></div>' : ''}
             </div>
             ${p.notas ? `<p class="a-nota">${escHTML(p.notas)}</p>` : ''}
             ${formularioGuia(p)}
@@ -718,6 +726,241 @@
     toast('Mensaje marcado como respondido');
   };
 
+  /* ---------- Cotizaciones ---------- */
+  const ESTADOS_COT = { nueva: 'Por responder', cotizada: 'Enviada', pagada: 'Pagada', rechazada: 'Rechazada', cancelada: 'Cancelada' };
+  const COLOR_COT = { nueva: 'var(--ocre)', cotizada: 'var(--cobalto)', pagada: 'var(--pino)', rechazada: 'var(--bermellon)', cancelada: 'var(--a-linea-2)' };
+  const TIPOS_COT = { a_medida: 'Pieza a medida', figura: 'Figura personalizada', volumen: 'Volumen', otro: 'Otro' };
+
+  const leerAjustes = async () => {
+    if (estado.ajustes) return estado.ajustes;
+    const { data } = await db.from('ajustes_tienda').select('*').maybeSingle();
+    estado.ajustes = data || null;
+    return estado.ajustes;
+  };
+
+  // Envío sugerido con las reglas de la tienda; el admin lo puede cambiar
+  const envioSugerido = (piezas) => {
+    const a = estado.ajustes;
+    if (!a) return 0;
+    return piezas >= Number(a.envio_gratis_desde) ? 0 : Number(a.envio_costo);
+  };
+
+  const formularioCotizacion = (q) => {
+    if (!['nueva', 'cotizada'].includes(q.estado)) return '';
+    const diasVigencia = q.vence_at ? Math.max(1, Math.round((new Date(q.vence_at) - Date.now()) / 86400000)) : 15;
+    return `
+      <form class="a-cotizar" data-cotizar="${escHTML(q.id)}" novalidate>
+        <label class="a-campo"><span class="a-label">Cantidad</span>
+          <input class="a-input mono" name="cantidad" type="number" min="1" max="1000" step="1" value="${q.cantidad}"></label>
+        <label class="a-campo"><span class="a-label">Precio por pieza</span>
+          <input class="a-input mono" name="precio" type="number" min="1" step="1" inputmode="decimal" value="${q.precio_unitario ?? ''}" placeholder="0"></label>
+        <label class="a-campo"><span class="a-label">Envío</span>
+          <input class="a-input mono" name="envio" type="number" min="0" step="1" inputmode="decimal" value="${q.costo_envio ?? ''}" placeholder="Según reglas"></label>
+        <label class="a-campo"><span class="a-label">Días de producción</span>
+          <input class="a-input mono" name="dias" type="number" min="1" max="120" step="1" value="${q.dias_produccion ?? 5}"></label>
+        <label class="a-campo"><span class="a-label">Válida por (días)</span>
+          <input class="a-input mono" name="vigencia" type="number" min="1" max="90" step="1" value="${diasVigencia}"></label>
+        <label class="a-campo a-cotizar-nota"><span class="a-label">Nota para el cliente <em>(obligatoria si la rechazas)</em></span>
+          <textarea class="a-input" name="respuesta" rows="2" maxlength="2000" placeholder="Material, color, acabado, cambios que sugieres…">${escHTML(q.respuesta || '')}</textarea></label>
+        <p class="a-ayuda a-cotizar-total" data-total></p>
+        <div class="a-cotizar-acciones">
+          <button type="button" class="a-btn a-btn-peligro a-btn-chico" data-rechazar>Rechazar</button>
+          <button type="submit" class="a-btn a-btn-primario a-btn-chico">${q.estado === 'cotizada' ? 'Actualizar y reenviar' : 'Enviar cotización'}</button>
+        </div>
+      </form>`;
+  };
+
+  const cargarCotizaciones = async () => {
+    const lista = $('#cotizaciones-lista');
+    lista.innerHTML = cargando(3);
+    await leerAjustes();
+    let consulta = db.from('cotizaciones').select('*').order('created_at', { ascending: false }).limit(200);
+    if (estado.filtroCot) consulta = consulta.eq('estado', estado.filtroCot);
+    const { data, error } = await consulta;
+    if (error) { lista.innerHTML = vacio('No pude cargar las cotizaciones.', ''); return; }
+    if (estado.filtroCot === 'nueva') pintarContador('#contador-cotizaciones', data.length);
+    if (!data.length) { lista.innerHTML = vacio(estado.filtroCot === 'nueva' ? 'No hay cotizaciones por responder.' : 'No hay cotizaciones aquí.', ''); return; }
+
+    // Nombre y correo del cliente
+    const ids = [...new Set(data.map((q) => q.user_id))];
+    const { data: clientes } = await db.from('clientes').select('user_id, nombre, email, telefono').in('user_id', ids);
+    const cliente = new Map((clientes || []).map((c) => [c.user_id, c]));
+
+    lista.innerHTML = data.map((q) => {
+      const c = cliente.get(q.user_id) || {};
+      const vencida = q.estado === 'cotizada' && q.vence_at && new Date(q.vence_at) < new Date();
+      const detalles = [
+        ['Tipo', TIPOS_COT[q.tipo] || q.tipo], ['Cantidad', q.cantidad], ['Medidas', q.medidas],
+        ['Material', q.material || 'Que lo recomendemos'], ['Color', q.color],
+      ].filter(([, v]) => v);
+      return `
+        <article class="a-tarjeta" style="--color-tarjeta: ${COLOR_COT[q.estado]}">
+          <div class="a-tarjeta-cabeza">
+            <h3>${escHTML(q.titulo)}</h3>
+            <span class="mono">#${escHTML(q.id.slice(0, 8).toUpperCase())} · ${fecha(q.created_at)}</span>
+            <span class="a-estado a-empuja">${vencida ? 'Vencida' : ESTADOS_COT[q.estado]}</span>
+          </div>
+          <div class="a-pedido-cuerpo">
+            <div>
+              <p><strong>${escHTML(c.nombre || 'Cliente')}</strong></p>
+              <p><a href="mailto:${escHTML(c.email || '')}">${escHTML(c.email || '')}</a></p>
+              <p>${escHTML(c.telefono || '')}</p>
+              <dl class="a-detalles">${detalles.map(([k, v]) => `<div><dt>${k}</dt><dd>${escHTML(String(v))}</dd></div>`).join('')}</dl>
+            </div>
+            <div>
+              <p class="a-mensaje">${escHTML(q.descripcion)}</p>
+              ${q.archivos?.length ? `<div class="a-archivos">${q.archivos.map((a) => `
+                <button type="button" class="a-btn a-btn-chico" data-archivo="${escHTML(a)}">↓ ${escHTML(a.split('/').pop().replace(/^\d+-[a-z0-9]+-/, ''))}</button>`).join('')}</div>`
+                : '<p class="a-tenue">Sin archivos</p>'}
+              ${q.estado === 'pagada' ? `<p class="a-ayuda">Pagada: ${q.cantidad} × ${dinero(q.precio_unitario)} + envío ${dinero(q.costo_envio)}. Revisa el pedido en Pedidos.</p>` : ''}
+              ${q.aviso_cliente_at ? `<p class="a-ayuda">Correo al cliente: ${fecha(q.aviso_cliente_at)}${q.vence_at ? ` · vence ${fecha(q.vence_at, false)}` : ''}</p>` : ''}
+              ${q.estado === 'rechazada' && q.respuesta ? `<p class="a-nota">${escHTML(q.respuesta)}</p>` : ''}
+            </div>
+            ${formularioCotizacion(q)}
+          </div>
+        </article>`;
+    }).join('');
+    $$('#cotizaciones-lista [data-cotizar]').forEach(actualizarTotalCotizacion);
+  };
+
+  const actualizarTotalCotizacion = (form) => {
+    const cantidad = parseInt(form.cantidad.value, 10) || 0;
+    const precio = Number(form.precio.value) || 0;
+    const piezas = cantidad * precio;
+    const envio = form.envio.value === '' ? envioSugerido(piezas) : Number(form.envio.value);
+    form.envio.placeholder = String(envioSugerido(piezas));
+    $('[data-total]', form).textContent = precio > 0
+      ? `Total para el cliente: ${dinero(piezas + envio)} (${cantidad} × ${dinero(precio)} + envío ${envio > 0 ? dinero(envio) : 'gratis'})`
+      : 'Escribe el precio por pieza.';
+  };
+
+  const responderCotizacion = async (form, rechazar = false) => {
+    const id = form.dataset.cotizar;
+    const cantidad = parseInt(form.cantidad.value, 10);
+    const precio = Number(form.precio.value);
+    const dias = parseInt(form.dias.value, 10);
+    const vigencia = parseInt(form.vigencia.value, 10);
+    const respuesta = form.respuesta.value.trim();
+    const piezas = cantidad * precio;
+    const envio = form.envio.value === '' ? envioSugerido(piezas) : Number(form.envio.value);
+
+    let cambios;
+    if (rechazar) {
+      if (!respuesta) { form.respuesta.focus(); toast('Escribe el motivo para el cliente', 'error'); return; }
+      if (!confirm('¿Rechazar esta cotización y avisarle al cliente?')) return;
+      cambios = { estado: 'rechazada', respuesta };
+    } else {
+      const errores = [
+        [form.cantidad, Number.isInteger(cantidad) && cantidad >= 1 && cantidad <= 1000],
+        [form.precio, precio > 0],
+        [form.envio, envio >= 0],
+        [form.dias, Number.isInteger(dias) && dias >= 1 && dias <= 120],
+        [form.vigencia, Number.isInteger(vigencia) && vigencia >= 1 && vigencia <= 90],
+      ];
+      errores.forEach(([el, ok]) => el.setAttribute('aria-invalid', String(!ok)));
+      const malo = errores.find(([, ok]) => !ok);
+      if (malo) { malo[0].focus(); toast('Revisa los datos de la cotización', 'error'); return; }
+      cambios = {
+        estado: 'cotizada', cantidad, precio_unitario: precio, costo_envio: envio, dias_produccion: dias,
+        respuesta: respuesta || null, cotizada_at: new Date().toISOString(),
+        vence_at: new Date(Date.now() + vigencia * 86400000).toISOString(),
+      };
+    }
+
+    const botones = $$('button', form);
+    botones.forEach((b) => { b.disabled = true; });
+    const { error } = await db.from('cotizaciones').update(cambios).eq('id', id).in('estado', ['nueva', 'cotizada']);
+    if (error) { botones.forEach((b) => { b.disabled = false; }); toast('No se pudo guardar la cotización', 'error'); return; }
+
+    const { data: aviso, error: errorCorreo } = await db.functions.invoke('aviso-cotizacion', { body: { cotizacion_id: id } });
+    if (errorCorreo || !aviso?.ok) toast('Guardada, pero no se pudo mandar el correo', 'error');
+    else toast(rechazar ? `Rechazo enviado a ${aviso.para}` : `Cotización enviada a ${aviso.para}`);
+    cargarCotizaciones();
+  };
+
+  const abrirArchivo = async (boton) => {
+    boton.disabled = true;
+    const { data, error } = await db.storage.from('cotizaciones').createSignedUrl(boton.dataset.archivo, 600, { download: true });
+    boton.disabled = false;
+    if (error || !data?.signedUrl) { toast('No se pudo abrir el archivo', 'error'); return; }
+    window.open(data.signedUrl, '_blank', 'noopener');
+  };
+
+  /* ---------- Reseñas ---------- */
+  const estrellas = (n) => '★'.repeat(n) + '☆'.repeat(5 - n);
+
+  const cargarResenas = async () => {
+    const lista = $('#resenas-lista');
+    lista.innerHTML = cargando(3);
+    const { data, error } = await db.from('resenas')
+      .select('id, autor, calificacion, titulo, texto, visible, respuesta, created_at, productos (nombre)')
+      .order('created_at', { ascending: false }).limit(300);
+    if (error) { lista.innerHTML = vacio('No pude cargar las reseñas.', ''); return; }
+    if (!data.length) { lista.innerHTML = vacio('Aún no hay reseñas.', ' Los clientes las dejan desde Mis pedidos cuando su pieza ya se envió.'); return; }
+    lista.innerHTML = data.map((r) => `
+      <article class="a-tarjeta" style="--color-tarjeta: ${r.visible ? 'var(--ocre)' : 'var(--a-linea-2)'}">
+        <div class="a-tarjeta-cabeza">
+          <h3>${escHTML(r.productos?.nombre || 'Producto')}</h3>
+          <span class="a-estrellas" aria-label="${r.calificacion} de 5">${estrellas(r.calificacion)}</span>
+          <span class="mono a-empuja">${escHTML(r.autor)} · ${fecha(r.created_at)}</span>
+        </div>
+        ${r.titulo ? `<p><strong>${escHTML(r.titulo)}</strong></p>` : ''}
+        <p class="a-mensaje">${escHTML(r.texto)}</p>
+        <div class="a-mensaje-acciones">
+          <label class="a-switch a-switch-chico"><input type="checkbox" data-resena-visible="${escHTML(r.id)}" ${r.visible ? 'checked' : ''}>
+            <span>Visible en la tienda</span></label>
+          <input class="a-input" id="resp-${escHTML(r.id)}" maxlength="1000" placeholder="Respuesta pública (opcional)" value="${escHTML(r.respuesta || '')}" aria-label="Respuesta pública">
+          <button type="button" class="a-btn a-btn-chico" data-resena-responder="${escHTML(r.id)}">Guardar respuesta</button>
+        </div>
+      </article>`).join('');
+  };
+
+  const cambiarResena = async (id, cambios, exito) => {
+    const { error } = await db.from('resenas').update(cambios).eq('id', id);
+    if (error) { toast('No se pudo guardar la reseña', 'error'); cargarResenas(); return; }
+    toast(exito);
+  };
+
+  /* ---------- Ajustes ---------- */
+  const cargarAjustes = async () => {
+    estado.ajustes = null;
+    const a = await leerAjustes();
+    const f = $('#form-ajustes');
+    if (!a) { $('#ajustes-error').textContent = 'No pude leer los ajustes.'; $('#ajustes-error').hidden = false; return; }
+    f.envio_costo.value = Number(a.envio_costo);
+    f.envio_gratis_desde.value = Number(a.envio_gratis_desde);
+    f.pedido_minimo.value = Number(a.pedido_minimo);
+    f.iva_pct.value = Math.round(Number(a.iva_tasa) * 100);
+    f.iva_desglosar.checked = !!a.iva_desglosar;
+    f.monedero_pct.value = Number(a.monedero_pct);
+    f.monedero_uso_max_pct.value = Number(a.monedero_uso_max_pct);
+    f.monedero_vigencia_meses.value = a.monedero_vigencia_meses;
+  };
+
+  const guardarAjustes = async (e) => {
+    e.preventDefault();
+    const f = e.target;
+    const num = (n) => Number(f[n].value);
+    const cambios = {
+      envio_costo: num('envio_costo'), envio_gratis_desde: num('envio_gratis_desde'), pedido_minimo: num('pedido_minimo'),
+      iva_tasa: num('iva_pct') / 100, iva_desglosar: f.iva_desglosar.checked,
+      monedero_pct: num('monedero_pct'), monedero_uso_max_pct: num('monedero_uso_max_pct'),
+      monedero_vigencia_meses: num('monedero_vigencia_meses'), updated_at: new Date().toISOString(),
+    };
+    const invalido = [...f.querySelectorAll('input[type=number]')].find((i) => i.value === '' || !i.checkValidity());
+    $$('input[type=number]', f).forEach((i) => i.setAttribute('aria-invalid', String(i === invalido)));
+    const err = $('#ajustes-error');
+    if (invalido) { invalido.focus(); err.textContent = 'Revisa el campo marcado.'; err.hidden = false; return; }
+    err.hidden = true;
+    const boton = $('#ajustes-guardar');
+    boton.disabled = true;
+    const { error } = await SupabaseDB.cliente.from('ajustes_tienda').update(cambios).eq('id', true).select('id');
+    boton.disabled = false;
+    if (error) { err.textContent = 'No se pudo guardar. ' + error.message; err.hidden = false; return; }
+    estado.ajustes = null;
+    toast('Ajustes guardados');
+  };
+
   /* ---------- Eventos ---------- */
   const marcarSegmento = (grupo, boton) => $$('button', grupo).forEach((b) => b.setAttribute('aria-pressed', String(b === boton)));
 
@@ -748,6 +991,17 @@
         return;
       }
 
+      const archivo = e.target.closest('[data-archivo]');
+      if (archivo) { abrirArchivo(archivo); return; }
+      const rechazar = e.target.closest('[data-rechazar]');
+      if (rechazar) { responderCotizacion(rechazar.closest('form'), true); return; }
+      const responder = e.target.closest('[data-resena-responder]');
+      if (responder) {
+        const id = responder.dataset.resenaResponder;
+        cambiarResena(id, { respuesta: $(`#resp-${CSS.escape(id)}`).value.trim() || null }, 'Respuesta guardada');
+        return;
+      }
+
       const respondido = e.target.closest('[data-respondido]');
       if (respondido && respondido.closest('#mensajes-lista')) { marcarRespondido(respondido.dataset.respondido, respondido); return; }
 
@@ -769,11 +1023,23 @@
     });
 
     document.addEventListener('submit', (e) => {
+      const cot = e.target.closest('[data-cotizar]');
+      if (cot) { e.preventDefault(); responderCotizacion(cot); return; }
       const form = e.target.closest('[data-guia]');
       if (!form) return;
       e.preventDefault();
       guardarGuia(form);
     });
+    document.addEventListener('input', (e) => {
+      const cot = e.target.closest('[data-cotizar]');
+      if (cot) actualizarTotalCotizacion(cot);
+    });
+    $('#form-ajustes').addEventListener('submit', guardarAjustes);
+    $$('#cotizaciones-filtro button').forEach((b) => b.addEventListener('click', () => {
+      estado.filtroCot = b.dataset.cot;
+      marcarSegmento(b.parentElement, b);
+      cargarCotizaciones();
+    }));
 
     document.addEventListener('change', (e) => {
       if (e.target.matches('[data-stock] input')) {
@@ -781,6 +1047,10 @@
         programarStock(caja.dataset.stock, caja);
       } else if (e.target.matches('[data-visible]')) {
         cambiarVisible(e.target.dataset.visible, e.target.checked, e.target);
+      } else if (e.target.matches('[data-resena-visible]')) {
+        const v = e.target.checked;
+        e.target.closest('.a-tarjeta').style.setProperty('--color-tarjeta', v ? 'var(--ocre)' : 'var(--a-linea-2)');
+        cambiarResena(e.target.dataset.resenaVisible, { visible: v }, v ? 'Reseña visible' : 'Reseña oculta');
       } else if (e.target.matches('[data-pedido]')) {
         cambiarEstadoPedido(e.target);
       } else if (e.target.id === 'ed-archivos') {
@@ -872,12 +1142,14 @@
 
   // Los contadores del menú se llenan aunque entre directo a otra sección
   const cargarResumenSilencioso = async () => {
-    const [pedidos, mensajes] = await Promise.all([
+    const [pedidos, mensajes, cotizaciones] = await Promise.all([
       db.from('pedidos').select('id', { count: 'exact', head: true }).in('estado', ['pagado', 'en_produccion']),
-      db.from('contactos').select('id', { count: 'exact', head: true }).eq('respondido', false)
+      db.from('contactos').select('id', { count: 'exact', head: true }).eq('respondido', false),
+      db.from('cotizaciones').select('id', { count: 'exact', head: true }).eq('estado', 'nueva')
     ]);
     pintarContador('#contador-pedidos', pedidos.count || 0);
     pintarContador('#contador-mensajes', mensajes.count || 0);
+    pintarContador('#contador-cotizaciones', cotizaciones.count || 0);
   };
 
   $('#acceso-form').addEventListener('submit', async (e) => {

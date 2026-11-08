@@ -33,7 +33,11 @@
     cancelado: 'Cancelado',
   };
 
-  const fmtPrecio = (n) => Number(n).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  const fmtPrecio = (n) => {
+    const v = Number(n);
+    const dec = Number.isInteger(Math.round(v * 100) / 100) ? 0 : 2;
+    return v.toLocaleString('es-MX', { minimumFractionDigits: dec, maximumFractionDigits: 2 });
+  };
   const fmtFecha = (f) => new Date(f).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
 
   const toast = (msg, tipo = 'exito') => {
@@ -117,6 +121,7 @@
     c.innerHTML = pedidos.map((p) => {
       const items = p.items || [];
       const piezas = items.reduce((s, i) => s + i.cantidad, 0);
+      const resenable = ['enviado', 'entregado'].includes(p.estado);
       return `
         <article class="pedido-tarjeta" data-estado="${escHTML(p.estado)}">
           <header class="pedido-tarjeta-cabeza">
@@ -141,21 +146,29 @@
                 <span class="pedido-pieza-img">${i.imagen_url ? `<img src="${escHTML(i.imagen_url)}" alt="" loading="lazy">` : ''}</span>
                 <span class="pedido-pieza-nombre">${escHTML(i.nombre)} <span class="pedido-pieza-cant">× ${i.cantidad}</span></span>
                 <span class="pedido-pieza-precio">$${fmtPrecio(i.precio * i.cantidad)}</span>
+                ${resenable && i.producto_id ? botonResena(i) : ''}
               </li>`).join('')}
             ${(() => {
-              const envio = Number(p.total) - items.reduce((s, i) => s + i.precio * i.cantidad, 0);
-              return envio > 0.009 ? `
-              <li class="pedido-pieza-envio">
+              const descuento = Number(p.descuento || 0);
+              const envio = p.envio != null
+                ? Number(p.envio)
+                : Number(p.total) + descuento - items.reduce((s, i) => s + i.precio * i.cantidad, 0);
+              const fila = (clase, texto, valor) => `
+              <li class="${clase}">
                 <span class="pedido-pieza-img" aria-hidden="true"></span>
-                <span class="pedido-pieza-nombre">Envío a domicilio</span>
-                <span class="pedido-pieza-precio">$${fmtPrecio(envio)}</span>
-              </li>` : '';
+                <span class="pedido-pieza-nombre">${texto}</span>
+                <span class="pedido-pieza-precio">${valor}</span>
+              </li>`;
+              return (envio > 0.009 ? fila('pedido-pieza-envio', 'Envío a domicilio', `$${fmtPrecio(envio)}`) : '')
+                + (descuento > 0 ? fila('pedido-pieza-envio pedido-pieza-monedero', 'Monedero Kinara', `−$${fmtPrecio(descuento)}`) : '');
             })()}
           </ul>
 
           <footer class="pedido-tarjeta-pie">
-            <div class="pedido-tarjeta-total">Total <strong>$${fmtPrecio(p.total)} MXN</strong></div>
-            <button type="button" class="btn-secundario btn-chico" data-repetir="${escHTML(p.id)}">Volver a pedir</button>
+            <div class="pedido-tarjeta-total">Total <strong>$${fmtPrecio(p.total)} MXN</strong>
+              ${Number(p.iva) > 0 ? `<span class="pedido-tarjeta-iva">Incluye IVA (${Math.round(Number(p.iva_tasa) * 100)}%): $${fmtPrecio(p.iva)}</span>` : ''}
+            </div>
+            ${p.cotizacion ? '' : `<button type="button" class="btn-secundario btn-chico" data-repetir="${escHTML(p.id)}">Volver a pedir</button>`}
           </footer>
           ${p.direccion ? `<p class="pedido-tarjeta-envio">Envío a ${escHTML(p.direccion)}</p>` : ''}
         </article>`;
@@ -218,7 +231,191 @@
   $('lista-pedidos').addEventListener('click', (e) => {
     const b = e.target.closest('[data-repetir]');
     if (b) repetirPedido(b.dataset.repetir, b);
+    const r = e.target.closest('[data-resenar]');
+    if (r) abrirResena(r);
+    if (e.target.closest('[data-cancelar-resena]')) e.target.closest('.resena-form')?.remove();
   });
+
+  /* =====================================================
+     RESEÑAS (solo piezas enviadas o entregadas)
+     ===================================================== */
+  let misResenas = new Map();   // producto_id → reseña
+
+  const estrellas = (n) => `<span class="estrellas" style="--valor:${(n / 5) * 100}%" aria-hidden="true">★★★★★</span>`;
+
+  const botonResena = (item) => {
+    const r = misResenas.get(item.producto_id);
+    return `
+      <span class="pedido-pieza-resena">
+        ${r ? `${estrellas(r.calificacion)}${r.visible ? '' : ' <small>Oculta por Kinara</small>'}` : ''}
+        <button type="button" class="acceso-link" data-resenar="${escHTML(item.producto_id)}" data-nombre="${escHTML(item.nombre)}">
+          ${r ? 'Editar reseña' : 'Dejar reseña'}
+        </button>
+      </span>`;
+  };
+
+  const abrirResena = (boton) => {
+    const li = boton.closest('li');
+    if (li.nextElementSibling?.classList.contains('resena-form')) { li.nextElementSibling.querySelector('input')?.focus(); return; }
+    const id = boton.dataset.resenar;
+    const r = misResenas.get(id) || {};
+    const form = document.createElement('li');
+    form.className = 'resena-form';
+    form.innerHTML = `
+      <form novalidate data-producto="${escHTML(id)}">
+        <fieldset class="resena-calificar">
+          <legend>¿Qué tal tu ${escHTML(boton.dataset.nombre)}?</legend>
+          <div class="resena-estrellas">
+            ${[5, 4, 3, 2, 1].map((n) => `
+              <input type="radio" name="calificacion" id="cal-${escHTML(id)}-${n}" value="${n}" ${r.calificacion === n ? 'checked' : ''}>
+              <label for="cal-${escHTML(id)}-${n}" title="${n} de 5">★<span class="sr-only">${n} de 5</span></label>`).join('')}
+          </div>
+        </fieldset>
+        <input class="checkout-input" name="titulo" maxlength="80" placeholder="Título (opcional)" value="${escHTML(r.titulo || '')}">
+        <textarea class="checkout-input" name="texto" rows="3" maxlength="1500" placeholder="Cómo quedó, cómo llegó, para qué la usas…">${escHTML(r.texto || '')}</textarea>
+        <p class="acceso-mensaje" role="alert" hidden></p>
+        <div class="cuenta-form-acciones">
+          <button type="submit" class="btn-primario btn-chico">Publicar reseña</button>
+          <button type="button" class="btn-secundario btn-chico" data-cancelar-resena>Cancelar</button>
+        </div>
+        <p class="acceso-ayuda">Se publica con tu nombre y la inicial de tu apellido.</p>
+      </form>`;
+    li.after(form);
+    form.querySelector('input[type=radio]:checked, input[type=radio]')?.focus();
+  };
+
+  $('lista-pedidos').addEventListener('submit', async (e) => {
+    const form = e.target.closest('form[data-producto]');
+    if (!form) return;
+    e.preventDefault();
+    const aviso = form.querySelector('.acceso-mensaje');
+    const calificacion = Number(form.calificacion.value);
+    const texto = form.texto.value.trim();
+    const error = !calificacion ? 'Elige de 1 a 5 estrellas.'
+      : texto.length < 10 ? 'Cuéntanos un poco más (mínimo 10 letras).' : '';
+    if (error) { aviso.textContent = error; aviso.hidden = false; return; }
+    const boton = form.querySelector('[type=submit]');
+    boton.disabled = true;
+    const { error: err } = await db.rpc('guardar_mi_resena', {
+      p_producto_id: form.dataset.producto, p_calificacion: calificacion,
+      p_titulo: form.titulo.value.trim(), p_texto: texto,
+    });
+    boton.disabled = false;
+    if (err) { aviso.textContent = err.message || 'No se pudo guardar. Intenta de nuevo.'; aviso.hidden = false; return; }
+    await cargarResenas();
+    pintarPedidos();
+    toast('Gracias por tu reseña');
+  });
+
+  const cargarResenas = async () => {
+    const { data } = await db.rpc('mis_resenas');
+    misResenas = new Map((data || []).map((r) => [r.producto_id, r]));
+  };
+
+  /* =====================================================
+     COTIZACIONES
+     ===================================================== */
+  const ESTADOS_COT = {
+    nueva: 'En revisión', cotizada: 'Lista para pagar', pagada: 'Pagada', rechazada: 'No disponible', cancelada: 'Cancelada',
+  };
+  let cotizaciones = [];
+
+  const pintarCotizaciones = () => {
+    const c = $('lista-cotizaciones');
+    if (!cotizaciones.length) {
+      c.innerHTML = `
+        <div class="cuenta-vacio">
+          <p class="cuenta-vacio-titulo">Aún no pides cotizaciones</p>
+          <p class="cuenta-vacio-texto">¿Necesitas una refacción, un molde o una figura? Sube tu archivo o fotos y te decimos cuánto cuesta.</p>
+        </div>`;
+      return;
+    }
+    const ahora = new Date();
+    c.innerHTML = cotizaciones.map((q) => {
+      const vencida = q.estado === 'cotizada' && q.vence_at && new Date(q.vence_at) < ahora;
+      const piezas = Number(q.precio_unitario) * q.cantidad;
+      const total = piezas + Number(q.costo_envio || 0);
+      return `
+        <article class="pedido-tarjeta cotizacion-tarjeta" data-estado="${escHTML(q.estado)}">
+          <header class="pedido-tarjeta-cabeza">
+            <div>
+              <p class="pedido-tarjeta-id">${escHTML(q.titulo)}</p>
+              <p class="pedido-tarjeta-fecha">#${escHTML(q.id.slice(0, 8).toUpperCase())} · ${fmtFecha(q.created_at)} · ${q.cantidad} ${q.cantidad === 1 ? 'pieza' : 'piezas'}</p>
+            </div>
+            <span class="pedido-estado cotizacion-estado--${escHTML(vencida ? 'vencida' : q.estado)}">${vencida ? 'Vencida' : ESTADOS_COT[q.estado]}</span>
+          </header>
+          <p class="cotizacion-descripcion">${escHTML(q.descripcion)}</p>
+          ${q.archivos?.length ? `<p class="cotizacion-archivos">${q.archivos.length} ${q.archivos.length === 1 ? 'archivo' : 'archivos'}: ${q.archivos.map((a) => escHTML(a.split('/').pop().replace(/^\d+-[a-z0-9]+-/, ''))).join(', ')}</p>` : ''}
+          ${q.estado === 'nueva' ? '<p class="pedido-tarjeta-nota">La estamos revisando. Te escribimos en 24 a 48 horas.</p>' : ''}
+          ${['cotizada', 'pagada'].includes(q.estado) ? `
+            <ul class="pedido-piezas cotizacion-precio">
+              <li><span class="pedido-pieza-nombre">Piezas <span class="pedido-pieza-cant">${q.cantidad} × $${fmtPrecio(q.precio_unitario)}</span></span><span class="pedido-pieza-precio">$${fmtPrecio(piezas)}</span></li>
+              <li><span class="pedido-pieza-nombre">Envío</span><span class="pedido-pieza-precio">${Number(q.costo_envio) > 0 ? '$' + fmtPrecio(q.costo_envio) : 'Gratis'}</span></li>
+              <li><span class="pedido-pieza-nombre">Producción</span><span class="pedido-pieza-precio">${q.dias_produccion} días hábiles</span></li>
+            </ul>` : ''}
+          ${q.respuesta ? `<p class="cotizacion-respuesta"><strong>Kinara:</strong> ${escHTML(q.respuesta)}</p>` : ''}
+          <footer class="pedido-tarjeta-pie">
+            ${['cotizada', 'pagada'].includes(q.estado) ? `<div class="pedido-tarjeta-total">Total <strong>$${fmtPrecio(total)} MXN</strong>
+              ${q.estado === 'cotizada' && q.vence_at && !vencida ? `<span class="pedido-tarjeta-iva">Válida hasta el ${new Date(q.vence_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'long' })}</span>` : ''}</div>` : '<span></span>'}
+            <div class="cotizacion-acciones">
+              ${['nueva', 'cotizada'].includes(q.estado) ? `<button type="button" class="acceso-link acceso-link--peligro" data-cancelar-cot="${escHTML(q.id)}">Cancelar</button>` : ''}
+              ${q.estado === 'cotizada' && !vencida ? `<a class="btn-primario btn-chico" href="../index.html?cotizacion=${escHTML(q.id)}">Pagar cotización</a>` : ''}
+              ${vencida ? '<a class="btn-secundario btn-chico" href="mailto:hola@kinaramx.com">Pedir que la actualicen</a>' : ''}
+              ${q.estado === 'pagada' ? '<a class="btn-secundario btn-chico" href="#pedidos" data-ir-pedidos>Ver el pedido</a>' : ''}
+            </div>
+          </footer>
+        </article>`;
+    }).join('');
+  };
+
+  const cargarCotizaciones = async () => {
+    const { data, error } = await db.from('cotizaciones')
+      .select('id, tipo, titulo, descripcion, cantidad, archivos, estado, precio_unitario, costo_envio, dias_produccion, respuesta, vence_at, created_at')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    cotizaciones = data || [];
+    pintarCotizaciones();
+  };
+
+  $('lista-cotizaciones').addEventListener('click', async (e) => {
+    if (e.target.closest('[data-ir-pedidos]')) { e.preventDefault(); abrirPanel('pedidos'); return; }
+    const b = e.target.closest('[data-cancelar-cot]');
+    if (!b || !confirm('¿Cancelar esta cotización?')) return;
+    b.disabled = true;
+    const { data, error } = await db.rpc('cancelar_mi_cotizacion', { p_id: b.dataset.cancelarCot });
+    if (error || !data) { toast('No se pudo cancelar.', 'error'); b.disabled = false; return; }
+    await cargarCotizaciones();
+    toast('Cotización cancelada');
+  });
+
+  /* =====================================================
+     MONEDERO
+     ===================================================== */
+  const TIPOS_MOV = { ganado: 'Ganado por tu compra', usado: 'Usado en tu compra', ajuste: 'Ajuste de Kinara' };
+
+  const cargarMonedero = async () => {
+    const { data, error } = await db.rpc('mi_monedero');
+    if (error) throw error;
+    const m = data || {};
+    $('monedero-saldo').textContent = `$${fmtPrecio(m.saldo || 0)}`;
+    $('monedero-vence').textContent = Number(m.saldo) > 0 && m.vence
+      ? `Vence el ${fmtFecha(m.vence)} si no vuelves a comprar.`
+      : 'Empieza a juntar con tu siguiente compra.';
+    $('monedero-reglas').innerHTML = `
+      <li>Cada compra pagada te regresa el <strong>${Number(m.pct)}%</strong> de lo que pagas en piezas.</li>
+      <li>Lo usas en tu siguiente compra con sesión iniciada, hasta el <strong>${Number(m.uso_max_pct)}%</strong> de las piezas.</li>
+      <li>Tu saldo dura <strong>${m.vigencia_meses} meses</strong> desde tu último movimiento. Cada compra lo renueva.</li>
+      <li>No se cambia por dinero. Si cancelamos o reembolsamos un pedido, su saldo se ajusta solo.</li>`;
+    const movs = m.movimientos || [];
+    $('monedero-movimientos').innerHTML = movs.length ? movs.map((v) => `
+      <li>
+        <span>
+          <strong>${escHTML(TIPOS_MOV[v.tipo] || v.tipo)}</strong>
+          <small>${fmtFecha(v.fecha)}${v.pedido ? ` · Pedido #${escHTML(v.pedido)}` : ''}${v.nota && v.tipo === 'ajuste' ? ` · ${escHTML(v.nota)}` : ''}</small>
+        </span>
+        <span class="monedero-monto ${Number(v.monto) < 0 ? 'negativo' : ''}">${Number(v.monto) < 0 ? '−' : '+'}$${fmtPrecio(Math.abs(v.monto))}</span>
+      </li>`).join('') : '<li class="monedero-sin-movs">Todavía no hay movimientos.</li>';
+  };
 
   /* =====================================================
      DIRECCIONES
@@ -448,6 +645,9 @@
         db.rpc('mi_perfil'),
         db.rpc('mis_pedidos'),
         cargarDirecciones(),
+        cargarResenas(),
+        cargarCotizaciones(),
+        cargarMonedero(),
       ]);
       if (perfil.error) throw perfil.error;
       if (lista.error) throw lista.error;
@@ -463,7 +663,7 @@
     }
 
     const panel = location.hash.slice(1);
-    abrirPanel(['pedidos', 'direcciones', 'datos'].includes(panel) ? panel : 'pedidos');
+    abrirPanel(['pedidos', 'cotizaciones', 'monedero', 'direcciones', 'datos'].includes(panel) ? panel : 'pedidos');
 
     $('cuenta-cargando').hidden = true;
     $('cuenta-contenido').hidden = false;

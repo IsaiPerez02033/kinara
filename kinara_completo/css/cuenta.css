@@ -747,3 +747,265 @@
   font-family: var(--fuente-mono);
   overflow-wrap: anywhere;
 }
+
+/* -------------------------------------------------------
+   RESEÑAS DESDE "MIS PEDIDOS"
+   ------------------------------------------------------- */
+.pedido-pieza-resena {
+  grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: -0.35rem;
+  font-size: var(--texto-xs);
+  color: var(--color-blanco-dim);
+}
+
+.pedido-pieza-monedero .pedido-pieza-precio { color: var(--color-exito); font-weight: 600; }
+
+.pedido-tarjeta-iva {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: var(--texto-xs);
+}
+
+.pedido-piezas li.resena-form {
+  display: block;
+  padding: 1rem;
+  border-radius: var(--radio-md);
+  background: var(--color-negro);
+}
+
+.resena-form form { display: grid; gap: 0.6rem; }
+
+/* Estrellas con radios: de derecha a izquierda para pintar las anteriores */
+.resena-calificar { margin: 0; padding: 0; border: 0; }
+
+.resena-calificar legend {
+  margin-bottom: 0.3rem;
+  padding: 0;
+  font-size: var(--texto-sm);
+  font-weight: 600;
+}
+
+.resena-estrellas {
+  display: inline-flex;
+  flex-direction: row-reverse;
+  gap: 0.15rem;
+}
+
+.resena-calificar input { position: absolute; opacity: 0; pointer-events: none; }
+
+.resena-calificar label {
+  font-size: 1.7rem;
+  line-height: 1;
+  color: var(--color-borde);
+  cursor: pointer;
+  transition: color var(--transicion-rapida), transform var(--transicion-rapida);
+}
+
+.resena-calificar label:hover,
+.resena-calificar label:hover ~ label,
+.resena-calificar input:checked ~ label { color: var(--ocre); }
+.resena-calificar label:active { transform: scale(0.92); }
+.resena-calificar input:focus-visible + label { outline: 2px solid var(--cobalto); outline-offset: 2px; border-radius: 6px; }
+
+/* -------------------------------------------------------
+   MONEDERO
+   ------------------------------------------------------- */
+.monedero-tarjeta {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: var(--espacio-md);
+  padding: clamp(1.4rem, 5vw, 2rem);
+  border-radius: var(--radio-lg);
+  background: linear-gradient(125deg, var(--pino) 0%, color-mix(in oklab, var(--pino) 55%, var(--cobalto)) 55%, var(--cobalto) 100%);
+  color: var(--hueso);
+}
+
+.monedero-tarjeta::after {
+  content: '';
+  position: absolute;
+  right: -60px;
+  bottom: -90px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in oklab, var(--ocre) 55%, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+.monedero-tarjeta p { color: var(--hueso); }
+
+.cotizacion-tarjeta .pedido-tarjeta-id {
+  font-family: var(--fuente-cuerpo);
+  font-size: var(--texto-base);
+  font-weight: 600;
+}
+
+.monedero-etiqueta {
+  font-family: var(--fuente-mono);
+  font-size: var(--texto-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.monedero-saldo {
+  margin: 0.3rem 0 0.2rem;
+  font-size: clamp(2.4rem, 9vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.monedero-vence { font-size: var(--texto-sm); opacity: 0.9; }
+
+.monedero-reglas {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: var(--espacio-lg);
+  padding-left: 1.1rem;
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+}
+
+.monedero-movimientos { display: grid; gap: 0.5rem; }
+
+.monedero-movimientos li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: var(--radio-md);
+  background: var(--color-grafito);
+  font-size: var(--texto-sm);
+}
+
+.monedero-movimientos small { display: block; font-size: var(--texto-xs); color: var(--color-blanco-dim); }
+.monedero-monto { font-weight: 700; color: var(--color-exito); font-variant-numeric: tabular-nums; }
+.monedero-monto.negativo { color: var(--color-blanco); }
+.monedero-movimientos .monedero-sin-movs { justify-content: center; color: var(--color-blanco-dim); }
+
+/* -------------------------------------------------------
+   COTIZACIONES
+   ------------------------------------------------------- */
+.cotizacion-estado--nueva { background: rgba(240, 180, 41, 0.18); color: var(--color-aviso); }
+.cotizacion-estado--cotizada { background: rgba(31, 54, 181, 0.12); color: var(--cobalto); }
+.cotizacion-estado--pagada { background: rgba(28, 110, 70, 0.12); color: var(--color-exito); }
+.cotizacion-estado--rechazada,
+.cotizacion-estado--cancelada,
+.cotizacion-estado--vencida { background: rgba(168, 35, 26, 0.1); color: var(--color-error); }
+
+.cotizacion-tarjeta[data-estado="cancelada"] { opacity: 0.72; }
+
+.cotizacion-descripcion {
+  margin-bottom: 0.6rem;
+  font-size: var(--texto-sm);
+  line-height: 1.55;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.cotizacion-archivos {
+  margin-bottom: 0.8rem;
+  font-size: var(--texto-xs);
+  color: var(--color-blanco-dim);
+  overflow-wrap: anywhere;
+}
+
+.cotizacion-precio li { grid-template-columns: 1fr auto; }
+
+.cotizacion-respuesta {
+  margin-top: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radio-md);
+  background: linear-gradient(120deg, color-mix(in oklab, var(--cobalto) 10%, var(--color-negro)), color-mix(in oklab, var(--rubor) 30%, var(--color-negro)));
+  font-size: var(--texto-sm);
+  line-height: 1.5;
+}
+
+.cotizacion-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+#btn-nueva-cotizacion { margin-top: var(--espacio-md); }
+
+/* Página de cotización */
+.cotizar-pasos {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.8rem 0 var(--espacio-lg);
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+}
+
+.cotizar-pasos li { display: flex; gap: 0.7rem; }
+.cotizar-pasos span { font-family: var(--fuente-mono); color: var(--color-acento); }
+
+.cotizar-caja {
+  display: grid;
+  gap: 0.9rem;
+  padding: clamp(1.2rem, 5vw, 2rem);
+  border-radius: var(--radio-lg);
+  background: var(--color-grafito);
+}
+
+.cotizar-caja[hidden] { display: none; }
+.cotizar-listo { justify-items: start; }
+.cotizar-listo:focus { outline: none; }
+.cotizar-listo .confirmacion-icono { margin: 0; }
+
+.cotizar-zona {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+  padding: 1.4rem 1rem;
+  border: 2px dashed var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: linear-gradient(135deg, color-mix(in oklab, var(--cobalto) 6%, transparent), color-mix(in oklab, var(--rubor) 18%, transparent));
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transicion-rapida), background-color var(--transicion-rapida);
+}
+
+.cotizar-zona:hover,
+.cotizar-zona.arrastrando { border-color: var(--cobalto); }
+.cotizar-zona:focus-within { outline: 2px solid var(--cobalto); outline-offset: 2px; }
+.cotizar-zona input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.cotizar-zona strong { font-size: var(--texto-sm); }
+.cotizar-zona small { font-size: var(--texto-xs); color: var(--color-blanco-dim); }
+
+.cotizar-archivos { display: grid; gap: 0.4rem; margin-top: 0.6rem; }
+
+.cotizar-archivos li {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radio-md);
+  background: var(--color-grafito);
+  font-size: var(--texto-sm);
+}
+
+.cotizar-archivo-ext {
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radio-full);
+  background: var(--cobalto);
+  color: var(--hueso);
+  font-family: var(--fuente-mono);
+  font-size: 0.68rem;
+}
+
+.cotizar-archivo-nombre { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cotizar-archivo-peso { font-size: var(--texto-xs); color: var(--color-blanco-dim); font-variant-numeric: tabular-nums; }
+
+textarea.checkout-input { min-height: 7rem; resize: vertical; line-height: 1.5; }

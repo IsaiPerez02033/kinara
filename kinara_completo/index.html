@@ -119,7 +119,7 @@
           </svg>
           <span id="carrito-contador">0</span>
         </button>
-        <a href="#contacto" class="btn-primario btn-chico">Cotizar pieza</a>
+        <a href="pages/cotizar.html" class="btn-primario btn-chico">Cotizar pieza</a>
         <button id="menu-movil-abrir" type="button" class="btn-icono btn-menu" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-movil">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg>
         </button>
@@ -137,7 +137,7 @@
     <a href="#catalogo">Catálogo</a>
     <a href="#contacto">Contacto</a>
     <a href="pages/acceso.html" data-enlace-cuenta>Iniciar sesión</a>
-    <a href="#contacto" class="btn-primario">Cotizar pieza</a>
+    <a href="pages/cotizar.html" class="btn-primario">Cotizar pieza</a>
   </div>
 
   <main id="contenido">
@@ -160,7 +160,7 @@
           </p>
           <div class="hero-acciones">
             <a href="#catalogo" class="btn-primario">Ver catálogo</a>
-            <a href="#contacto" class="btn-secundario">Cotizar mi pieza</a>
+            <a href="pages/cotizar.html" class="btn-secundario">Cotizar mi pieza</a>
           </div>
         </div>
 
@@ -181,7 +181,7 @@
           <h2 class="hero-subtitulo">¿Qué quieres imprimir?</h2>
           <p class="hero-descripcion">Mándanos tu idea, una foto o tu archivo STL. Nosotros te decimos cómo hacerla realidad.</p>
           <div class="hero-acciones">
-            <a href="#contacto" class="btn-primario">Cotizar mi pieza</a>
+            <a href="pages/cotizar.html" class="btn-primario">Cotizar mi pieza</a>
             <a href="#categorias" class="btn-secundario">Explorar categorías</a>
           </div>
         </div>
@@ -232,7 +232,7 @@
             <svg class="pieza-svg" viewBox="0 0 120 120" aria-hidden="true"><use href="#pieza-figura"/></svg>
             <h3>Figuras</h3><p>Decorativas y de colección, para tu repisa.</p>
           </a>
-          <a href="#contacto" data-consulta="a_medida" class="categoria categoria-f categoria-medida reveal">
+          <a href="pages/cotizar.html" class="categoria categoria-f categoria-medida reveal">
             <div>
               <h3>¿No está en la lista? Lo hacemos a medida.</h3>
               <p>Refacciones, prototipos, piezas para tu negocio o cualquier idea que tengas.</p>
@@ -252,7 +252,7 @@
           <span class="etiqueta-seccion reveal">Cómo funciona</span>
           <h2 class="titulo-seccion reveal">De tu idea a tus <span>manos.</span></h2>
           <p class="reveal">No necesitas saber de modelado 3D. Hablas con quien hace tu pieza antes de imprimirla.</p>
-          <a href="#contacto" data-consulta="a_medida" class="btn-primario reveal">Empezar mi cotización</a>
+          <a href="pages/cotizar.html" class="btn-primario reveal">Empezar mi cotización</a>
         </div>
         <ol>
           <li class="paso reveal">
@@ -317,7 +317,7 @@
               <li><span>02</span>Aprueba el diseño antes de imprimir</li>
               <li><span>03</span>Recíbela lista para tu repisa</li>
             </ul>
-            <a href="#contacto" data-consulta="figura" class="btn-primario">Cotizar mi figura</a>
+            <a href="pages/cotizar.html?tipo=figura" class="btn-primario">Cotizar mi figura</a>
             <p class="figuras-aviso">Solo reproducimos marcas o personajes registrados si cuentas con autorización de su titular.</p>
           </div>
           <div class="figuras-arte cama" data-categoria="Figuras" aria-hidden="true">
@@ -367,8 +367,9 @@
           <span class="etiqueta-seccion reveal">Hablemos</span>
           <h2 class="titulo-seccion reveal">¿Qué quieres <span>imprimir?</span></h2>
           <p class="reveal">
-            Cuéntanos qué necesitas, para qué lo vas a usar, qué medidas tiene y cuántas piezas quieres.
-            Si ya tienes una foto o un archivo STL, lo revisamos por correo cuando te respondamos.
+            ¿Dudas antes de comprar? Escríbenos aquí. Si ya sabes qué pieza quieres y tienes una foto o un
+            archivo STL, <a href="pages/cotizar.html">pide tu cotización en línea</a>: la subes, te respondemos con
+            precio y la pagas desde tu cuenta.
           </p>
           <div class="contacto-datos reveal">
             <a href="mailto:hola@kinaramx.com">hola@kinaramx.com</a>
@@ -482,6 +483,8 @@
         <span class="carrito-subtotal-label">Total</span>
         <span class="carrito-subtotal-valor" id="carrito-total-valor">$0 MXN</span>
       </div>
+      <p class="carrito-iva" id="carrito-iva" hidden></p>
+      <p class="carrito-monedero" id="carrito-monedero" hidden></p>
       <p class="carrito-nota-envio" id="carrito-nota-envio">Envío a todo México. <a href="pages/envios.html" target="_blank" rel="noopener">Envíos y devoluciones</a></p>
       <button class="btn-checkout" id="btn-checkout" type="button" disabled>Proceder al pago</button>
     </div>
@@ -557,16 +560,28 @@
           <span>Guardar esta dirección en mi cuenta</span>
         </label>
         <div class="checkout-paso-label checkout-paso-label--separado"><span class="checkout-paso-numero">3</span>Resumen</div>
+        <label class="checkout-monedero" id="co-monedero-campo" hidden>
+          <input type="checkbox" id="co-usar-monedero" checked />
+          <span>
+            <strong id="co-monedero-titulo">Usar mi Monedero Kinara</strong>
+            <small id="co-monedero-texto"></small>
+          </span>
+        </label>
         <div class="checkout-resumen">
           <div id="checkout-resumen-items"></div>
           <div class="checkout-resumen-fila checkout-resumen-envio" id="checkout-envio-fila" hidden>
             <span>Envío a domicilio</span>
             <span id="checkout-envio"></span>
           </div>
+          <div class="checkout-resumen-fila checkout-resumen-descuento" id="checkout-descuento-fila" hidden>
+            <span>Monedero Kinara</span>
+            <span id="checkout-descuento"></span>
+          </div>
           <div class="checkout-resumen-total">
             <span>Total</span>
             <span id="checkout-total">$0 MXN</span>
           </div>
+          <p class="checkout-iva" id="checkout-iva" hidden></p>
         </div>
         <p class="checkout-nota">Te llevaremos a Mercado Pago para completar el pago de forma segura. Al pagar aceptas nuestras <a href="pages/envios.html" target="_blank" rel="noopener">políticas de envío y devoluciones</a> y nuestro <a href="pages/privacidad.html" target="_blank" rel="noopener">aviso de privacidad</a>.</p>
         <button id="btn-pagar" class="btn-checkout" type="button">Ir a pagar con Mercado Pago</button>

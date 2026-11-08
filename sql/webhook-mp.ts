@@ -30,11 +30,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // Cabeceras CORS básicas
 const HEADERS = { "Content-Type": "application/json" };
 
-/* ---------- Plantilla de correo de pedido (igual en aviso-envio.ts) ---------- */
+/* ---------- Plantilla de correo de pedido (igual en aviso-envio.ts y aviso-cotizacion.ts) ---------- */
 const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
-const dinero = (n: unknown) =>
-  "$" + Number(n ?? 0).toLocaleString("es-MX", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const dinero = (n: unknown) => {
+  const v = Number(n ?? 0);
+  const dec = Number.isInteger(Math.round(v * 100) / 100) ? 0 : 2;
+  return "$" + v.toLocaleString("es-MX", { minimumFractionDigits: dec, maximumFractionDigits: 2 });
+};
 
 function plantillaPedido(d: { asunto: string; titulo: string; texto: string; bloque: string; boton: string; url: string; nota: string }) {
   return `<!DOCTYPE html>
@@ -88,7 +91,7 @@ async function enviarCorreo(para: string, asunto: string, html: string) {
 async function correoPago(supabase: any, pedidoId: string) {
   const { data: p, error } = await supabase
     .from("pedidos")
-    .select("id, total, costo_envio, contacto_nombre, direccion_envio, correo_pago_at, clientes (nombre, email), pedido_items (cantidad, precio_unitario, productos (nombre))")
+    .select("id, total, costo_envio, descuento_monedero, iva_incluido, iva_tasa, cotizacion_id, contacto_nombre, direccion_envio, correo_pago_at, clientes (nombre, email, user_id), pedido_items (cantidad, precio_unitario, concepto, productos (nombre)), cotizaciones (dias_produccion)")
     .eq("id", pedidoId)
     .single();
   if (error || !p || p.correo_pago_at || !p.clientes?.email) return;
@@ -101,20 +104,45 @@ async function correoPago(supabase: any, pedidoId: string) {
   const renglon = (izq: string, der: string, fuerte = false) =>
     `<tr><td style="padding:7px 0;font-size:14px;color:${fuerte ? "#14161a" : "#3a3d44"};${fuerte ? "font-weight:700;" : ""}border-top:1px solid #e2dfd6;">${izq}</td><td align="right" style="padding:7px 0;font-size:14px;color:#14161a;${fuerte ? "font-weight:700;" : ""}border-top:1px solid #e2dfd6;white-space:nowrap;">${der}</td></tr>`;
   const piezas = (p.pedido_items ?? []).map((i: any) =>
-    renglon(`${esc(i.productos?.nombre ?? "Pieza")} × ${i.cantidad}`, dinero(i.precio_unitario * i.cantidad))).join("");
+    renglon(`${esc(i.productos?.nombre ?? i.concepto ?? "Pieza")} × ${i.cantidad}`, dinero(i.precio_unitario * i.cantidad))).join("");
   const envio = Number(p.costo_envio ?? 0);
+  const descuento = Number(p.descuento_monedero ?? 0);
+
+  // IVA incluido (se apaga en ajustes_tienda.iva_desglosar) y monedero ganado
+  const [{ data: ajustes }, { data: ganado }] = await Promise.all([
+    supabase.from("ajustes_tienda").select("iva_desglosar").maybeSingle(),
+    supabase.from("monedero_movimientos").select("monto").eq("pedido_id", p.id).eq("tipo", "ganado").maybeSingle(),
+  ]);
+  const iva = ajustes?.iva_desglosar && Number(p.iva_incluido) > 0
+    ? `<p style="margin:8px 0 0;font-size:12px;color:#54575d;text-align:right;">Incluye IVA (${Math.round(Number(p.iva_tasa) * 100)}%): ${dinero(p.iva_incluido)}</p>`
+    : "";
+  const conCuenta = !!p.clientes?.user_id;
+  const monedero = Number(ganado?.monto ?? 0) > 0 ? `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;background-color:#e8f1ec;background-image:linear-gradient(120deg,#e8f1ec 0%,#f3efe2 100%);border-radius:16px;">
+<tr><td style="padding:14px 16px;font-size:14px;line-height:1.5;color:#14161a;">
+<strong>Ganaste ${dinero(ganado.monto)} en tu Monedero Kinara.</strong><br>
+<span style="color:#3a3d44;font-size:13px;">${conCuenta
+  ? "Lo puedes usar en tu siguiente compra."
+  : `Crea tu cuenta con este correo en <a href="${siteUrl}/pages/acceso.html" style="color:#1f36b5;">kinaramx.com</a> para usarlo en tu siguiente compra.`}</span>
+</td></tr></table>` : "";
+
   const bloque = `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
 ${piezas}
 ${renglon("Envío", envio > 0 ? dinero(envio) : "Gratis")}
+${descuento > 0 ? renglon("Monedero Kinara", `−${dinero(descuento)}`) : ""}
 ${renglon("Total pagado", `${dinero(p.total)} MXN`, true)}
 </table>
+${iva}
+${monedero}
 <p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:#54575d;"><strong style="color:#14161a;">Se enviará a:</strong> ${esc(p.direccion_envio)}</p>`;
+  const dias = p.cotizaciones?.dias_produccion;
+  const tiempo = dias ? `en unos ${dias} días hábiles` : "en 3 a 5 días hábiles";
 
   const html = plantillaPedido({
     asunto,
     titulo: "Recibimos tu pago",
-    texto: `${nombre ? `Hola, ${esc(nombre)}. ` : ""}Tu pedido <strong>#${numero}</strong> ya está confirmado. Lo imprimimos y revisamos en nuestro taller, y sale en 3 a 5 días hábiles. Te avisamos con el número de guía cuando lo enviemos.`,
+    texto: `${nombre ? `Hola, ${esc(nombre)}. ` : ""}Tu pedido <strong>#${numero}</strong> ya está confirmado. Lo imprimimos y revisamos en nuestro taller, y sale ${tiempo}. Te avisamos con el número de guía cuando lo enviemos.`,
     bloque,
     boton: "Ver mi pedido",
     url: `${siteUrl}/pages/confirmacion.html?status=success&pedido=${p.id}`,

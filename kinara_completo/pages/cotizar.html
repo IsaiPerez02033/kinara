@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<!--
+  cotizar.html — Cotización a medida
+  El cliente con cuenta describe su pieza y sube archivos (STL, fotos,
+  PDF) al bucket privado "cotizaciones". Kinara responde con precio
+  en el panel y el cliente la paga desde Mi cuenta.
+-->
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Cotiza tu pieza — Kinara</title>
+  <meta name="description" content="Sube tu archivo STL o fotos de la pieza que necesitas. Te respondemos con precio y tiempo, y la pagas en línea." />
+  <link rel="canonical" href="https://kinaramx.com/pages/cotizar.html" />
+
+  <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/images/favicon-32.png" />
+  <link rel="apple-touch-icon" href="../assets/images/apple-touch-icon.png" />
+  <meta name="theme-color" content="#f2f0ea" />
+  <meta property="og:site_name" content="Kinara" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_MX" />
+  <meta property="og:title" content="Cotiza tu pieza — Kinara" />
+  <meta property="og:description" content="Impresión 3D en México: lámparas, herramientas, moldes, juguetes, figuras y piezas personalizadas." />
+  <meta property="og:image" content="https://kinaramx.com/assets/images/og-kinara.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://kinaramx.com/assets/images/og-kinara.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="../css/variables.css" />
+  <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../css/components.css" />
+  <link rel="stylesheet" href="../css/carrito.css" />
+  <link rel="stylesheet" href="../css/cuenta.css" />
+</head>
+
+<body class="pagina-simple">
+
+  <header class="pagina-simple-header cuenta-header">
+    <a href="../index.html" class="logo" aria-label="Kinara, volver al inicio">
+      <img class="logo-marca" src="../assets/images/logo-kinara-marca.svg" alt="" width="32" height="32" />
+      <span class="logo-nombre">KINARA</span>
+    </a>
+    <a href="cuenta.html#cotizaciones" class="btn-secundario btn-chico">Mis cotizaciones</a>
+  </header>
+
+  <main class="cuenta-page cotizar-page" id="contenido">
+    <p class="confirmacion-etiqueta">Cotización a medida</p>
+    <h1 class="cuenta-saludo">Cotiza tu pieza</h1>
+    <ol class="cotizar-pasos">
+      <li><span>01</span>Nos cuentas qué necesitas y subes tu archivo o fotos.</li>
+      <li><span>02</span>Te respondemos en 24 a 48 horas con precio, envío y tiempo.</li>
+      <li><span>03</span>Si te late, la pagas desde tu cuenta y la imprimimos.</li>
+    </ol>
+
+    <div class="cuenta-cargando" id="cotizar-cargando"><div class="pago-spinner"></div></div>
+
+    <section class="cotizar-caja" id="cotizar-sin-sesion" hidden>
+      <h2 class="cuenta-subtitulo">Entra para pedir tu cotización</h2>
+      <p class="cuenta-vacio-texto">Así guardamos tus archivos de forma privada, te avisamos cuando esté lista y la pagas en un clic.</p>
+      <div class="cuenta-form-acciones">
+        <a class="btn-primario" id="cotizar-entrar" href="acceso.html">Entrar</a>
+        <a class="btn-secundario" id="cotizar-registro" href="acceso.html?modo=registro">Crear cuenta</a>
+      </div>
+      <p class="acceso-ayuda">¿Solo tienes una duda? <a href="../index.html#contacto">Escríbenos sin cuenta</a>.</p>
+    </section>
+
+    <form class="cuenta-form cotizar-form" id="form-cotizar" novalidate hidden>
+      <p class="cuenta-aviso" id="cotizar-aviso" hidden></p>
+
+      <div class="checkout-campo">
+        <label class="checkout-label" for="cot-tipo">¿Qué necesitas?</label>
+        <select id="cot-tipo" class="checkout-input">
+          <option value="a_medida">Pieza a medida (refacción, molde, herramienta, prototipo)</option>
+          <option value="figura">Figura personalizada</option>
+          <option value="volumen">Varias piezas para mi negocio</option>
+          <option value="otro">Otra cosa</option>
+        </select>
+      </div>
+
+      <div class="checkout-campo">
+        <label class="checkout-label" for="cot-titulo">Nombre corto de la pieza</label>
+        <input type="text" id="cot-titulo" class="checkout-input" maxlength="120" placeholder="Engrane para batidora, figura de mi perro…" />
+      </div>
+
+      <div class="checkout-campo">
+        <label class="checkout-label" for="cot-descripcion">Detalles</label>
+        <textarea id="cot-descripcion" class="checkout-input" rows="5" maxlength="3000" placeholder="Para qué la vas a usar, si va a cargar peso o estar al sol, dónde va montada, qué tan detallada la quieres…"></textarea>
+      </div>
+
+      <div class="checkout-grid-2">
+        <div class="checkout-campo">
+          <label class="checkout-label" for="cot-cantidad">Cantidad</label>
+          <input type="number" id="cot-cantidad" class="checkout-input" min="1" max="1000" step="1" value="1" inputmode="numeric" />
+        </div>
+        <div class="checkout-campo">
+          <label class="checkout-label" for="cot-medidas">Medidas aproximadas <span class="cuenta-opcional">opcional</span></label>
+          <input type="text" id="cot-medidas" class="checkout-input" maxlength="120" placeholder="10 × 5 × 3 cm" />
+        </div>
+      </div>
+
+      <div class="checkout-grid-2">
+        <div class="checkout-campo">
+          <label class="checkout-label" for="cot-material">Material</label>
+          <select id="cot-material" class="checkout-input">
+            <option value="">Recomiéndenme</option>
+            <option>PLA</option>
+            <option>PETG</option>
+            <option>TPU (flexible)</option>
+            <option>Resina</option>
+          </select>
+        </div>
+        <div class="checkout-campo">
+          <label class="checkout-label" for="cot-color">Color <span class="cuenta-opcional">opcional</span></label>
+          <input type="text" id="cot-color" class="checkout-input" maxlength="60" placeholder="Negro mate" />
+        </div>
+      </div>
+
+      <div class="checkout-campo">
+        <span class="checkout-label" id="cot-archivos-label">Archivos <span class="cuenta-opcional">opcional, hasta 6</span></span>
+        <label class="cotizar-zona" id="cot-zona" for="cot-archivos">
+          <input type="file" id="cot-archivos" multiple accept=".stl,.obj,.3mf,.step,.stp,.jpg,.jpeg,.png,.webp,.heic,.pdf" aria-labelledby="cot-archivos-label" />
+          <strong>Arrastra aquí o elige archivos</strong>
+          <small>STL, OBJ, 3MF, STEP, fotos o PDF. Máximo 25 MB cada uno.</small>
+        </label>
+        <ul class="cotizar-archivos" id="cot-lista"></ul>
+      </div>
+
+      <p class="acceso-mensaje" id="cot-mensaje" role="alert" hidden></p>
+      <button type="submit" class="btn-primario" id="cot-enviar">Pedir cotización</button>
+      <p class="acceso-ayuda">Solo reproducimos marcas o personajes registrados si cuentas con autorización de su titular.</p>
+    </form>
+
+    <section class="cotizar-caja cotizar-listo" id="cotizar-listo" hidden tabindex="-1">
+      <div class="confirmacion-icono confirmacion-icono--exito">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2 class="cuenta-subtitulo">Recibimos tu solicitud</h2>
+      <p class="cuenta-vacio-texto">Te escribimos en 24 a 48 horas con el precio. También la vas a ver en tu cuenta, lista para pagar.</p>
+      <div class="cuenta-form-acciones">
+        <a class="btn-primario" href="cuenta.html#cotizaciones">Ver mis cotizaciones</a>
+        <a class="btn-secundario" href="cotizar.html">Cotizar otra pieza</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pagina-simple-footer">© Kinara · Impresión 3D · México · <a href="envios.html" class="footer-legal">Envíos y devoluciones</a> · <a href="privacidad.html" class="footer-legal">Aviso de privacidad</a></footer>
+
+  <div id="agregar-toast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
+  <script src="../js/lib/supabase.js"></script>
+  <script src="../js/sesion.js"></script>
+  <script src="../js/cotizar.js"></script>
+</body>
+</html>

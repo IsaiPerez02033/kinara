@@ -85,8 +85,10 @@
     /**
      * Formateo un precio en MXN.
      */
-    const fmt = (n) =>
-      parseFloat(n).toLocaleString('es-MX', { minimumFractionDigits: 0 });
+    const fmt = (n) => {
+      const v = parseFloat(n);
+      return v.toLocaleString('es-MX', { minimumFractionDigits: Number.isInteger(Math.round(v * 100) / 100) ? 0 : 2, maximumFractionDigits: 2 });
+    };
 
     /**
      * Formateo una fecha de forma legible.
@@ -115,7 +117,10 @@
       const pagado = ['pagado', 'en_produccion', 'enviado', 'entregado'].includes(pedido?.estado);
 
       // El pago ya se inició o concluyó: el carrito ya cumplió su función
-      if (pagado || status === 'success' || status === 'pending') {
+      // Una cotización se paga sin tocar el carrito de la tienda
+      let eraCotizacion = false;
+      try { eraCotizacion = sessionStorage.getItem('kinara:pago_cotizacion') === pedidoId; } catch (_) {}
+      if ((pagado || status === 'success' || status === 'pending') && !eraCotizacion) {
         localStorage.removeItem('kinara_carrito_v1');
         localStorage.removeItem('kinara_pedido_actual');
       }
@@ -134,8 +139,10 @@
       // Caso: pago confirmado por el webhook
       if (pagado) {
         const items = typeof pedido.items === 'string' ? JSON.parse(pedido.items) : pedido.items || [];
-        // El total incluye el envío; lo que no son piezas es envío
-        const envio = Number(pedido.total) - items.reduce((s, i) => s + Number(i.subtotal), 0);
+        const descuento = Number(pedido.descuento || 0);
+        const envio = pedido.envio != null
+          ? Number(pedido.envio)
+          : Number(pedido.total) - items.reduce((s, i) => s + Number(i.subtotal), 0);
         contenedor.innerHTML = `
           <div class="confirmacion-icono confirmacion-icono--exito">
             <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
@@ -159,9 +166,11 @@
                   <td>$${fmt(item.subtotal)}</td>
                 </tr>`).join('')}
               ${envio > 0.009 ? `<tr><td><span class="pedido-item-nombre">Envío a domicilio</span></td><td>$${fmt(envio)}</td></tr>` : ''}
+              ${descuento > 0 ? `<tr><td><span class="pedido-item-nombre">Monedero Kinara</span></td><td>−$${fmt(descuento)}</td></tr>` : ''}
             </tbody>
           </table>
           <div class="pedido-total"><span>Total pagado</span><strong>$${fmt(pedido.total)} MXN</strong></div>
+          ${Number(pedido.iva) > 0 ? `<p class="pedido-iva">Incluye IVA (${Math.round(Number(pedido.iva_tasa) * 100)}%): $${fmt(pedido.iva)}</p>` : ''}
           <p class="confirmacion-etiqueta">¿Qué sigue?</p>
           <ol class="pedido-pasos">
             <li><span>01</span>Guarda tu número de pedido para cualquier aclaración.</li>
