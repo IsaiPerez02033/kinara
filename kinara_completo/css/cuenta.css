@@ -121,7 +121,7 @@
 
 .acceso-mensaje[data-tipo="exito"] {
   border-left-color: var(--color-exito);
-  background: rgba(28, 110, 70, 0.1);
+  background: rgba(61, 107, 79, 0.1);
 }
 
 .acceso-alternativas {
@@ -344,7 +344,7 @@
   padding: 0.8rem 1rem;
   border-left: 3px solid var(--color-aviso);
   border-radius: var(--radio-sm);
-  background: rgba(240, 180, 41, 0.14);
+  background: rgba(184, 139, 116, 0.14);
   font-size: var(--texto-sm);
 }
 
@@ -476,9 +476,9 @@
 
 .pedido-estado--pagado,
 .pedido-estado--en_produccion,
-.pedido-estado--enviado { background: rgba(31, 54, 181, 0.12); color: var(--cobalto); }
-.pedido-estado--entregado { background: rgba(28, 110, 70, 0.12); color: var(--color-exito); }
-.pedido-estado--pendiente { background: rgba(240, 180, 41, 0.18); color: var(--color-aviso); }
+.pedido-estado--enviado { background: rgba(47, 92, 88, 0.12); color: var(--cobalto); }
+.pedido-estado--entregado { background: rgba(61, 107, 79, 0.12); color: var(--color-exito); }
+.pedido-estado--pendiente { background: rgba(184, 139, 116, 0.18); color: var(--color-aviso); }
 .pedido-estado--cancelado { background: rgba(168, 35, 26, 0.1); color: var(--color-error); }
 
 /* Recorrido: pagado → producción → enviado → entregado */
@@ -524,7 +524,7 @@
 .pedido-recorrido li.hecho .pedido-recorrido-punto { border-color: var(--color-acento); background: var(--color-acento); }
 .pedido-recorrido li.actual .pedido-recorrido-punto {
   border-color: var(--color-acento);
-  box-shadow: 0 0 0 4px rgba(201, 56, 20, 0.18);
+  box-shadow: 0 0 0 4px rgba(141, 95, 74, 0.18);
 }
 
 .pedido-recorrido-texto {
@@ -739,7 +739,7 @@
   margin: 0.9rem 0 0;
   padding: 0.75rem 0.9rem;
   border-radius: var(--radio-sm);
-  background: rgba(31, 54, 181, 0.08);
+  background: rgba(47, 92, 88, 0.08);
   font-size: var(--texto-sm);
 }
 
@@ -892,9 +892,9 @@
 /* -------------------------------------------------------
    COTIZACIONES
    ------------------------------------------------------- */
-.cotizacion-estado--nueva { background: rgba(240, 180, 41, 0.18); color: var(--color-aviso); }
-.cotizacion-estado--cotizada { background: rgba(31, 54, 181, 0.12); color: var(--cobalto); }
-.cotizacion-estado--pagada { background: rgba(28, 110, 70, 0.12); color: var(--color-exito); }
+.cotizacion-estado--nueva { background: rgba(184, 139, 116, 0.18); color: var(--color-aviso); }
+.cotizacion-estado--cotizada { background: rgba(47, 92, 88, 0.12); color: var(--cobalto); }
+.cotizacion-estado--pagada { background: rgba(61, 107, 79, 0.12); color: var(--color-exito); }
 .cotizacion-estado--rechazada,
 .cotizacion-estado--cancelada,
 .cotizacion-estado--vencida { background: rgba(168, 35, 26, 0.1); color: var(--color-error); }

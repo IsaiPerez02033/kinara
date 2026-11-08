@@ -42,7 +42,7 @@ const crearEscena = (THREE) => {
   const escena = new THREE.Scene();
   const camara = new THREE.PerspectiveCamera(30, 1, 0.1, 60);
 
-  escena.add(new THREE.HemisphereLight(0xffffff, 0x2a3a9a, 1.5));
+  escena.add(new THREE.HemisphereLight(0xffffff, 0x2f5c58, 1.5));
   const sol = new THREE.DirectionalLight(0xffffff, 2.6);
   sol.position.set(4, 8, 5);
   sol.castShadow = true;
@@ -50,7 +50,7 @@ const crearEscena = (THREE) => {
   Object.assign(sol.shadow.camera, { left: -4, right: 4, top: 5, bottom: -2, near: 1, far: 20 });
   sol.shadow.bias = -0.0006;
   escena.add(sol);
-  const contra = new THREE.DirectionalLight(0x9fb2ff, 1.4);
+  const contra = new THREE.DirectionalLight(0xc8dbd6, 1.4);
   contra.position.set(-6, 3, -4);
   escena.add(contra);
 
@@ -96,14 +96,14 @@ const crearEscena = (THREE) => {
       [0.72, 0], [0.74, 0.1], [0.46, 0.22], [0.5, 0.42], [0.82, 0.8], [0.9, 1.05],
       [0.72, 1.42], [0.76, 1.62], [0.46, 1.86], [0.4, 1.96],
     ].map(([x, y]) => new THREE.Vector2(x, y));
-    const material = materialImpreso(0xf0b429, { flatShading: true, emissive: 0xff9d3c, emissiveIntensity: 0 });
+    const material = materialImpreso(0xd2ab94, { flatShading: true, emissive: 0xc99a80, emissiveIntensity: 0 });
     g.add(malla(new THREE.LatheGeometry(perfil, 14), material));
     g.add(malla(new THREE.CylinderGeometry(0.74, 0.74, 0.08, 14), material, 0, 0.04, 0));
-    const foco = new THREE.PointLight(0xffb066, 0, 7);
+    const foco = new THREE.PointLight(0xe0c2ad, 0, 7);
     foco.position.y = 1.05;
     g.add(foco);
     g.userData = { material, foco };
-    return { grupo: g, alto: 1.96, radio: 0.84, nombre: 'Lámpara', capas: 245, color: 0xf0b429 };
+    return { grupo: g, alto: 1.96, radio: 0.84, nombre: 'Lámpara', capas: 245, color: 0xd2ab94 };
   };
 
   // ---------- Pieza 2: engranes ----------
@@ -129,8 +129,8 @@ const crearEscena = (THREE) => {
 
   const crearEngranes = () => {
     const g = new THREE.Group();
-    const azul = materialImpreso(0xf2f0ea);
-    const verde = materialImpreso(0xc93814);
+    const azul = materialImpreso(0xf3f2ee);
+    const verde = materialImpreso(0x8d5f4a);
     const engrane = (radio, dientes, alto, material) => {
       const geo = new THREE.ExtrudeGeometry(formaEngrane(radio, dientes), {
         depth: alto, bevelEnabled: false, curveSegments: 24,
@@ -144,14 +144,14 @@ const crearEscena = (THREE) => {
     chico.position.x = 0.92;
     g.add(grande, chico);
     g.userData = { grande, chico };
-    return { grupo: g, alto: 1.45, radio: 1.2, nombre: 'Engranes', capas: 181, color: 0xc93814 };
+    return { grupo: g, alto: 1.45, radio: 1.2, nombre: 'Engranes', capas: 181, color: 0x8d5f4a };
   };
 
   // ---------- Pieza 3: ajolote de escritorio ----------
   const crearAjolote = () => {
     const g = new THREE.Group();
-    const piel = materialImpreso(0xeec6bc);
-    const branquia = materialImpreso(0xc93814);
+    const piel = materialImpreso(0xdcd9d1);
+    const branquia = materialImpreso(0x8d5f4a);
     const ojo = materialImpreso(0x1b1714, { roughness: 0.25 });
     const esfera = new THREE.SphereGeometry(1, 32, 24);
 
@@ -180,7 +180,7 @@ const crearEscena = (THREE) => {
     parte(branquia, [-1.1, 0.59, 0], [0.025, 0.025, 0.2]);      // Sonrisa
     // Lo giro para que mire a la cámara al terminar de imprimirse
     g.rotation.y = 2.25;
-    return { grupo: g, alto: 1.62, radio: 1.15, nombre: 'Ajolote', capas: 202, color: 0xeec6bc };
+    return { grupo: g, alto: 1.62, radio: 1.15, nombre: 'Ajolote', capas: 202, color: 0xdcd9d1 };
   };
 
   const piezas = [
@@ -191,22 +191,22 @@ const crearEscena = (THREE) => {
   piezas.forEach((p) => escena.add(p.grupo));
 
   // ---------- Impresora ----------
-  const metal = new THREE.MeshStandardMaterial({ color: 0x24272d, roughness: 0.5, metalness: 0.35 });
+  const metal = new THREE.MeshStandardMaterial({ color: 0x2a3433, roughness: 0.5, metalness: 0.35 });
   const metalClaro = new THREE.MeshStandardMaterial({ color: 0xc4c6cb, roughness: 0.32, metalness: 0.6 });
-  const naranja = new THREE.MeshStandardMaterial({ color: 0xff6a2b, roughness: 0.42 });
+  const naranja = new THREE.MeshStandardMaterial({ color: 0xb88b74, roughness: 0.42 });
 
   const lienzo = document.createElement('canvas');
   lienzo.width = lienzo.height = 512;
   const c = lienzo.getContext('2d');
-  c.fillStyle = '#14161a';
+  c.fillStyle = '#1f2b2a';
   c.fillRect(0, 0, 512, 512);
-  c.strokeStyle = 'rgba(242,240,234,.2)';
+  c.strokeStyle = 'rgba(243,242,238,.2)';
   c.lineWidth = 1.5;
   for (let i = 0; i <= 512; i += 42.66) {
     c.beginPath(); c.moveTo(i, 0); c.lineTo(i, 512); c.stroke();
     c.beginPath(); c.moveTo(0, i); c.lineTo(512, i); c.stroke();
   }
-  c.strokeStyle = '#f2f0ea';
+  c.strokeStyle = '#f3f2ee';
   c.lineWidth = 5;
   c.strokeRect(10, 10, 492, 492);
   const texturaCama = new THREE.CanvasTexture(lienzo);
@@ -233,8 +233,8 @@ const crearEscena = (THREE) => {
   escena.add(portal);
 
   // Punto de plástico fundido y su luz
-  const gota = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffa763 }));
-  const luzGota = new THREE.PointLight(0xff7a33, 2.5, 2.5);
+  const gota = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 8), new THREE.MeshBasicMaterial({ color: 0xd9b8a3 }));
+  const luzGota = new THREE.PointLight(0xc99a80, 2.5, 2.5);
   gota.add(luzGota);
   escena.add(gota);
 
@@ -251,7 +251,7 @@ const crearEscena = (THREE) => {
   const filamentoPuntos = new Float32Array(24 * 3);
   const filamentoGeo = new THREE.BufferGeometry();
   filamentoGeo.setAttribute('position', new THREE.BufferAttribute(filamentoPuntos, 3));
-  const filamento = new THREE.Line(filamentoGeo, new THREE.LineBasicMaterial({ color: 0xff6a2b }));
+  const filamento = new THREE.Line(filamentoGeo, new THREE.LineBasicMaterial({ color: 0xb88b74 }));
   filamento.frustumCulled = false;
   escena.add(filamento);
   const curva = new THREE.QuadraticBezierCurve3(new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3());

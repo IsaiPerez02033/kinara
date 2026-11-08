@@ -42,25 +42,25 @@ const dinero = (n: unknown) => {
 function plantillaPedido(d: { asunto: string; titulo: string; texto: string; bloque: string; boton: string; url: string; nota: string }) {
   return `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(d.asunto)}</title></head>
-<body style="margin:0;padding:0;background-color:#f2f0ea;background-image:linear-gradient(180deg,#f2f0ea 0%,#f6e4dc 100%);">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f2f0ea;background-image:linear-gradient(180deg,#f2f0ea 0%,#f6e4dc 100%);">
+<body style="margin:0;padding:0;background-color:#f3f2ee;background-image:linear-gradient(180deg,#f3f2ee 0%,#e9e4dc 100%);">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f2ee;background-image:linear-gradient(180deg,#f3f2ee 0%,#e9e4dc 100%);">
 <tr><td align="center" style="padding:32px 16px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #e6e1d6;border-radius:24px;">
-<tr><td style="background-color:#1f36b5;background-image:linear-gradient(120deg,#1f36b5 0%,#3047c4 55%,#5a6fe0 100%);border-radius:24px 24px 0 0;padding:22px 28px;">
-<span style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;letter-spacing:4px;color:#f2f0ea;">KINARA</span>
-<span style="font-family:'Courier New',monospace;font-size:11px;color:#f2f0ea;opacity:.8;padding-left:10px;">IMPRESIÓN 3D</span>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #e3e0d8;border-radius:24px;">
+<tr><td style="background-color:#2f5c58;background-image:linear-gradient(120deg,#2f5c58 0%,#3a6c67 55%,#6f8f7f 100%);border-radius:24px 24px 0 0;padding:22px 28px;">
+<span style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;letter-spacing:4px;color:#f3f2ee;">KINARA</span>
+<span style="font-family:'Courier New',monospace;font-size:11px;color:#f3f2ee;opacity:.8;padding-left:10px;">IMPRESIÓN 3D</span>
 </td></tr>
-<tr><td style="padding:32px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#14161a;">
+<tr><td style="padding:32px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#1f2b2a;">
 <h1 style="margin:0 0 14px;font-size:24px;line-height:1.25;">${d.titulo}</h1>
-<p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#3a3d44;">${d.texto}</p>
+<p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#3b4746;">${d.texto}</p>
 ${d.bloque}
-<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr><td style="background-color:#c93814;background-image:linear-gradient(120deg,#c93814 0%,#e05a2e 100%);border-radius:999px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr><td style="background-color:#8d5f4a;background-image:linear-gradient(120deg,#8d5f4a 0%,#b88b74 100%);border-radius:999px;">
 <a href="${esc(d.url)}" style="display:inline-block;padding:14px 28px;border-radius:999px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;">${d.boton}</a>
 </td></tr></table>
-<p style="margin:24px 0 28px;font-size:13px;line-height:1.6;color:#54575d;">${d.nota}</p>
+<p style="margin:24px 0 28px;font-size:13px;line-height:1.6;color:#5a605d;">${d.nota}</p>
 </td></tr>
 </table>
-<p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#54575d;">Kinara · Impresión 3D · México · <a href="https://kinaramx.com" style="color:#54575d;">kinaramx.com</a></p>
+<p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#5a605d;">Kinara · Impresión 3D · México · <a href="https://kinaramx.com" style="color:#5a605d;">kinaramx.com</a></p>
 </td></tr></table>
 </body></html>`;
 }
@@ -102,7 +102,7 @@ async function correoPago(supabase: any, pedidoId: string) {
   const asunto = `Recibimos tu pago · Pedido #${numero}`;
 
   const renglon = (izq: string, der: string, fuerte = false) =>
-    `<tr><td style="padding:7px 0;font-size:14px;color:${fuerte ? "#14161a" : "#3a3d44"};${fuerte ? "font-weight:700;" : ""}border-top:1px solid #e2dfd6;">${izq}</td><td align="right" style="padding:7px 0;font-size:14px;color:#14161a;${fuerte ? "font-weight:700;" : ""}border-top:1px solid #e2dfd6;white-space:nowrap;">${der}</td></tr>`;
+    `<tr><td style="padding:7px 0;font-size:14px;color:${fuerte ? "#1f2b2a" : "#3b4746"};${fuerte ? "font-weight:700;" : ""}border-top:1px solid #e0ddd5;">${izq}</td><td align="right" style="padding:7px 0;font-size:14px;color:#1f2b2a;${fuerte ? "font-weight:700;" : ""}border-top:1px solid #e0ddd5;white-space:nowrap;">${der}</td></tr>`;
   const piezas = (p.pedido_items ?? []).map((i: any) =>
     renglon(`${esc(i.productos?.nombre ?? i.concepto ?? "Pieza")} × ${i.cantidad}`, dinero(i.precio_unitario * i.cantidad))).join("");
   const envio = Number(p.costo_envio ?? 0);
@@ -114,16 +114,16 @@ async function correoPago(supabase: any, pedidoId: string) {
     supabase.from("monedero_movimientos").select("monto").eq("pedido_id", p.id).eq("tipo", "ganado").maybeSingle(),
   ]);
   const iva = ajustes?.iva_desglosar && Number(p.iva_incluido) > 0
-    ? `<p style="margin:8px 0 0;font-size:12px;color:#54575d;text-align:right;">Incluye IVA (${Math.round(Number(p.iva_tasa) * 100)}%): ${dinero(p.iva_incluido)}</p>`
+    ? `<p style="margin:8px 0 0;font-size:12px;color:#5a605d;text-align:right;">Incluye IVA (${Math.round(Number(p.iva_tasa) * 100)}%): ${dinero(p.iva_incluido)}</p>`
     : "";
   const conCuenta = !!p.clientes?.user_id;
   const monedero = Number(ganado?.monto ?? 0) > 0 ? `
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;background-color:#e8f1ec;background-image:linear-gradient(120deg,#e8f1ec 0%,#f3efe2 100%);border-radius:16px;">
-<tr><td style="padding:14px 16px;font-size:14px;line-height:1.5;color:#14161a;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;background-color:#e6eadf;background-image:linear-gradient(120deg,#e6eadf 0%,#f1ebe4 100%);border-radius:16px;">
+<tr><td style="padding:14px 16px;font-size:14px;line-height:1.5;color:#1f2b2a;">
 <strong>Ganaste ${dinero(ganado.monto)} en tu Monedero Kinara.</strong><br>
-<span style="color:#3a3d44;font-size:13px;">${conCuenta
+<span style="color:#3b4746;font-size:13px;">${conCuenta
   ? "Lo puedes usar en tu siguiente compra."
-  : `Crea tu cuenta con este correo en <a href="${siteUrl}/pages/acceso.html" style="color:#1f36b5;">kinaramx.com</a> para usarlo en tu siguiente compra.`}</span>
+  : `Crea tu cuenta con este correo en <a href="${siteUrl}/pages/acceso.html" style="color:#2f5c58;">kinaramx.com</a> para usarlo en tu siguiente compra.`}</span>
 </td></tr></table>` : "";
 
   const bloque = `
@@ -135,7 +135,7 @@ ${renglon("Total pagado", `${dinero(p.total)} MXN`, true)}
 </table>
 ${iva}
 ${monedero}
-<p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:#54575d;"><strong style="color:#14161a;">Se enviará a:</strong> ${esc(p.direccion_envio)}</p>`;
+<p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:#5a605d;"><strong style="color:#1f2b2a;">Se enviará a:</strong> ${esc(p.direccion_envio)}</p>`;
   const dias = p.cotizaciones?.dias_produccion;
   const tiempo = dias ? `en unos ${dias} días hábiles` : "en 3 a 5 días hábiles";
 
@@ -146,7 +146,7 @@ ${monedero}
     bloque,
     boton: "Ver mi pedido",
     url: `${siteUrl}/pages/confirmacion.html?status=success&pedido=${p.id}`,
-    nota: `¿Dudas? Responde a este correo o escribe a hola@kinaramx.com con tu número de pedido. <a href="${siteUrl}/pages/envios.html" style="color:#1f36b5;">Envíos y devoluciones</a>`,
+    nota: `¿Dudas? Responde a este correo o escribe a hola@kinaramx.com con tu número de pedido. <a href="${siteUrl}/pages/envios.html" style="color:#2f5c58;">Envíos y devoluciones</a>`,
   });
 
   await enviarCorreo(p.clientes.email, asunto, html);

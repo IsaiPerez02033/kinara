@@ -43,25 +43,25 @@ const dinero = (n: unknown) => {
 function plantillaPedido(d: { asunto: string; titulo: string; texto: string; bloque: string; boton: string; url: string; nota: string }) {
   return `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(d.asunto)}</title></head>
-<body style="margin:0;padding:0;background-color:#f2f0ea;background-image:linear-gradient(180deg,#f2f0ea 0%,#f6e4dc 100%);">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f2f0ea;background-image:linear-gradient(180deg,#f2f0ea 0%,#f6e4dc 100%);">
+<body style="margin:0;padding:0;background-color:#f3f2ee;background-image:linear-gradient(180deg,#f3f2ee 0%,#e9e4dc 100%);">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f2ee;background-image:linear-gradient(180deg,#f3f2ee 0%,#e9e4dc 100%);">
 <tr><td align="center" style="padding:32px 16px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #e6e1d6;border-radius:24px;">
-<tr><td style="background-color:#1f36b5;background-image:linear-gradient(120deg,#1f36b5 0%,#3047c4 55%,#5a6fe0 100%);border-radius:24px 24px 0 0;padding:22px 28px;">
-<span style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;letter-spacing:4px;color:#f2f0ea;">KINARA</span>
-<span style="font-family:'Courier New',monospace;font-size:11px;color:#f2f0ea;opacity:.8;padding-left:10px;">IMPRESIÓN 3D</span>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #e3e0d8;border-radius:24px;">
+<tr><td style="background-color:#2f5c58;background-image:linear-gradient(120deg,#2f5c58 0%,#3a6c67 55%,#6f8f7f 100%);border-radius:24px 24px 0 0;padding:22px 28px;">
+<span style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;letter-spacing:4px;color:#f3f2ee;">KINARA</span>
+<span style="font-family:'Courier New',monospace;font-size:11px;color:#f3f2ee;opacity:.8;padding-left:10px;">IMPRESIÓN 3D</span>
 </td></tr>
-<tr><td style="padding:32px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#14161a;">
+<tr><td style="padding:32px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#1f2b2a;">
 <h1 style="margin:0 0 14px;font-size:24px;line-height:1.25;">${d.titulo}</h1>
-<p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#3a3d44;">${d.texto}</p>
+<p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#3b4746;">${d.texto}</p>
 ${d.bloque}
-<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr><td style="background-color:#c93814;background-image:linear-gradient(120deg,#c93814 0%,#e05a2e 100%);border-radius:999px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr><td style="background-color:#8d5f4a;background-image:linear-gradient(120deg,#8d5f4a 0%,#b88b74 100%);border-radius:999px;">
 <a href="${esc(d.url)}" style="display:inline-block;padding:14px 28px;border-radius:999px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;">${d.boton}</a>
 </td></tr></table>
-<p style="margin:24px 0 28px;font-size:13px;line-height:1.6;color:#54575d;">${d.nota}</p>
+<p style="margin:24px 0 28px;font-size:13px;line-height:1.6;color:#5a605d;">${d.nota}</p>
 </td></tr>
 </table>
-<p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#54575d;">Kinara · Impresión 3D · México · <a href="https://kinaramx.com" style="color:#54575d;">kinaramx.com</a></p>
+<p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#5a605d;">Kinara · Impresión 3D · México · <a href="https://kinaramx.com" style="color:#5a605d;">kinaramx.com</a></p>
 </td></tr></table>
 </body></html>`;
 }
@@ -88,9 +88,9 @@ const respuesta = (status: number, body: object) =>
   new Response(JSON.stringify(body), { status, headers: { ...CORS, "Content-Type": "application/json" } });
 
 const fila = (k: string, v: string) =>
-  `<tr><td style="padding:6px 0;color:#54575d;font-size:13px;width:120px;vertical-align:top;">${k}</td><td style="padding:6px 0;font-size:14px;color:#14161a;">${v}</td></tr>`;
+  `<tr><td style="padding:6px 0;color:#5a605d;font-size:13px;width:120px;vertical-align:top;">${k}</td><td style="padding:6px 0;font-size:14px;color:#1f2b2a;">${v}</td></tr>`;
 const caja = (filas: string) =>
-  `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f3ec;border-radius:16px;padding:12px 16px;">${filas}</table>`;
+  `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1efe9;border-radius:16px;padding:12px 16px;">${filas}</table>`;
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -152,7 +152,7 @@ serve(async (req: Request) => {
     const { data: cliente } = await supabase.from("clientes").select("nombre").eq("user_id", c.user_id).maybeSingle();
     const nombre = String(cliente?.nombre ?? duenio.user.user_metadata?.nombre ?? duenio.user.user_metadata?.full_name ?? "").split(/\s+/)[0];
     const hola = nombre ? `Hola, ${esc(nombre)}. ` : "";
-    const respuestaAdmin = c.respuesta ? `<p style="margin:16px 0 0;font-size:14px;line-height:1.6;color:#3a3d44;"><strong style="color:#14161a;">Nota del taller:</strong> ${esc(c.respuesta).replace(/\n/g, "<br>")}</p>` : "";
+    const respuestaAdmin = c.respuesta ? `<p style="margin:16px 0 0;font-size:14px;line-height:1.6;color:#3b4746;"><strong style="color:#1f2b2a;">Nota del taller:</strong> ${esc(c.respuesta).replace(/\n/g, "<br>")}</p>` : "";
 
     let asunto: string, html: string;
     if (c.estado === "cotizada") {

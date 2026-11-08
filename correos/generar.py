@@ -4,30 +4,30 @@ import pathlib
 
 BASE = """<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{asunto}</title></head>
-<body style="margin:0;padding:0;background-color:#f2f0ea;background-image:linear-gradient(180deg,#f2f0ea 0%,#f6e4dc 100%);">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f2f0ea;background-image:linear-gradient(180deg,#f2f0ea 0%,#f6e4dc 100%);">
+<body style="margin:0;padding:0;background-color:#f3f2ee;background-image:linear-gradient(180deg,#f3f2ee 0%,#e9e4dc 100%);">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f2ee;background-image:linear-gradient(180deg,#f3f2ee 0%,#e9e4dc 100%);">
 <tr><td align="center" style="padding:32px 16px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #e6e1d6;border-radius:24px;">
-<tr><td style="background-color:#1f36b5;background-image:linear-gradient(120deg,#1f36b5 0%,#3047c4 55%,#5a6fe0 100%);border-radius:24px 24px 0 0;padding:22px 28px;">
-<span style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;letter-spacing:4px;color:#f2f0ea;">KINARA</span>
-<span style="font-family:'Courier New',monospace;font-size:11px;color:#f2f0ea;opacity:.8;padding-left:10px;">IMPRESIÓN 3D</span>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #e3e0d8;border-radius:24px;">
+<tr><td style="background-color:#2f5c58;background-image:linear-gradient(120deg,#2f5c58 0%,#3a6c67 55%,#6f8f7f 100%);border-radius:24px 24px 0 0;padding:22px 28px;">
+<span style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;letter-spacing:4px;color:#f3f2ee;">KINARA</span>
+<span style="font-family:'Courier New',monospace;font-size:11px;color:#f3f2ee;opacity:.8;padding-left:10px;">IMPRESIÓN 3D</span>
 </td></tr>
-<tr><td style="padding:32px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#14161a;">
+<tr><td style="padding:32px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#1f2b2a;">
 <h1 style="margin:0 0 14px;font-size:24px;line-height:1.25;">{titulo}</h1>
-<p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#3a3d44;">{texto}</p>
-<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background-color:#c93814;background-image:linear-gradient(120deg,#c93814 0%,#e05a2e 100%);border-radius:999px;">
+<p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#3b4746;">{texto}</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background-color:#8d5f4a;background-image:linear-gradient(120deg,#8d5f4a 0%,#b88b74 100%);border-radius:999px;">
 <a href="{{{{ .ConfirmationURL }}}}" style="display:inline-block;padding:14px 28px;border-radius:999px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;">{boton}</a>
 </td></tr></table>
-<p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:#54575d;">{nota}</p>
+<p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:#5a605d;">{nota}</p>
 </td></tr>
-<tr><td style="padding:20px 28px 28px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#54575d;">
-<div style="background:#f6f3ec;border-radius:16px;padding:14px 16px;">
+<tr><td style="padding:20px 28px 28px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#5a605d;">
+<div style="background:#f1efe9;border-radius:16px;padding:14px 16px;">
 Si el botón no funciona, copia este enlace en tu navegador:<br>
-<a href="{{{{ .ConfirmationURL }}}}" style="color:#1f36b5;word-break:break-all;">{{{{ .ConfirmationURL }}}}</a>
+<a href="{{{{ .ConfirmationURL }}}}" style="color:#2f5c58;word-break:break-all;">{{{{ .ConfirmationURL }}}}</a>
 </div>
 </td></tr>
 </table>
-<p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#54575d;">Kinara · Impresión 3D · México · <a href="https://kinaramx.com" style="color:#54575d;">kinaramx.com</a></p>
+<p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#5a605d;">Kinara · Impresión 3D · México · <a href="https://kinaramx.com" style="color:#5a605d;">kinaramx.com</a></p>
 </td></tr></table>
 </body></html>
 """

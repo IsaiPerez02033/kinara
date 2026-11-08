@@ -45,10 +45,10 @@
   height: 60px;
   padding: 0 0.5rem 0 clamp(1rem, 2vw, 1.4rem);
   border-radius: var(--radio-full);
-  background-color: rgba(242, 240, 234, 0.84);
+  background-color: rgba(243, 242, 238, 0.84);
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
   backdrop-filter: blur(16px) saturate(1.4);
-  box-shadow: 0 12px 34px rgba(20, 22, 26, 0.16), inset 0 0 0 1px rgba(20, 22, 26, 0.08);
+  box-shadow: 0 12px 34px rgba(31, 43, 42, 0.16), inset 0 0 0 1px rgba(31, 43, 42, 0.08);
 }
 
 #header.solido .logo-marca { width: 28px; height: 28px; }
@@ -241,7 +241,7 @@
   gap: 6px;
   padding: 3px 10px;
   border-radius: var(--radio-full);
-  background-color: rgba(242, 240, 234, 0.92);
+  background-color: rgba(243, 242, 238, 0.92);
   font-family: var(--fuente-mono);
   font-size: 0.7rem;
   line-height: 1.5;
@@ -455,7 +455,7 @@
   position: fixed;
   inset: 0;
   z-index: var(--capa-overlay);
-  background: rgba(20, 22, 26, 0.55);
+  background: rgba(31, 43, 42, 0.55);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -485,7 +485,7 @@
   top: 0.75rem;
   right: 0.75rem;
   z-index: 2;
-  background-color: rgba(242, 240, 234, 0.9);
+  background-color: rgba(243, 242, 238, 0.9);
 }
 
 .detalle-imagen {
