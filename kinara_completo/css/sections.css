@@ -203,13 +203,12 @@
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   grid-auto-rows: minmax(250px, min(21vw, 340px));
-  gap: 1px;
-  border: 1px solid var(--tinta);
-  background-color: var(--tinta);
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
 }
 
 .categoria {
   position: relative;
+  border-radius: var(--radio-lg);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -281,6 +280,7 @@
   display: grid;
   place-items: center;
   border: 1px solid currentColor;
+  border-radius: 50%;
   transition: background-color var(--transicion-rapida), color var(--transicion-rapida);
 }
 
