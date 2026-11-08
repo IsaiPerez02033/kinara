@@ -746,3 +746,9 @@
   .checkout-grid-2 { grid-template-columns: 1fr; }
   .confirmacion-acciones > * { flex: 1; }
 }
+
+.carrito-nota-envio a {
+  color: var(--color-blanco-dim);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
