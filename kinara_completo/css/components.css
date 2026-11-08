@@ -635,7 +635,7 @@
 .footer-marca-grande {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 0.18em;
   padding-top: var(--espacio-lg);
   border-top: 1px solid var(--color-borde);
