@@ -634,7 +634,7 @@
 }
 
 .confirmacion-icono--exito { background: rgba(61, 107, 79, 0.12); color: var(--color-exito); }
-.confirmacion-icono--espera { background: rgba(141, 95, 74, 0.13); color: var(--color-acento); }
+.confirmacion-icono--espera { background: rgba(54, 117, 135, 0.13); color: var(--color-acento); }
 .confirmacion-icono--error { background: rgba(168, 35, 26, 0.1); color: var(--color-error); }
 
 .confirmacion-etiqueta {

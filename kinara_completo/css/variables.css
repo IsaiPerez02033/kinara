@@ -19,6 +19,8 @@
   --tinta:     #1f2b2a;
   --cobalto:   #2f5c58;
   --bermellon: #8d5f4a;
+  --petroleo: #367587;        /* botones principales */
+  --petroleo-hondo: #2b5f6e;  /* botones al pasar el cursor */
   --ocre:      #d2ab94;
   --pino:      #545f4e;
   --rubor:     #dcd9d1;
@@ -101,9 +103,9 @@
   --color-borde:      #c9c6bc;
   --color-blanco:     var(--tinta);
   --color-blanco-dim: #5a605d;
-  --color-acento:        var(--bermellon);
-  --color-acento-luz:    #74493a;
-  --color-acento-oscuro: var(--bermellon);
+  --color-acento:        var(--petroleo);
+  --color-acento-luz:    var(--petroleo-hondo);
+  --color-acento-oscuro: var(--petroleo);
   --acento-logo:      var(--bermellon);
 }
 

@@ -253,8 +253,8 @@
 .a-btn:active { transform: translateY(1px); }
 .a-btn:disabled { opacity: 0.5; pointer-events: none; }
 
-.a-btn-primario { background: var(--bermellon); border-color: var(--bermellon); color: var(--hueso); }
-.a-btn-primario:hover { background: #74493a; border-color: #74493a; }
+.a-btn-primario { background: var(--petroleo); border-color: var(--petroleo); color: var(--hueso); }
+.a-btn-primario:hover { background: var(--petroleo-hondo); border-color: var(--petroleo-hondo); }
 
 .a-btn-claro { border-color: var(--hueso); color: var(--hueso); }
 .a-btn-claro:hover { background: var(--hueso); color: var(--tinta); }
