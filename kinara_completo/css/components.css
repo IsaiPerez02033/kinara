@@ -697,6 +697,15 @@
   .btn-menu { display: inline-flex; }
 }
 
+/* Celulares angostos (iPhone SE, Galaxy Fold cerrado): el header debe caber */
+@media (max-width: 380px) {
+  .header-inner { gap: 0.5rem; }
+  .header-acciones { gap: 0; }
+  .btn-icono { width: 40px; height: 40px; }
+  .logo { gap: 0.45rem; }
+  .logo-nombre { font-size: 1.05rem; letter-spacing: 0.07em; }
+}
+
 @media (max-width: 640px) {
   .footer-grid { grid-template-columns: 1fr 1fr; }
 
