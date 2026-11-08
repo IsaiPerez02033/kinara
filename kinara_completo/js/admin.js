@@ -82,6 +82,12 @@
       if (b.dataset.panel === nombre) b.setAttribute('aria-current', 'page');
       else b.removeAttribute('aria-current');
     });
+    // En el celular el menú es una fila que se desliza: centro la sección activa
+    const nav = $('.a-nav');
+    const activo = $('.a-nav-item[aria-current]');
+    if (nav.scrollWidth > nav.clientWidth && activo) {
+      nav.scrollTo({ left: activo.offsetLeft - nav.offsetLeft - (nav.clientWidth - activo.offsetWidth) / 2, behavior: empujar ? 'smooth' : 'auto' });
+    }
     if (empujar && location.hash !== `#${nombre}`) history.replaceState(null, '', `#${nombre}`);
     CARGAR[nombre]();
     window.scrollTo({ top: 0 });
@@ -131,7 +137,7 @@
         <span class="a-cifra-valor">${porPreparar}</span>
         <span class="a-cifra-nota">Pagados o en producción</span>
       </button>
-      <div class="a-cifra" style="--color-bloque: var(--cobalto)">
+      <div class="a-cifra a-cifra--oscura">
         <span class="a-cifra-etiqueta">Ventas del mes</span>
         <span class="a-cifra-valor">${dinero(delMes.reduce((s, p) => s + Number(p.total), 0))}</span>
         <span class="a-cifra-nota">${delMes.length} ${delMes.length === 1 ? 'pedido cobrado' : 'pedidos cobrados'}</span>

@@ -53,6 +53,7 @@
   <!-- PANEL -->
   <div class="a-app" id="app" hidden>
     <aside class="a-lateral">
+      <div class="a-lateral-dentro">
       <a class="a-marca" href="../index.html" aria-label="Ir a la tienda">
         <img src="../assets/images/logo-kinara-marca-blanco.svg" alt="" width="28" height="28" />
         <strong>KINARA</strong>
@@ -60,25 +61,26 @@
       </a>
 
       <nav class="a-nav" aria-label="Secciones del panel">
-        <button type="button" class="a-nav-item" data-panel="resumen" style="--color-seccion: var(--ocre)">Resumen</button>
-        <button type="button" class="a-nav-item" data-panel="productos" style="--color-seccion: var(--cobalto)">Productos</button>
-        <button type="button" class="a-nav-item" data-panel="pedidos" style="--color-seccion: var(--bermellon)">
+        <button type="button" class="a-nav-item" data-panel="resumen"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="8" rx="2"/><rect x="13.5" y="3.5" width="7" height="5" rx="2"/><rect x="13.5" y="11.5" width="7" height="9" rx="2"/><rect x="3.5" y="14.5" width="7" height="6" rx="2"/></svg>Resumen</button>
+        <button type="button" class="a-nav-item" data-panel="productos"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>Productos</button>
+        <button type="button" class="a-nav-item" data-panel="pedidos"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 10V6.5a3 3 0 0 1 6 0V10"/></svg>
           Pedidos <span class="a-nav-contador" id="contador-pedidos" hidden></span>
         </button>
-        <button type="button" class="a-nav-item" data-panel="cotizaciones" style="--color-seccion: var(--rubor)">
+        <button type="button" class="a-nav-item" data-panel="cotizaciones"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 7.5h6M9 12h.01M12 12h.01M15 12h.01M9 16h.01M12 16h.01M15 16h.01"/></svg>
           Cotizaciones <span class="a-nav-contador" id="contador-cotizaciones" hidden></span>
         </button>
-        <button type="button" class="a-nav-item" data-panel="mensajes" style="--color-seccion: var(--pino)">
+        <button type="button" class="a-nav-item" data-panel="mensajes"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 5.5h15v10.5H9.5l-5 4z"/></svg>
           Mensajes <span class="a-nav-contador" id="contador-mensajes" hidden></span>
         </button>
-        <button type="button" class="a-nav-item" data-panel="resenas" style="--color-seccion: var(--ocre)">Reseñas</button>
-        <button type="button" class="a-nav-item" data-panel="ajustes" style="--color-seccion: var(--cobalto)">Ajustes</button>
+        <button type="button" class="a-nav-item" data-panel="resenas"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8l2.5 5.1 5.6.8-4 3.9.9 5.6-5-2.6-5 2.6.9-5.6-4-3.9 5.6-.8z"/></svg>Reseñas</button>
+        <button type="button" class="a-nav-item" data-panel="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/></svg>Ajustes</button>
       </nav>
 
       <div class="a-lateral-pie">
         <span class="a-usuario" id="usuario-email"></span>
         <a href="../index.html" target="_blank" rel="noopener">Ver tienda ↗</a>
         <button type="button" id="btn-salir">Cerrar sesión</button>
+      </div>
       </div>
     </aside>
 
@@ -88,7 +90,7 @@
       <section class="a-panel" id="panel-resumen" hidden>
         <header class="a-cabecera">
           <div>
-            <h1 class="a-titulo">Resumen</h1>
+            <h1 class="a-titulo" id="resumen-saludo">Resumen</h1>
             <p class="a-subtitulo" id="resumen-fecha"></p>
           </div>
           <button type="button" class="a-btn" data-recargar>Actualizar</button>
