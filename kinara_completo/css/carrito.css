@@ -423,7 +423,7 @@
 .checkout-input:focus {
   outline: none;
   border-color: var(--color-acento);
-  box-shadow: 0 0 0 3px rgba(141, 95, 74, 0.2);
+  box-shadow: 0 0 0 3px rgba(54, 117, 135, 0.2);
 }
 
 .checkout-input.error { border-color: var(--color-error); }
@@ -500,7 +500,7 @@
 .pago-spinner {
   width: 44px;
   height: 44px;
-  border: 3px solid rgba(141, 95, 74, 0.22);
+  border: 3px solid rgba(54, 117, 135, 0.22);
   border-top-color: var(--color-acento);
   border-radius: 50%;
   animation: girar 0.8s linear infinite;

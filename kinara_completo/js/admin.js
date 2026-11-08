@@ -48,6 +48,8 @@
     el.className = `a-toast ${tipo === 'error' ? 'error' : ''}`;
     el.textContent = texto;
     $('#toasts').append(el);
+    // Con el dedo se puede descartar antes de tiempo
+    window.Movimiento?.deslizable(el, { umbral: 60, alCerrar: () => el.remove() });
     setTimeout(() => { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; }, 3200);
     setTimeout(() => el.remove(), 3600);
   };

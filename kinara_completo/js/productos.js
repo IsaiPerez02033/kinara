@@ -85,12 +85,12 @@ const ModuloCatalogo = (() => {
     parseFloat(precio).toLocaleString('es-MX', { minimumFractionDigits: 0 });
 
   /* --- Genera HTML de una tarjeta --- */
-  const generarTarjeta = (p) => {
+  const generarTarjeta = (p, visible = false) => {
     const badge    = obtenerInfoBadge(p.estado_stock, p.stock_actual);
     const categoria = p.coleccion_nombre?.replace('Kinara ', '') || '';
 
     return `
-      <article class="tarjeta-producto reveal"
+      <article class="tarjeta-producto reveal${visible ? ' visible' : ''}" style="view-transition-name: t-${p.id}"
                data-id="${p.id}" data-coleccion="${escHTML(categoria)}" data-estado="${p.estado_stock}"
                role="listitem">
         <button type="button" class="tarjeta-imagen cama" data-categoria="${escHTML(categoria)}"
@@ -119,7 +119,7 @@ const ModuloCatalogo = (() => {
         <div class="tarjeta-pie">
           <div class="tarjeta-precio">$${formatearPrecio(p.precio)}<small>MXN</small></div>
           ${badge.disponible
-            ? `<button type="button" class="btn-primario btn-chico" onclick="ModuloCarrito.agregar('${p.id}')"
+            ? `<button type="button" class="btn-primario btn-chico" onclick="ModuloCarrito.agregar('${p.id}', null, this)"
                        aria-label="Agregar ${escHTML(p.nombre)} al carrito">Agregar</button>`
             : '<span class="tarjeta-agotado">Agotado</span>'}
         </div>
@@ -157,7 +157,8 @@ const ModuloCatalogo = (() => {
   };
 
   /* --- Renderizado principal --- */
-  const renderizarCatalogo = () => {
+  // enCambio: viene de un filtro u orden; las tarjetas ya se ven y se reacomodan
+  const renderizarCatalogo = (enCambio = false) => {
     const grid = document.getElementById('catalogo-grid');
     if (!grid) return;
     const productos = obtenerProductosFiltrados();
@@ -171,8 +172,10 @@ const ModuloCatalogo = (() => {
       </div>`;
       return;
     }
-    grid.innerHTML = productos.map(generarTarjeta).join('');
-    setTimeout(() => grid.querySelectorAll('.reveal').forEach(el=>el.classList.add('visible')), 50);
+    grid.innerHTML = productos.map((p) => generarTarjeta(p, enCambio)).join('');
+    if (enCambio) return;
+    if (window.Movimiento) Movimiento.revelar(grid.querySelectorAll('.reveal'));
+    else setTimeout(() => grid.querySelectorAll('.reveal').forEach(el=>el.classList.add('visible')), 50);
   };
 
   const activarFiltro = (col) => {
@@ -182,10 +185,15 @@ const ModuloCatalogo = (() => {
       b.classList.toggle('activo', activo);
       b.setAttribute('aria-pressed', String(activo));
     });
-    renderizarCatalogo();
+    reacomodar();
   };
 
-  const cambiarOrden = (orden) => { ordenActivo = orden; renderizarCatalogo(); };
+  const reacomodar = () => {
+    if (window.Movimiento) Movimiento.transicion(() => renderizarCatalogo(true));
+    else renderizarCatalogo();
+  };
+
+  const cambiarOrden = (orden) => { ordenActivo = orden; reacomodar(); };
   const reintentar  = () => cargarProductos();
 
   const configurarEventos = () => {
@@ -274,7 +282,7 @@ const ModuloProducto = (() => {
           ${typeof ModuloCarrito !== 'undefined' && ModuloCarrito.textoIva(Number(p.precio)) ? `<span class="detalle-iva">${ModuloCarrito.textoIva(Number(p.precio))}</span>` : ''}
         </div>
         ${badge.disponible
-          ? `<button type="button" class="btn-primario" onclick="ModuloCarrito.agregar('${p.id}')">Agregar al carrito</button>`
+          ? `<button type="button" class="btn-primario" onclick="ModuloCarrito.agregar('${p.id}', null, this)">Agregar al carrito</button>`
           : '<span class="tarjeta-agotado">No disponible</span>'}
       </div>`;
 
@@ -284,13 +292,28 @@ const ModuloProducto = (() => {
     document.body.append(overlay, drawer);
     document.body.style.overflow = 'hidden';
     drawer.querySelector('#detalle-cerrar').addEventListener('click', cerrar);
+    const verFoto = (i) => {
+      const principal = drawer.querySelector('#detalle-foto');
+      const botones = [...drawer.querySelectorAll('[data-foto]')];
+      if (!principal || !botones.length) return;
+      const n = (i + botones.length) % botones.length;
+      principal.src = botones[n].dataset.foto;
+      botones.forEach((b, j) => b.toggleAttribute('aria-current', j === n));
+      botones[n].scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+    };
+    const fotoActual = () => [...drawer.querySelectorAll('[data-foto]')].findIndex((b) => b.hasAttribute('aria-current'));
     drawer.querySelector('.detalle-galeria')?.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-foto]');
-      const principal = drawer.querySelector('#detalle-foto');
-      if (!btn || !principal) return;
-      principal.src = btn.dataset.foto;
-      drawer.querySelectorAll('[data-foto]').forEach((b) => b.toggleAttribute('aria-current', b === btn));
+      if (btn) verFoto([...drawer.querySelectorAll('[data-foto]')].indexOf(btn));
     });
+    if (window.Movimiento) {
+      // Con el dedo: deslizar a la derecha cierra; sobre la foto, cambia de foto
+      Movimiento.deslizable(drawer, { ignorar: fotos.length > 1 ? '.detalle-galeria, .detalle-imagen' : '.detalle-galeria', alCerrar: cerrar });
+      if (fotos.length > 1) Movimiento.deslizarFotos(drawer.querySelector('.detalle-imagen'), {
+        siguiente: () => verFoto(fotoActual() + 1),
+        anterior:  () => verFoto(fotoActual() - 1),
+      });
+    }
     requestAnimationFrame(() => {
       overlay.classList.add('visible');
       drawer.classList.add('abierto');

@@ -34,6 +34,7 @@
   <link rel="stylesheet" href="../css/components.css" />
   <link rel="stylesheet" href="../css/carrito.css" />
   <link rel="stylesheet" href="../css/cuenta.css" />
+  <link rel="stylesheet" href="../css/movimiento.css" />
 </head>
 
 <body class="pagina-simple">
@@ -48,8 +49,15 @@
 
   <main class="cuenta-page" id="cuenta-page" aria-busy="true">
 
-    <div class="cuenta-cargando" id="cuenta-cargando">
-      <div class="pago-spinner"></div>
+    <!-- Esqueleto con la forma de la cuenta mientras llegan los datos -->
+    <div class="cuenta-cargando" id="cuenta-cargando" aria-hidden="true">
+      <div class="esq-identidad">
+        <span class="esq esq-avatar"></span>
+        <span class="esq-lineas"><span class="esq"></span><span class="esq"></span><span class="esq"></span></span>
+      </div>
+      <div class="esq-pestanas"><span class="esq"></span><span class="esq"></span><span class="esq"></span><span class="esq"></span></div>
+      <div class="esq esq-tarjeta"></div>
+      <div class="esq esq-tarjeta"></div>
     </div>
 
     <div class="cuenta-contenido" id="cuenta-contenido" hidden>
@@ -180,6 +188,7 @@
   <div id="agregar-toast" role="status" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
+  <script src="../js/movimiento.js"></script>
   <script src="../js/lib/supabase.js"></script>
   <script src="../js/sesion.js"></script>
   <script src="../js/cuenta.js"></script>

@@ -95,7 +95,7 @@
     return `
       <ol class="pedido-recorrido" aria-label="Avance del pedido: ${ETIQUETAS[estado]}">
         ${PASOS.map((p, i) => `
-          <li class="${i < idx ? 'hecho' : i === idx ? 'actual' : ''}" ${i === idx ? 'aria-current="step"' : ''}>
+          <li class="${i < idx ? 'hecho' : i === idx ? 'actual' : ''}" style="--i:${i}" ${i === idx ? 'aria-current="step"' : ''}>
             <span class="pedido-recorrido-punto" aria-hidden="true"></span>
             <span class="pedido-recorrido-texto">${p.texto}</span>
           </li>`).join('')}
@@ -268,7 +268,7 @@
           <div class="resena-estrellas">
             ${[5, 4, 3, 2, 1].map((n) => `
               <input type="radio" name="calificacion" id="cal-${escHTML(id)}-${n}" value="${n}" ${r.calificacion === n ? 'checked' : ''}>
-              <label for="cal-${escHTML(id)}-${n}" title="${n} de 5">★<span class="sr-only">${n} de 5</span></label>`).join('')}
+              <label for="cal-${escHTML(id)}-${n}" title="${n} de 5" style="--n:${n}">★<span class="sr-only">${n} de 5</span></label>`).join('')}
           </div>
         </fieldset>
         <input class="checkout-input" name="titulo" maxlength="80" placeholder="Título (opcional)" value="${escHTML(r.titulo || '')}">
@@ -398,6 +398,7 @@
     if (error) throw error;
     const m = data || {};
     $('monedero-saldo').textContent = `$${fmtPrecio(m.saldo || 0)}`;
+    $('monedero-saldo').closest('.monedero-tarjeta')?.classList.toggle('con-saldo', Number(m.saldo) > 0);
     $('monedero-vence').textContent = Number(m.saldo) > 0 && m.vence
       ? `Vence el ${fmtFecha(m.vence)} si no vuelves a comprar.`
       : 'Empieza a juntar con tu siguiente compra.';

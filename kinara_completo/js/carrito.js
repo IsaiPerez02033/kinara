@@ -25,8 +25,12 @@ const ModuloCarrito = (() => {
   };
 
   /* --- Agregar producto (verifica stock en Supabase) --- */
-  const agregar = async (productoId, datosProducto = null) => {
-    const { data: stockData } = await SupabaseDB.obtenerStock(productoId);
+  // origen: el botón que se tocó, para confirmar ahí mismo y hacer volar la pieza
+  const agregar = async (productoId, datosProducto = null, origen = null) => {
+    if (origen?.disabled) return;
+    if (origen) origen.disabled = true;
+    const { data: stockData } = await SupabaseDB.obtenerStock(productoId)
+      .finally(() => { if (origen) origen.disabled = false; });
     if (!stockData || stockData.stock_actual === 0) {
       mostrarMensaje('Esta pieza ya no está disponible', 'error');
       return;
@@ -58,7 +62,12 @@ const ModuloCarrito = (() => {
     guardarEnStorage();
     actualizarUI();
     mostrarMensaje(`"${items.find(i=>i.id===productoId)?.nombre}" agregado`);
-    animarIcono();
+    if (window.Movimiento && origen) {
+      Movimiento.confirmarBoton(origen);
+      Movimiento.volarAlCarrito(origen, animarIcono);
+    } else {
+      animarIcono();
+    }
   };
 
   /* --- Cambiar cantidad --- */
@@ -82,7 +91,16 @@ const ModuloCarrito = (() => {
   const eliminar = (id) => {
     items = items.filter(i => i.id !== id);
     guardarEnStorage();
-    actualizarUI();
+    // La fila se desliza y se cierra antes de redibujar la lista
+    const fila = document.querySelector(`.carrito-item[data-id="${CSS.escape(id)}"]`);
+    if (!fila || !window.Movimiento || Movimiento.reducido()) { actualizarUI(); return; }
+    const alto = `${fila.offsetHeight}px`;
+    fila.style.overflow = 'hidden';
+    fila.animate([
+      { opacity: 1, transform: 'none', height: alto },
+      { opacity: 0, transform: 'translateX(24px)', height: alto, offset: 0.55 },
+      { opacity: 0, transform: 'translateX(24px)', height: '0px', paddingTop: '0px', paddingBottom: '0px', marginTop: '0px', marginBottom: '0px' },
+    ], { duration: 380, easing: 'cubic-bezier(0.16, 1, 0.3, 1)', fill: 'forwards' }).onfinish = actualizarUI;
   };
 
   /* --- Vaciar todo --- */
@@ -213,7 +231,7 @@ const ModuloCarrito = (() => {
     const $ = (id) => document.getElementById(id);
 
     const tv = $('carrito-total-valor');
-    if (tv) tv.textContent = `$${formatearPrecio(sub + envio)} MXN`;
+    if (tv) ponerCifra(tv, `$${formatearPrecio(sub + envio)} MXN`);
 
     const ivaEl = $('carrito-iva');
     if (ivaEl) {
@@ -261,6 +279,9 @@ const ModuloCarrito = (() => {
   };
 
   /* --- Feedback visual --- */
+  // Las cifras ruedan hasta el nuevo valor si el módulo de movimiento está
+  const ponerCifra = (el, texto) => window.Movimiento ? Movimiento.contar(el, texto) : (el.textContent = texto);
+
   const animarIcono = () => {
     const btn = document.getElementById('btn-carrito');
     if (btn) { btn.classList.add('carrito-btn-pulso'); setTimeout(()=>btn.classList.remove('carrito-btn-pulso'),400); }
@@ -283,6 +304,9 @@ const ModuloCarrito = (() => {
     document.getElementById('btn-carrito')?.addEventListener('click', abrirDrawer);
     document.getElementById('carrito-overlay')?.addEventListener('click', cerrarDrawer);
     document.getElementById('carrito-cerrar-btn')?.addEventListener('click', cerrarDrawer);
+    // En el celular, el carrito también se cierra deslizándolo a la derecha
+    const panel = document.getElementById('carrito-drawer');
+    if (panel && window.Movimiento) Movimiento.deslizable(panel, { ignorar: '.cantidad-control', alCerrar: cerrarDrawer });
     document.getElementById('btn-checkout')?.addEventListener('click', ModuloCheckout.abrir);
     document.addEventListener('keydown', e => { if (e.key==='Escape') { cerrarDrawer(); ModuloCheckout.cerrar(); } });
 
@@ -299,7 +323,7 @@ const ModuloCarrito = (() => {
   return { iniciar, agregar, cambiarCantidad, eliminar, vaciar, abrirDrawer, cerrarDrawer,
            calcularTotal, calcularEnvio, faltaMinimo, hayReglas: () => !!reglas, reglas: () => reglas,
            ivaDe, textoIva, monederoGanado,
-           contarUnidades, obtenerItems:()=>items, formatearPrecio, mostrarMensaje };
+           contarUnidades, obtenerItems:()=>items, formatearPrecio, mostrarMensaje, ponerCifra };
 })();
 
 
@@ -498,7 +522,7 @@ const ModuloCheckout = (() => {
     }
 
     const total = sub + envio - descuento;
-    if (t) t.textContent = `$${fmt(total)} MXN`;
+    if (t) ModuloCarrito.ponerCifra(t, `$${fmt(total)} MXN`);
     const iva = document.getElementById('checkout-iva');
     if (iva) {
       iva.textContent = ModuloCarrito.textoIva(total);

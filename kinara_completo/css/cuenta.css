@@ -278,10 +278,29 @@
 }
 
 .cuenta-cargando {
-  display: flex;
-  justify-content: center;
-  padding: var(--espacio-2xl) 0;
+  display: grid;
+  gap: var(--espacio-md);
+  padding-top: var(--espacio-sm);
 }
+
+/* Cotizar todavía usa el círculo giratorio: va centrado */
+.cuenta-cargando:has(> .pago-spinner) { justify-items: center; padding: var(--espacio-2xl) 0; }
+
+.esq-identidad { display: flex; align-items: center; gap: 1rem; }
+.esq.esq-avatar { flex: none; width: 72px; height: 72px; border-radius: 50%; }
+.esq-lineas { display: grid; gap: 0.55rem; flex: 1; }
+.esq-lineas .esq { height: 0.8rem; width: 30%; border-radius: 6px; }
+.esq-lineas .esq:nth-child(2) { height: 2.2rem; width: 55%; border-radius: 10px; }
+.esq-lineas .esq:nth-child(3) { width: 40%; }
+.esq-pestanas { display: flex; gap: 0.5rem; }
+.esq-pestanas .esq { height: 2.4rem; width: 6.5rem; border-radius: var(--radio-full); }
+.esq.esq-tarjeta { height: 180px; border-radius: var(--radio-lg); }
+.esq-tarjeta + .esq-tarjeta { opacity: 0.6; }
+
+/* Al llegar los datos, la cuenta entra suave en lugar de aparecer de golpe */
+.cuenta-contenido:not([hidden]) { animation: cuenta-entra 0.45s var(--curva-salida); }
+@keyframes cuenta-entra { from { opacity: 0; transform: translateY(8px); } }
+@media (prefers-reduced-motion: reduce) { .cuenta-contenido:not([hidden]) { animation: none; } }
 
 .cuenta-cargando[hidden] { display: none; }
 
@@ -524,7 +543,7 @@
 .pedido-recorrido li.hecho .pedido-recorrido-punto { border-color: var(--color-acento); background: var(--color-acento); }
 .pedido-recorrido li.actual .pedido-recorrido-punto {
   border-color: var(--color-acento);
-  box-shadow: 0 0 0 4px rgba(141, 95, 74, 0.18);
+  box-shadow: 0 0 0 4px rgba(54, 117, 135, 0.18);
 }
 
 .pedido-recorrido-texto {

@@ -1,0 +1,329 @@
+/* =========================================================
+   MOVIMIENTO — transiciones y microinteracciones de Kinara
+   Va al final de cada página. Con "reducir movimiento" casi
+   todo se apaga al final de este archivo.
+   ========================================================= */
+
+:root {
+  --curva-resorte: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --sombra-tarjeta: 0 22px 44px -22px rgba(31, 75, 82, 0.42), 0 4px 12px -6px rgba(31, 43, 42, 0.12);
+}
+
+/* -------------------------------------------------------
+   ENTRE PÁGINAS: fundido suave en vez del parpadeo blanco
+   ------------------------------------------------------- */
+@view-transition {
+  navigation: auto;
+  types: pagina;
+}
+
+html:active-view-transition-type(pagina)::view-transition-old(root) {
+  animation: mov-salir 0.2s ease both;
+}
+
+html:active-view-transition-type(pagina)::view-transition-new(root) {
+  animation: mov-entrar 0.38s var(--curva-salida) both;
+}
+
+@keyframes mov-salir  { to   { opacity: 0; } }
+@keyframes mov-entrar { from { opacity: 0; transform: translateY(10px); } }
+
+/* -------------------------------------------------------
+   CATÁLOGO: cascada, hover y reacomodo al filtrar
+   ------------------------------------------------------- */
+.js .catalogo-grid > .tarjeta-producto.reveal {
+  transform: translateY(22px) scale(0.98);
+  transition:
+    opacity 0.7s var(--curva-salida) var(--retraso, 0s),
+    transform 0.7s var(--curva-salida) var(--retraso, 0s),
+    translate 0.35s var(--curva-salida),
+    box-shadow 0.35s var(--curva-salida);
+}
+
+.js .catalogo-grid > .tarjeta-producto.reveal.visible { transform: none; }
+
+.catalogo-grid > .tarjeta-producto { view-transition-class: tarjeta; }
+
+::view-transition-group(*.tarjeta) {
+  animation-duration: 0.45s;
+  animation-timing-function: var(--curva-salida);
+}
+
+/* Las que salen se encogen; las que llegan crecen desde su lugar */
+::view-transition-old(*.tarjeta):only-child { animation: mov-tarjeta-sale 0.25s ease both; }
+::view-transition-new(*.tarjeta):only-child { animation: mov-tarjeta-llega 0.4s var(--curva-salida) 0.08s both; }
+
+@keyframes mov-tarjeta-sale  { to   { opacity: 0; transform: scale(0.9); } }
+@keyframes mov-tarjeta-llega { from { opacity: 0; transform: scale(0.92); } }
+
+html:active-view-transition-type(catalogo)::view-transition-old(root),
+html:active-view-transition-type(catalogo)::view-transition-new(root) {
+  animation-duration: 0.25s;
+}
+
+@media (hover: hover) {
+  .catalogo-grid > .tarjeta-producto:hover {
+    translate: 0 -5px;
+    box-shadow: inset 0 0 0 1px var(--color-borde), var(--sombra-tarjeta);
+  }
+}
+
+/* Fotos: fundido al terminar de cargar (solo si este archivo JS corre) */
+.mov .tarjeta-imagen img,
+.mov .detalle-imagen img,
+.mov .carrito-item-imagen img,
+.mov .detalle-galeria img {
+  opacity: 0;
+  transition: opacity 0.5s ease, transform 0.6s var(--curva-salida);
+}
+
+.mov .tarjeta-imagen img.cargada,
+.mov .detalle-imagen img.cargada,
+.mov .carrito-item-imagen img.cargada,
+.mov .detalle-galeria img.cargada { opacity: 1; }
+
+/* -------------------------------------------------------
+   AGREGAR AL CARRITO
+   ------------------------------------------------------- */
+.btn-primario.agregado {
+  background-color: var(--color-exito);
+  color: var(--hueso);
+  animation: mov-rebote 0.4s var(--curva-resorte);
+}
+
+.btn-primario.agregado .palomita {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: mov-trazo-palomita 0.35s 0.1s ease-out forwards;
+}
+
+@keyframes mov-rebote { 40% { transform: scale(1.06); } }
+@keyframes mov-trazo-palomita { to { stroke-dashoffset: 0; } }
+
+.vuelo-pieza {
+  position: fixed;
+  z-index: 9000;
+  overflow: hidden;
+  border-radius: 22px;
+  box-shadow: var(--sombra-md);
+  pointer-events: none;
+  will-change: transform, translate;
+}
+
+.vuelo-pieza > img,
+.vuelo-pieza > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1;
+}
+
+.vuelo-pieza > svg { inset: 18%; width: 64%; height: 64%; }
+
+/* El contador del carrito salta al recibir la pieza */
+.carrito-btn-pulso { animation: mov-pulso-carrito 0.45s var(--curva-resorte); }
+.carrito-btn-pulso #carrito-contador { animation: mov-rebote 0.45s var(--curva-resorte); }
+
+@keyframes mov-pulso-carrito {
+  35% { transform: scale(1.18) rotate(-6deg); }
+  70% { transform: scale(0.96); }
+}
+
+/* Cifras que cuentan: dígitos del mismo ancho para que no bailen */
+#carrito-total-valor,
+#checkout-total,
+.carrito-item-subtotal,
+.monedero-saldo { font-variant-numeric: tabular-nums; }
+
+/* -------------------------------------------------------
+   BOTONES "PROCESANDO": indicador dentro del mismo botón
+   ------------------------------------------------------- */
+button.procesando,
+button.procesando:disabled {
+  position: relative;
+  cursor: progress;
+  opacity: 0.9;
+}
+
+button.procesando::after {
+  content: '';
+  flex: none;
+  width: 1em;
+  height: 1em;
+  margin-left: 0.5rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: -0.15em;
+  display: inline-block;
+  opacity: 0;
+  animation: mov-girar 0.7s linear infinite, mov-aparecer 0.2s 0.15s ease forwards;
+}
+
+@keyframes mov-girar    { to { transform: rotate(360deg); } }
+@keyframes mov-aparecer { to { opacity: 1; } }
+
+/* -------------------------------------------------------
+   PANELES Y AVISOS QUE SE DESLIZAN
+   ------------------------------------------------------- */
+#producto-drawer {
+  touch-action: pan-y;
+  transition: transform 0.4s var(--curva-salida), translate 0.3s var(--curva-salida);
+}
+
+#carrito-drawer {
+  touch-action: pan-y;
+  transition: transform 0.4s var(--curva-salida), translate 0.3s var(--curva-salida), visibility 0.4s;
+}
+
+#producto-drawer.arrastrando,
+#carrito-drawer.arrastrando,
+#agregar-toast.arrastrando { transition: none; }
+
+.detalle-imagen { touch-action: pan-y; overflow: hidden; }
+
+.a-toast { touch-action: pan-y; }
+
+#agregar-toast {
+  touch-action: pan-y;
+  transform: translate(-50%, 18px) scale(0.96);
+  transition: opacity 0.25s ease, transform 0.45s var(--curva-resorte), translate 0.3s var(--curva-salida);
+}
+
+#agregar-toast.visible {
+  pointer-events: auto;
+  transform: translate(-50%, 0) scale(1);
+}
+
+/* -------------------------------------------------------
+   MI CUENTA: recorrido del pedido, estrellas y monedero
+   ------------------------------------------------------- */
+.pedido-recorrido li + li::before {
+  transform-origin: left center;
+  animation: mov-linea 0.5s var(--curva-salida) calc(var(--i, 0) * 0.16s) both;
+}
+
+.pedido-recorrido li.hecho .pedido-recorrido-punto,
+.pedido-recorrido li.actual .pedido-recorrido-punto {
+  animation: mov-punto 0.4s var(--curva-resorte) calc(var(--i, 0) * 0.16s + 0.1s) both;
+}
+
+.pedido-recorrido li.actual .pedido-recorrido-punto {
+  box-shadow: 0 0 0 4px rgba(54, 117, 135, 0.2);
+  animation:
+    mov-punto 0.4s var(--curva-resorte) calc(var(--i, 0) * 0.16s + 0.1s) both,
+    mov-latido 2.4s ease-in-out calc(var(--i, 0) * 0.16s + 0.6s) infinite;
+}
+
+@keyframes mov-linea { from { transform: scaleX(0); } }
+@keyframes mov-punto { from { transform: scale(0); } }
+@keyframes mov-latido {
+  50% { box-shadow: 0 0 0 7px rgba(54, 117, 135, 0.08); }
+}
+
+.resena-estrellas.llenando input:checked ~ label {
+  animation: mov-estrella 0.38s var(--curva-resorte) calc((var(--n, 1) - 1) * 70ms) both;
+}
+
+@keyframes mov-estrella {
+  0%   { transform: scale(0.6); color: var(--color-borde); }
+  60%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+/* Un brillo cruza la tarjeta del monedero cuando hay saldo */
+.monedero-tarjeta.con-saldo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(243, 242, 238, 0.22) 50%, transparent 65%);
+  transform: translateX(-100%);
+  animation: mov-brillo 7s ease-in-out 0.6s infinite;
+  pointer-events: none;
+}
+
+.monedero-tarjeta > * { position: relative; z-index: 1; }
+
+@keyframes mov-brillo {
+  0%       { transform: translateX(-100%); }
+  22%, 100% { transform: translateX(100%); }
+}
+
+/* -------------------------------------------------------
+   TÍTULOS QUE SE ARMAN CON EL SCROLL (solo navegadores que lo saben hacer)
+   ------------------------------------------------------- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .js .titulo-seccion.reveal,
+    .js .titulo-seccion.reveal.visible {
+      opacity: 1;
+      transform: none;
+      transition: none;
+      animation: mov-titulo linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 28%;
+    }
+
+    .titulo-seccion > span {
+      display: inline-block;
+      animation: mov-titulo-acento linear both;
+      animation-timeline: view();
+      animation-range: entry 25% cover 34%;
+    }
+  }
+}
+
+@keyframes mov-titulo {
+  from { opacity: 0; transform: translateY(0.5em); filter: blur(8px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes mov-titulo-acento {
+  from { opacity: 0; transform: translateY(0.35em) rotate(-2deg); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* -------------------------------------------------------
+   ESQUELETOS: brillo que recorre la forma mientras carga
+   ------------------------------------------------------- */
+.esq {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radio-md);
+  background: var(--color-grafito-2);
+}
+
+.esq::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: translateX(-100%);
+  animation: mov-esqueleto 1.4s ease-in-out infinite;
+}
+
+@keyframes mov-esqueleto { to { transform: translateX(100%); } }
+
+/* -------------------------------------------------------
+   REDUCIR MOVIMIENTO: todo instantáneo
+   ------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+
+  .catalogo-grid > .tarjeta-producto,
+  .btn-primario.agregado,
+  .carrito-btn-pulso,
+  .carrito-btn-pulso #carrito-contador,
+  .pedido-recorrido li + li::before,
+  .pedido-recorrido .pedido-recorrido-punto,
+  .resena-estrellas.llenando input:checked ~ label,
+  .monedero-tarjeta.con-saldo::before,
+  .esq::after { animation: none !important; }
+
+  .catalogo-grid > .tarjeta-producto:hover { translate: none; }
+  .btn-primario.agregado .palomita { animation: none; stroke-dashoffset: 0; }
+  button.procesando::after { animation: mov-aparecer 0.01s forwards; border-right-color: currentColor; opacity: 0.5; }
+}
