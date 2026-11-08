@@ -533,8 +533,10 @@
   display: grid;
   gap: 1.1rem;
   padding: clamp(1.25rem, 3vw, 2.25rem);
+  border-radius: clamp(20px, 2.5vw, 28px);
   background-color: var(--hueso);
   color: var(--tinta);
+  box-shadow: 0 24px 60px rgba(10, 16, 60, 0.28);
 }
 
 .campo label {
@@ -549,9 +551,9 @@
 .campo textarea {
   width: 100%;
   min-height: 48px;
-  padding: 0.7rem 0.9rem;
+  padding: 0.7rem 1.1rem;
   border: 1px solid var(--tinta);
-  border-radius: var(--radio-sm);
+  border-radius: 14px;
   background-color: #fbfaf6;
   color: var(--tinta);
   font-size: 1rem;
