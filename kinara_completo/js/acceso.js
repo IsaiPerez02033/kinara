@@ -22,6 +22,12 @@
 
   const urlDe = (archivo) => new URL(archivo, location.href).href;
 
+  // Al llegar a la siguiente página, sesion.js saluda con "¡Hola, nombre!"
+  const entrarA = (url) => {
+    try { sessionStorage.setItem('kinara:bienvenida', '1'); } catch (_) {}
+    location.replace(url);
+  };
+
   const MODOS = {
     entrar: {
       titulo: 'Entra a tu cuenta',
@@ -198,7 +204,7 @@
       if (modo === 'entrar') {
         const { error } = await auth.signInWithPassword({ email: datos.email, password: datos.pass });
         if (error) throw error;
-        location.replace(destino);
+        entrarA(destino);
         return;
       }
 
@@ -209,7 +215,7 @@
           options: { data: { nombre: datos.nombre }, emailRedirectTo: urlDe(destino) },
         });
         if (error) throw error;
-        if (data.session) { location.replace(destino); return; }
+        if (data.session) { entrarA(destino); return; }
         // Supabase no dice si el correo ya existía, para no revelar quién tiene cuenta
         mostrarListo('Confirma tu correo',
           `Te mandamos un enlace a ${datos.email}. Ábrelo para activar tu cuenta. ` +
@@ -338,6 +344,6 @@
       return;
     }
     // Si ya hay sesión no tiene caso mostrar el formulario
-    if (session) location.replace(destino);
+    if (session) entrarA(destino);
   });
 })();

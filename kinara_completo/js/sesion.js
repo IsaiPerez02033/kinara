@@ -16,6 +16,60 @@ const ModuloSesion = (() => {
 
   const confirmado = (u) => !!(u && u.email_confirmed_at);
 
+  // Con correo el nombre llega como "nombre"; Google lo manda como "full_name" o "name"
+  const nombreDe = (u) => {
+    const m = u?.user_metadata || {};
+    return String(m.nombre || m.full_name || m.name || '').trim();
+  };
+
+  // Foto de la cuenta de Google (solo https, por si acaso)
+  const fotoDe = (u, tam = 96) => {
+    const m = u?.user_metadata || {};
+    const url = String(m.avatar_url || m.picture || '');
+    if (!/^https:\/\//.test(url)) return '';
+    // Las fotos de Google aceptan el tamaño al final: "=s96-c"
+    return url.replace(/=s\d+-c$/, `=s${tam}-c`);
+  };
+
+  const pintarFoto = (btn) => {
+    const url = fotoDe(usuario);
+    let img = btn.querySelector('.cuenta-foto');
+    if (!url) {
+      img?.remove();
+      btn.classList.remove('con-foto');
+      return;
+    }
+    if (!img) {
+      img = document.createElement('img');
+      img.className = 'cuenta-foto';
+      img.alt = '';
+      img.width = 30;
+      img.height = 30;
+      img.decoding = 'async';
+      // Google a veces niega la foto si recibe el sitio de origen
+      img.referrerPolicy = 'no-referrer';
+      img.addEventListener('error', () => { img.remove(); btn.classList.remove('con-foto'); });
+      btn.prepend(img);
+    }
+    if (img.getAttribute('src') !== url) img.src = url;
+    btn.classList.add('con-foto');
+  };
+
+  // acceso.js deja la marca al entrar; aquí se saluda una sola vez
+  const darBienvenida = () => {
+    let marca = null;
+    try { marca = sessionStorage.getItem('kinara:bienvenida'); sessionStorage.removeItem('kinara:bienvenida'); } catch (_) {}
+    if (!marca || !usuario) return;
+    const primerNombre = nombreDe(usuario).split(/\s+/)[0];
+    const t = document.getElementById('agregar-toast');
+    if (!t) return;
+    t.textContent = primerNombre ? `¡Hola, ${primerNombre}!` : '¡Hola!';
+    t.style.borderLeftColor = 'var(--color-acento)';
+    t.classList.add('visible');
+    clearTimeout(t._to);
+    t._to = setTimeout(() => t.classList.remove('visible'), 3500);
+  };
+
   // Liga la fila de clientes (y sus pedidos de invitado) una vez por carga
   const asegurarVinculo = () => {
     if (!confirmado(usuario)) return Promise.resolve(false);
@@ -36,6 +90,7 @@ const ModuloSesion = (() => {
       btn.href = ruta(conSesion ? 'cuenta.html' : 'acceso.html');
       btn.setAttribute('aria-label', conSesion ? 'Mi cuenta' : 'Iniciar sesión');
       btn.classList.toggle('con-sesion', conSesion);
+      pintarFoto(btn);
     }
     document.querySelectorAll('[data-enlace-cuenta]').forEach((a) => {
       a.href = ruta(conSesion ? 'cuenta.html' : 'acceso.html');
@@ -55,6 +110,7 @@ const ModuloSesion = (() => {
   // getSession lee del navegador sin pedir nada a la red
   const listo = auth.getSession().then(({ data }) => {
     actualizar(data?.session?.user ?? null);
+    darBienvenida();
     auth.onAuthStateChange((_evento, session) => {
       const nuevo = session?.user ?? null;
       if ((nuevo?.id ?? null) !== (usuario?.id ?? null) ||
@@ -76,6 +132,8 @@ const ModuloSesion = (() => {
     listo,
     usuario: () => usuario,
     confirmado: () => confirmado(usuario),
+    nombre: () => nombreDe(usuario),
+    foto: (tam) => fotoDe(usuario, tam),
     asegurarVinculo,
     cerrarSesion,
     ruta,

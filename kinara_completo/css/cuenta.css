@@ -293,6 +293,38 @@
   margin-bottom: var(--espacio-md);
 }
 
+.cuenta-identidad {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.cuenta-avatar {
+  flex: none;
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--ocre);
+  color: var(--tinta);
+  font-family: var(--fuente-display);
+  font-size: 1.9rem;
+  font-weight: 700;
+}
+
+.cuenta-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 480px) {
+  .cuenta-avatar { width: 56px; height: 56px; font-size: 1.5rem; }
+}
+
 .cuenta-saludo {
   font-size: var(--texto-3xl);
   line-height: 1;

@@ -336,10 +336,25 @@
   /* =====================================================
      DATOS Y CONTRASEÑA
      ===================================================== */
+  // Foto de Google si la hay; si no, la inicial del nombre
+  const pintarAvatar = (nombre) => {
+    const caja = $('cuenta-avatar');
+    const url = ModuloSesion.foto(160);
+    caja.textContent = (nombre.trim()[0] || 'K').toUpperCase();
+    if (url) {
+      const img = new Image(80, 80);
+      img.alt = '';
+      img.referrerPolicy = 'no-referrer';
+      img.onload = () => { caja.textContent = ''; caja.append(img); };
+      img.src = url;
+    }
+  };
+
   const pintarPerfil = (perfil, usuario) => {
-    const nombre = perfil?.nombre || usuario.user_metadata?.nombre || '';
+    const nombre = perfil?.nombre || ModuloSesion.nombre();
     const primerNombre = nombre.split(/\s+/)[0];
     $('cuenta-saludo').textContent = primerNombre ? `Hola, ${primerNombre}` : 'Hola';
+    pintarAvatar(nombre || usuario.email);
     $('cuenta-email').textContent = usuario.email;
     $('cuenta-desde').textContent = perfil?.cliente_desde
       ? `Cliente desde ${new Date(perfil.cliente_desde).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })}`

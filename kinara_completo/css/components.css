@@ -744,6 +744,17 @@
   transition: opacity var(--transicion-rapida), transform var(--transicion-normal);
 }
 
+/* Con foto de Google, la foto sustituye al ícono */
+#btn-cuenta .cuenta-foto {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 1.5px var(--color-blanco);
+}
+
+#btn-cuenta.con-foto svg { display: none; }
+
 #btn-cuenta.con-sesion .cuenta-indicador {
   opacity: 1;
   transform: scale(1);
