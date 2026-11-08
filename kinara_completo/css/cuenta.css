@@ -724,3 +724,7 @@
 .footer-legal { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 .checkout-nota a,
 .acceso-aviso a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
+/* El renglón de envío no lleva foto: solo el hueco para alinear */
+.pedido-pieza-envio .pedido-pieza-img { background: none; }
+.pedido-pieza-envio .pedido-pieza-nombre { color: var(--color-blanco-dim); }

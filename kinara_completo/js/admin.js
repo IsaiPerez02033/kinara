@@ -575,6 +575,7 @@
             </div>
             <div>
               <ul class="a-items">${items || '<li class="a-tenue">Sin productos</li>'}</ul>
+              ${Number(p.costo_envio) > 0 ? `<div class="a-pedido-envio"><span>Envío</span><span class="mono">${dinero(p.costo_envio)}</span></div>` : ''}
               <div class="a-pedido-total"><span>Total</span><span class="mono">${dinero(p.total)}</span></div>
             </div>
             ${p.notas ? `<p class="a-nota">${escHTML(p.notas)}</p>` : ''}

@@ -125,15 +125,31 @@ serve(async (req: Request) => {
 
     const [primerNombre, ...apellidos] = datos.nombre.split(/\s+/);
 
-    const preferencia = {
-      items: pedido.items.map((i: any) => ({
-        id:          i.id,
-        title:       i.titulo,
-        unit_price:  Number(i.precio),
-        quantity:    i.cantidad,
+    const items = pedido.items.map((i: any) => ({
+      id:          i.id,
+      title:       i.titulo,
+      unit_price:  Number(i.precio),
+      quantity:    i.cantidad,
+      currency_id: "MXN",
+      category_id: "others",
+    }));
+
+    // El envío lo decide crear_pedido_checkout (09_envio_y_minimo.sql).
+    // Va como un renglón más para que el cobro sume exactamente pedidos.total.
+    const envio = Number(pedido.envio ?? 0);
+    if (envio > 0) {
+      items.push({
+        id:          "envio",
+        title:       "Envío a domicilio",
+        unit_price:  envio,
+        quantity:    1,
         currency_id: "MXN",
-        category_id: "others",
-      })),
+        category_id: "services",
+      });
+    }
+
+    const preferencia = {
+      items,
       payer: {
         name:    primerNombre,
         surname: apellidos.join(" "),
@@ -178,7 +194,7 @@ serve(async (req: Request) => {
       ? (pref.sandbox_init_point ?? pref.init_point)
       : pref.init_point;
 
-    return respuesta(200, { pedido_id: pedidoId, url_pago: urlPago, total: pedido.total });
+    return respuesta(200, { pedido_id: pedidoId, url_pago: urlPago, total: pedido.total, envio });
 
   } catch (e) {
     console.error("Error en crear-preferencia-mp:", e);

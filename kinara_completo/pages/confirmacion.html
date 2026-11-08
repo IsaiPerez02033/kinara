@@ -134,6 +134,8 @@
       // Caso: pago confirmado por el webhook
       if (pagado) {
         const items = typeof pedido.items === 'string' ? JSON.parse(pedido.items) : pedido.items || [];
+        // El total incluye el envío; lo que no son piezas es envío
+        const envio = Number(pedido.total) - items.reduce((s, i) => s + Number(i.subtotal), 0);
         contenedor.innerHTML = `
           <div class="confirmacion-icono confirmacion-icono--exito">
             <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
@@ -156,6 +158,7 @@
                   </td>
                   <td>$${fmt(item.subtotal)}</td>
                 </tr>`).join('')}
+              ${envio > 0.009 ? `<tr><td><span class="pedido-item-nombre">Envío a domicilio</span></td><td>$${fmt(envio)}</td></tr>` : ''}
             </tbody>
           </table>
           <div class="pedido-total"><span>Total pagado</span><strong>$${fmt(pedido.total)} MXN</strong></div>

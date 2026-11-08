@@ -211,6 +211,62 @@
   background: var(--color-grafito-2);
 }
 
+/* Barra de envío gratis / pedido mínimo */
+.carrito-envio {
+  margin-bottom: 0.85rem;
+  padding: 0.7rem 0.85rem 0.8rem;
+  border-radius: var(--radio-sm);
+  background: var(--color-negro);
+}
+
+.carrito-envio[hidden],
+.carrito-desglose[hidden] { display: none; }
+
+.carrito-envio-texto {
+  margin-bottom: 0.5rem;
+  font-size: var(--texto-sm);
+  line-height: 1.35;
+  color: var(--color-blanco-dim);
+}
+
+.carrito-envio-texto strong { color: var(--color-blanco); font-weight: 600; }
+
+.carrito-envio-barra {
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--radio-full);
+  background: var(--color-borde);
+}
+
+.carrito-envio-barra span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--cobalto);
+  transform: scaleX(0.03);
+  transform-origin: left;
+  transition: transform var(--transicion-normal), background-color var(--transicion-rapida);
+}
+
+.carrito-envio--minimo .carrito-envio-barra span { background: var(--color-aviso); }
+.carrito-envio--gratis .carrito-envio-barra span { background: var(--color-exito); }
+
+.carrito-desglose {
+  display: grid;
+  gap: 0.2rem;
+  margin-bottom: 0.45rem;
+  font-size: var(--texto-sm);
+  color: var(--color-blanco-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.carrito-desglose > div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.checkout-resumen-envio[hidden] { display: none; }
+
 .carrito-subtotal {
   display: flex;
   justify-content: space-between;

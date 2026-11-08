@@ -137,6 +137,15 @@
                 <span class="pedido-pieza-nombre">${escHTML(i.nombre)} <span class="pedido-pieza-cant">× ${i.cantidad}</span></span>
                 <span class="pedido-pieza-precio">$${fmtPrecio(i.precio * i.cantidad)}</span>
               </li>`).join('')}
+            ${(() => {
+              const envio = Number(p.total) - items.reduce((s, i) => s + i.precio * i.cantidad, 0);
+              return envio > 0.009 ? `
+              <li class="pedido-pieza-envio">
+                <span class="pedido-pieza-img" aria-hidden="true"></span>
+                <span class="pedido-pieza-nombre">Envío a domicilio</span>
+                <span class="pedido-pieza-precio">$${fmtPrecio(envio)}</span>
+              </li>` : '';
+            })()}
           </ul>
 
           <footer class="pedido-tarjeta-pie">

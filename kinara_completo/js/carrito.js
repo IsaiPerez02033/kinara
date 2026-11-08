@@ -90,6 +90,30 @@ const ModuloCarrito = (() => {
 
   /* --- Cálculos --- */
   const calcularTotal    = () => items.reduce((s, i) => s + i.precio * i.cantidad, 0);
+
+  /* --- Envío y pedido mínimo ---
+     Las reglas vienen de ajustes_tienda (09_envio_y_minimo.sql). Aquí solo
+     se muestran: el servidor vuelve a calcular el envío al crear el pago. */
+  let reglas = null;
+  const cargarReglas = async () => {
+    try {
+      const { data, error } = await SupabaseDB.cliente
+        .from('ajustes_tienda')
+        .select('envio_costo, envio_gratis_desde, pedido_minimo')
+        .maybeSingle();
+      if (error || !data) return;
+      reglas = {
+        costo:  Number(data.envio_costo),
+        gratis: Number(data.envio_gratis_desde),
+        minimo: Number(data.pedido_minimo),
+      };
+      pintarEnvio();
+    } catch (_) { /* sin reglas, el carrito se ve como antes */ }
+  };
+  const calcularEnvio = (sub = calcularTotal()) =>
+    (!reglas || sub <= 0 || sub >= reglas.gratis) ? 0 : reglas.costo;
+  const faltaMinimo = (sub = calcularTotal()) =>
+    reglas ? Math.max(0, reglas.minimo - sub) : 0;
   const contarUnidades   = () => items.reduce((s, i) => s + i.cantidad, 0);
   const formatearPrecio  = (p) => parseFloat(p).toLocaleString('es-MX', {minimumFractionDigits:0});
 
@@ -159,12 +183,50 @@ const ModuloCarrito = (() => {
           </div>
         </div>`;
       }).join('');
-      const btn = document.getElementById('btn-checkout');
-      if (btn) btn.disabled = false;
     }
 
-    const tv = document.getElementById('carrito-total-valor');
-    if (tv) tv.textContent = `$${formatearPrecio(calcularTotal())} MXN`;
+    pintarEnvio();
+  };
+
+  /* --- Desglose, barra de envío gratis y pedido mínimo --- */
+  const pintarEnvio = () => {
+    const sub = calcularTotal();
+    const envio = calcularEnvio(sub);
+    const falta = faltaMinimo(sub);
+    const $ = (id) => document.getElementById(id);
+
+    const tv = $('carrito-total-valor');
+    if (tv) tv.textContent = `$${formatearPrecio(sub + envio)} MXN`;
+
+    const btn = $('btn-checkout');
+    if (btn) btn.disabled = !items.length || falta > 0;
+
+    const caja = $('carrito-envio');
+    const desglose = $('carrito-desglose');
+    if (!caja || !desglose) return;
+    const conReglas = !!reglas && items.length > 0;
+    caja.hidden = !conReglas;
+    desglose.hidden = !conReglas;
+    if (!conReglas) return;
+
+    $('carrito-piezas-valor').textContent = `$${formatearPrecio(sub)}`;
+    $('carrito-envio-valor').textContent = envio > 0 ? `$${formatearPrecio(envio)}` : 'Gratis';
+
+    let texto, avance;
+    if (falta > 0) {
+      texto = `El pedido mínimo es de <strong>$${formatearPrecio(reglas.minimo)}</strong> en piezas. Te faltan $${formatearPrecio(falta)}.`;
+      avance = sub / reglas.minimo;
+    } else if (envio > 0) {
+      texto = `Te faltan <strong>$${formatearPrecio(reglas.gratis - sub)}</strong> para el envío gratis.`;
+      avance = sub / reglas.gratis;
+    } else {
+      texto = '<strong>Tu envío es gratis.</strong>';
+      avance = 1;
+    }
+    $('carrito-envio-texto').innerHTML = texto;
+    caja.classList.toggle('carrito-envio--minimo', falta > 0);
+    caja.classList.toggle('carrito-envio--gratis', falta === 0 && envio === 0);
+    $('carrito-envio-progreso').style.transform = `scaleX(${Math.min(1, Math.max(0.03, avance))})`;
   };
 
   /* --- Feedback visual --- */
@@ -186,6 +248,7 @@ const ModuloCarrito = (() => {
   /* --- Inicialización --- */
   const iniciar = () => {
     actualizarUI();
+    cargarReglas();
     document.getElementById('btn-carrito')?.addEventListener('click', abrirDrawer);
     document.getElementById('carrito-overlay')?.addEventListener('click', cerrarDrawer);
     document.getElementById('carrito-cerrar-btn')?.addEventListener('click', cerrarDrawer);
@@ -203,7 +266,8 @@ const ModuloCarrito = (() => {
   };
 
   return { iniciar, agregar, cambiarCantidad, eliminar, vaciar, abrirDrawer, cerrarDrawer,
-           calcularTotal, contarUnidades, obtenerItems:()=>items, formatearPrecio, mostrarMensaje };
+           calcularTotal, calcularEnvio, faltaMinimo, hayReglas: () => !!reglas,
+           contarUnidades, obtenerItems:()=>items, formatearPrecio, mostrarMensaje };
 })();
 
 
@@ -289,7 +353,7 @@ const ModuloCheckout = (() => {
 
   /* --- Abrir / cerrar modal --- */
   const abrir = () => {
-    if (!ModuloCarrito.contarUnidades()) return;
+    if (!ModuloCarrito.contarUnidades() || ModuloCarrito.faltaMinimo() > 0) return;
     ModuloCarrito.cerrarDrawer();
     restaurarFormulario();
     renderizarResumen();
@@ -318,7 +382,15 @@ const ModuloCheckout = (() => {
         <span>${escHTML(i.nombre)} × ${i.cantidad}</span>
         <span>$${ModuloCarrito.formatearPrecio(i.precio*i.cantidad)}</span>
       </div>`).join('');
-    if (t) t.textContent = `$${ModuloCarrito.formatearPrecio(ModuloCarrito.calcularTotal())} MXN`;
+    const sub = ModuloCarrito.calcularTotal();
+    const envio = ModuloCarrito.calcularEnvio(sub);
+    const fila = document.getElementById('checkout-envio-fila');
+    if (fila) {
+      fila.hidden = !ModuloCarrito.hayReglas();
+      document.getElementById('checkout-envio').textContent =
+        envio > 0 ? `$${ModuloCarrito.formatearPrecio(envio)}` : 'Gratis';
+    }
+    if (t) t.textContent = `$${ModuloCarrito.formatearPrecio(sub + envio)} MXN`;
   };
 
   /* --- Validar formulario --- */

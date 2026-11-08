@@ -469,11 +469,19 @@
     </div>
     <div class="carrito-items" id="carrito-items-contenedor"></div>
     <div class="carrito-footer">
+      <div class="carrito-envio" id="carrito-envio" hidden>
+        <p class="carrito-envio-texto" id="carrito-envio-texto"></p>
+        <div class="carrito-envio-barra" aria-hidden="true"><span id="carrito-envio-progreso"></span></div>
+      </div>
+      <div class="carrito-desglose" id="carrito-desglose" hidden>
+        <div><span>Piezas</span><span id="carrito-piezas-valor">$0</span></div>
+        <div><span>Envío</span><span id="carrito-envio-valor">$0</span></div>
+      </div>
       <div class="carrito-subtotal">
-        <span class="carrito-subtotal-label">Total estimado</span>
+        <span class="carrito-subtotal-label">Total</span>
         <span class="carrito-subtotal-valor" id="carrito-total-valor">$0 MXN</span>
       </div>
-      <p class="carrito-nota-envio">El costo de envío se calcula en el checkout.</p>
+      <p class="carrito-nota-envio" id="carrito-nota-envio">Envío a todo México.</p>
       <button class="btn-checkout" id="btn-checkout" type="button" disabled>Proceder al pago</button>
     </div>
   </aside>
@@ -550,6 +558,10 @@
         <div class="checkout-paso-label checkout-paso-label--separado"><span class="checkout-paso-numero">3</span>Resumen</div>
         <div class="checkout-resumen">
           <div id="checkout-resumen-items"></div>
+          <div class="checkout-resumen-fila checkout-resumen-envio" id="checkout-envio-fila" hidden>
+            <span>Envío a domicilio</span>
+            <span id="checkout-envio"></span>
+          </div>
           <div class="checkout-resumen-total">
             <span>Total</span>
             <span id="checkout-total">$0 MXN</span>

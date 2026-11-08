@@ -972,3 +972,11 @@ button.a-cifra:hover { filter: brightness(1.08); }
   .a-velo,
   .a-toast { transition: none; animation: none; }
 }
+
+.a-pedido-envio {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.4rem;
+  color: var(--a-tenue, inherit);
+  font-size: 0.92em;
+}
