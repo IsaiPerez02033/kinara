@@ -11,6 +11,7 @@
 // 4. En Settings → Secrets agrega:
 //    MERCADOPAGO_ACCESS_TOKEN = TEST-... (o productivo)
 //    MERCADOPAGO_WEBHOOK_SECRET = tu-secret-de-webhook (ver paso 5)
+//    RESEND_API_KEY = llave de Resend para el correo de pago recibido
 // 5. En el panel de MP → Developers → Webhooks → tu webhook → copiar "Secret"
 // 6. Desactiva "Verify JWT" en esta función (Mercado Pago no manda JWT;
 //    la autenticación es la firma HMAC). Con CLI: --no-verify-jwt
@@ -28,6 +29,101 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Cabeceras CORS básicas
 const HEADERS = { "Content-Type": "application/json" };
+
+/* ---------- Plantilla de correo de pedido (igual en aviso-envio.ts) ---------- */
+const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+const dinero = (n: unknown) =>
+  "$" + Number(n ?? 0).toLocaleString("es-MX", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+function plantillaPedido(d: { asunto: string; titulo: string; texto: string; bloque: string; boton: string; url: string; nota: string }) {
+  return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(d.asunto)}</title></head>
+<body style="margin:0;padding:0;background:#f2f0ea;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f0ea;">
+<tr><td align="center" style="padding:32px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:2px solid #14161a;">
+<tr><td style="background:#1f36b5;padding:20px 28px;">
+<span style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;letter-spacing:4px;color:#f2f0ea;">KINARA</span>
+<span style="font-family:'Courier New',monospace;font-size:11px;color:#f2f0ea;opacity:.8;padding-left:10px;">IMPRESIÓN 3D</span>
+</td></tr>
+<tr><td style="padding:32px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#14161a;">
+<h1 style="margin:0 0 14px;font-size:24px;line-height:1.25;">${d.titulo}</h1>
+<p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#3a3d44;">${d.texto}</p>
+${d.bloque}
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr><td style="background:#c93814;">
+<a href="${esc(d.url)}" style="display:inline-block;padding:14px 26px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;">${d.boton}</a>
+</td></tr></table>
+<p style="margin:24px 0 28px;font-size:13px;line-height:1.6;color:#54575d;">${d.nota}</p>
+</td></tr>
+</table>
+<p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#54575d;">Kinara · Impresión 3D · México · <a href="https://kinaramx.com" style="color:#54575d;">kinaramx.com</a></p>
+</td></tr></table>
+</body></html>`;
+}
+
+async function enviarCorreo(para: string, asunto: string, html: string) {
+  const key = Deno.env.get("RESEND_API_KEY");
+  if (!key) throw new Error("Falta el secret RESEND_API_KEY");
+  const r = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: "Kinara <no-responder@kinaramx.com>",
+      to: [para],
+      reply_to: "hola@kinaramx.com",
+      subject: asunto,
+      html,
+    }),
+  });
+  if (!r.ok) throw new Error(`Resend respondió ${r.status}: ${await r.text()}`);
+}
+/* ---------- Fin de la plantilla ---------- */
+
+/* -------------------------------------------------------
+   CORREO "RECIBIMOS TU PAGO"
+   Se manda una sola vez por pedido (correo_pago_at). Si falla,
+   el pago ya quedó registrado: solo se anota en los logs.
+   ------------------------------------------------------- */
+async function correoPago(supabase: any, pedidoId: string) {
+  const { data: p, error } = await supabase
+    .from("pedidos")
+    .select("id, total, costo_envio, contacto_nombre, direccion_envio, correo_pago_at, clientes (nombre, email), pedido_items (cantidad, precio_unitario, productos (nombre))")
+    .eq("id", pedidoId)
+    .single();
+  if (error || !p || p.correo_pago_at || !p.clientes?.email) return;
+
+  const siteUrl = (Deno.env.get("SITE_URL") ?? "https://kinaramx.com").replace(/\/+$/, "");
+  const numero = p.id.slice(0, 8).toUpperCase();
+  const nombre = String(p.contacto_nombre || p.clientes?.nombre || "").split(/\s+/)[0];
+  const asunto = `Recibimos tu pago · Pedido #${numero}`;
+
+  const renglon = (izq: string, der: string, fuerte = false) =>
+    `<tr><td style="padding:7px 0;font-size:14px;color:${fuerte ? "#14161a" : "#3a3d44"};${fuerte ? "font-weight:700;" : ""}border-top:1px solid #e2dfd6;">${izq}</td><td align="right" style="padding:7px 0;font-size:14px;color:#14161a;${fuerte ? "font-weight:700;" : ""}border-top:1px solid #e2dfd6;white-space:nowrap;">${der}</td></tr>`;
+  const piezas = (p.pedido_items ?? []).map((i: any) =>
+    renglon(`${esc(i.productos?.nombre ?? "Pieza")} × ${i.cantidad}`, dinero(i.precio_unitario * i.cantidad))).join("");
+  const envio = Number(p.costo_envio ?? 0);
+  const bloque = `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+${piezas}
+${renglon("Envío", envio > 0 ? dinero(envio) : "Gratis")}
+${renglon("Total pagado", `${dinero(p.total)} MXN`, true)}
+</table>
+<p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:#54575d;"><strong style="color:#14161a;">Se enviará a:</strong> ${esc(p.direccion_envio)}</p>`;
+
+  const html = plantillaPedido({
+    asunto,
+    titulo: "Recibimos tu pago",
+    texto: `${nombre ? `Hola, ${esc(nombre)}. ` : ""}Tu pedido <strong>#${numero}</strong> ya está confirmado. Lo imprimimos y revisamos en nuestro taller, y sale en 3 a 5 días hábiles. Te avisamos con el número de guía cuando lo enviemos.`,
+    bloque,
+    boton: "Ver mi pedido",
+    url: `${siteUrl}/pages/confirmacion.html?status=success&pedido=${p.id}`,
+    nota: `¿Dudas? Responde a este correo o escribe a hola@kinaramx.com con tu número de pedido. <a href="${siteUrl}/pages/envios.html" style="color:#1f36b5;">Envíos y devoluciones</a>`,
+  });
+
+  await enviarCorreo(p.clientes.email, asunto, html);
+  await supabase.from("pedidos").update({ correo_pago_at: new Date().toISOString() }).eq("id", p.id);
+}
 
 /* -------------------------------------------------------
    VERIFICACIÓN DE FIRMA HMAC (Mercado Pago)
@@ -191,6 +287,11 @@ serve(async (req: Request) => {
       if (error) throw new Error("Error en procesar_pago_confirmado: " + error.message);
 
       console.log(`Pedido ${pedidoId}, pago ${pagoId}: ${resultado}`);
+
+      if (resultado === "procesado") {
+        try { await correoPago(supabase, pedidoId); }
+        catch (e) { console.error(`No se pudo mandar el correo de pago del pedido ${pedidoId}:`, e); }
+      }
 
     } else if (pago.status === "refunded" || pago.status === "charged_back") {
       const { data: resultado, error } = await supabase.rpc("revertir_pago_confirmado", {

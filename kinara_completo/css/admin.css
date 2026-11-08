@@ -240,7 +240,7 @@
   min-height: 42px;
   padding: 0.6rem 1.1rem;
   border: 1px solid var(--tinta);
-  border-radius: var(--radio-sm);
+  border-radius: var(--radio-full);
   background: transparent;
   font-weight: 600;
   font-size: 0.875rem;
@@ -270,7 +270,7 @@
   width: 34px;
   height: 34px;
   border: 1px solid var(--a-linea-2);
-  border-radius: var(--radio-sm);
+  border-radius: 50%;
   background: var(--a-papel);
 }
 
@@ -351,22 +351,26 @@ textarea.a-input { min-height: 110px; resize: vertical; line-height: 1.5; }
 .a-segmento {
   display: inline-flex;
   flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
   border: 1px solid var(--a-linea-2);
-  border-radius: var(--radio-sm);
+  border-radius: var(--radio-full);
   background: var(--a-papel);
 }
 
 .a-segmento button {
-  min-height: 40px;
-  padding: 0.45rem 0.9rem;
+  min-height: 36px;
+  padding: 0.4rem 0.95rem;
   border: 0;
+  border-radius: var(--radio-full);
   background: transparent;
   color: var(--a-tenue);
   font-size: 0.875rem;
   font-weight: 500;
+  transition: background var(--transicion-rapida), color var(--transicion-rapida);
 }
 
-.a-segmento button + button { border-left: 1px solid var(--a-linea); }
+.a-segmento button:hover { color: var(--tinta); }
 .a-segmento button[aria-pressed='true'] { background: var(--tinta); color: var(--hueso); }
 
 /* ---------- Resumen ---------- */
@@ -959,8 +963,11 @@ button.a-cifra:hover { filter: brightness(1.08); }
 @media (max-width: 520px) {
   .a-cifra { min-height: 128px; padding: 1rem; }
   .a-barra select.a-input,
+  /* En el teléfono los filtros se deslizan en una sola fila */
   .a-barra .a-segmento { flex: 1 1 100%; }
-  .a-segmento button { flex: 1; }
+  .a-segmento { max-width: 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .a-segmento::-webkit-scrollbar { display: none; }
+  .a-segmento button { flex: 1 0 auto; white-space: nowrap; }
   .a-editor-cuerpo,
   .a-editor-cabeza,
   .a-editor-pie { padding-inline: 1rem; }
@@ -979,4 +986,25 @@ button.a-cifra:hover { filter: brightness(1.08); }
   margin-top: 0.4rem;
   color: var(--a-tenue, inherit);
   font-size: 0.92em;
+}
+
+/* Guía de envío dentro de la tarjeta del pedido */
+.a-guia {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1.4fr) auto;
+  align-items: end;
+  gap: 0.6rem 0.75rem;
+  margin-top: 0.4rem;
+  padding-top: 0.9rem;
+  border-top: 1px dashed var(--a-linea-2);
+}
+
+.a-guia .a-input { min-height: 38px; padding: 0.4rem 0.6rem; font-size: 0.875rem; }
+.a-guia .a-btn { min-height: 38px; }
+.a-guia-avisos { grid-column: 1 / -1; font-size: 0.75rem; }
+
+@media (max-width: 900px) {
+  .a-guia { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .a-guia-url, .a-guia .a-btn { grid-column: 1 / -1; }
 }

@@ -787,12 +787,13 @@
 #materiales {
   --fondo: var(--pino);
   --fondo-arriba: color-mix(in oklab, var(--hueso) 50%, var(--pino));
-  --fondo-abajo: color-mix(in oklab, var(--pino) 50%, var(--bermellon));
+  /* Verde y rojo mezclados dan café: el paso va por un verde casi negro */
+  --fondo-abajo: color-mix(in oklab, var(--pino) 40%, var(--tinta));
 }
 
 #figuras {
   --fondo: var(--bermellon);
-  --fondo-arriba: color-mix(in oklab, var(--pino) 50%, var(--bermellon));
+  --fondo-arriba: color-mix(in oklab, var(--pino) 40%, var(--tinta));
   --fondo-abajo: color-mix(in oklab, var(--bermellon) 50%, var(--hueso));
 }
 

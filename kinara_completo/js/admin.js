@@ -579,9 +579,84 @@
               <div class="a-pedido-total"><span>Total</span><span class="mono">${dinero(p.total)}</span></div>
             </div>
             ${p.notas ? `<p class="a-nota">${escHTML(p.notas)}</p>` : ''}
+            ${formularioGuia(p)}
           </div>
         </article>`;
     }).join('');
+  };
+
+  /* ---------- Guía de envío ---------- */
+  const PAQUETERIAS = ['Estafeta', 'FedEx', 'DHL', 'Paquetexpress', 'J&T Express', '99minutos', 'Redpack', 'Otra'];
+
+  // Rastreo directo para las paqueterías con enlace estable; las demás se pegan a mano
+  const rastreoDe = (paqueteria, guia) => {
+    const g = encodeURIComponent(guia);
+    if (paqueteria === 'DHL') return `https://www.dhl.com/mx-es/home/rastreo.html?tracking-id=${g}&submit=1`;
+    if (paqueteria === 'FedEx') return `https://www.fedex.com/fedextrack/?trknbr=${g}`;
+    return '';
+  };
+
+  const formularioGuia = (p) => {
+    if (!['pagado', 'en_produccion', 'enviado', 'entregado'].includes(p.estado)) return '';
+    const yaEnviado = ['enviado', 'entregado'].includes(p.estado) && p.numero_guia;
+    const avisos = [
+      p.correo_pago_at ? `Correo de pago: ${fecha(p.correo_pago_at)}` : 'Correo de pago: no enviado',
+      p.correo_envio_at ? `Correo de envío: ${fecha(p.correo_envio_at)}` : 'Correo de envío: no enviado',
+    ].join(' · ');
+    return `
+      <form class="a-guia" data-guia="${escHTML(p.id)}" novalidate>
+        <label class="a-campo">
+          <span class="a-label">Paquetería</span>
+          <select class="a-input" name="paqueteria">
+            ${PAQUETERIAS.map((n) => `<option ${p.paqueteria === n ? 'selected' : ''}>${n}</option>`).join('')}
+          </select>
+        </label>
+        <label class="a-campo">
+          <span class="a-label">Número de guía</span>
+          <input class="a-input mono" name="guia" maxlength="60" autocomplete="off" value="${escHTML(p.numero_guia || '')}">
+        </label>
+        <label class="a-campo a-guia-url">
+          <span class="a-label">Enlace de rastreo</span>
+          <input class="a-input" name="url" type="url" maxlength="500" placeholder="https://  (DHL y FedEx se llenan solos)" value="${escHTML(p.url_rastreo || '')}">
+        </label>
+        <button type="submit" class="a-btn a-btn-primario a-btn-chico">${yaEnviado ? 'Guardar y reenviar correo' : 'Marcar enviado y avisar'}</button>
+        <p class="a-ayuda a-guia-avisos">${avisos}</p>
+      </form>`;
+  };
+
+  const guardarGuia = async (form) => {
+    const id = form.dataset.guia;
+    const paqueteria = form.paqueteria.value;
+    const guia = form.guia.value.trim();
+    let url = form.url.value.trim();
+
+    form.guia.setAttribute('aria-invalid', String(!guia));
+    if (!guia) { form.guia.focus(); toast('Escribe el número de guía', 'error'); return; }
+    if (!url) url = rastreoDe(paqueteria, guia);
+    const urlValida = !url || /^https:\/\/\S+$/.test(url);
+    form.url.setAttribute('aria-invalid', String(!urlValida));
+    if (!urlValida) { form.url.focus(); toast('El enlace debe empezar con https://', 'error'); return; }
+
+    const boton = form.querySelector('button');
+    boton.disabled = true;
+
+    // Lo entregado se queda entregado; lo demás pasa a enviado
+    const { data: actual } = await db.from('pedidos').select('estado, enviado_at').eq('id', id).single();
+    const cambios = { paqueteria, numero_guia: guia, url_rastreo: url || null };
+    if (actual?.estado !== 'entregado') cambios.estado = 'enviado';
+    if (!actual?.enviado_at) cambios.enviado_at = new Date().toISOString();
+
+    const { error } = await db.from('pedidos').update(cambios).eq('id', id);
+    if (error) { boton.disabled = false; toast('No se pudo guardar la guía', 'error'); return; }
+
+    const { data: aviso, error: errorCorreo } = await db.functions.invoke('aviso-envio', { body: { pedido_id: id } });
+    boton.disabled = false;
+    if (errorCorreo || !aviso?.ok) {
+      toast('Guía guardada, pero no se pudo mandar el correo', 'error');
+    } else {
+      toast(`Guía guardada y correo enviado a ${aviso.para}`);
+    }
+    cargarPedidos();
   };
 
   const cambiarEstadoPedido = async (select) => {
@@ -691,6 +766,13 @@
         estado.editor.fotos.splice(Number(quitar.dataset.quitar), 1);
         pintarFotos();
       }
+    });
+
+    document.addEventListener('submit', (e) => {
+      const form = e.target.closest('[data-guia]');
+      if (!form) return;
+      e.preventDefault();
+      guardarGuia(form);
     });
 
     document.addEventListener('change', (e) => {

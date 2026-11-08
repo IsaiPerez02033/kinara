@@ -128,6 +128,11 @@
           </header>
 
           ${pintarRecorrido(p.estado)}
+          ${p.numero_guia ? `
+          <p class="pedido-guia">
+            <span>Va por <strong>${escHTML(p.paqueteria || 'paquetería')}</strong> · guía <span class="pedido-guia-num">${escHTML(p.numero_guia)}</span></span>
+            ${/^https:\/\//.test(p.url_rastreo || '') ? `<a href="${escHTML(p.url_rastreo)}" target="_blank" rel="noopener" class="btn-secundario btn-chico">Rastrear paquete</a>` : ''}
+          </p>` : ''}
           ${p.estado === 'pendiente' ? '<p class="pedido-tarjeta-nota">Aún no recibimos la confirmación del pago. Si pagaste en OXXO o por transferencia, puede tardar unas horas.</p>' : ''}
 
           <ul class="pedido-piezas">

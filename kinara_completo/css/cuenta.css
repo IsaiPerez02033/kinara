@@ -728,3 +728,22 @@
 /* El renglón de envío no lleva foto: solo el hueco para alinear */
 .pedido-pieza-envio .pedido-pieza-img { background: none; }
 .pedido-pieza-envio .pedido-pieza-nombre { color: var(--color-blanco-dim); }
+
+/* Guía de envío en Mis pedidos */
+.pedido-guia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1rem;
+  margin: 0.9rem 0 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radio-sm);
+  background: rgba(31, 54, 181, 0.08);
+  font-size: var(--texto-sm);
+}
+
+.pedido-guia-num {
+  font-family: var(--fuente-mono);
+  overflow-wrap: anywhere;
+}
