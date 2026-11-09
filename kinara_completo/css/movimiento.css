@@ -6,7 +6,7 @@
 
 :root {
   --curva-resorte: cubic-bezier(0.34, 1.4, 0.64, 1);
-  --sombra-tarjeta: 0 22px 44px -22px rgba(31, 75, 82, 0.42), 0 4px 12px -6px rgba(31, 43, 42, 0.12);
+  --sombra-tarjeta: 0 22px 44px -22px rgba(37, 40, 46, 0.42), 0 4px 12px -6px rgba(27, 29, 33, 0.12);
 }
 
 /* -------------------------------------------------------
@@ -211,7 +211,7 @@ button.procesando::after {
 }
 
 .pedido-recorrido li.actual .pedido-recorrido-punto {
-  box-shadow: 0 0 0 4px rgba(54, 117, 135, 0.2);
+  box-shadow: 0 0 0 4px rgba(194, 74, 31, 0.2);
   animation:
     mov-punto 0.4s var(--curva-resorte) calc(var(--i, 0) * 0.16s + 0.1s) both,
     mov-latido 2.4s ease-in-out calc(var(--i, 0) * 0.16s + 0.6s) infinite;
@@ -220,7 +220,7 @@ button.procesando::after {
 @keyframes mov-linea { from { transform: scaleX(0); } }
 @keyframes mov-punto { from { transform: scale(0); } }
 @keyframes mov-latido {
-  50% { box-shadow: 0 0 0 7px rgba(54, 117, 135, 0.08); }
+  50% { box-shadow: 0 0 0 7px rgba(194, 74, 31, 0.08); }
 }
 
 .resena-estrellas.llenando input:checked ~ label {
@@ -239,7 +239,7 @@ button.procesando::after {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: linear-gradient(105deg, transparent 35%, rgba(243, 242, 238, 0.22) 50%, transparent 65%);
+  background: linear-gradient(105deg, transparent 35%, rgba(243, 241, 236, 0.22) 50%, transparent 65%);
   transform: translateX(-100%);
   animation: mov-brillo 7s ease-in-out 0.6s infinite;
   pointer-events: none;

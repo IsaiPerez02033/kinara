@@ -1,12 +1,12 @@
 /*
  * ============================================================
  * variables.css — Sistema de diseño de Kinara
- * Paleta "innovación elegante": marfil y tinta verdosa como base,
- * verde azulado de marca, salvia, terracota y piedra. Los nombres
- * de las variables vienen de la paleta anterior y se conservan
- * para no tocar cada regla: cobalto = verde azulado, bermellón =
- * terracota de botones, ocre = terracota clara, pino = salvia
- * profunda, rubor = piedra.
+ * Paleta "Taller": grafito y hueso como base, naranja de filamento
+ * para botones y acentos. Los nombres de las variables vienen de
+ * paletas anteriores y se conservan para no tocar cada regla:
+ * cobalto = grafito de los bloques oscuros, petróleo y bermellón =
+ * naranja de botones, ocre = naranja claro sobre oscuro, pino =
+ * gris acero, rubor = piedra, salvia = gris cálido.
  * ============================================================
  */
 
@@ -15,17 +15,17 @@
 
 :root {
   /* === COLORES DE MARCA === */
-  --hueso:     #f3f2ee;
-  --tinta:     #1f2b2a;
-  --cobalto:   #2f5c58;
-  --bermellon: #8d5f4a;
-  --petroleo: #367587;        /* botones principales */
-  --petroleo-hondo: #2b5f6e;  /* botones al pasar el cursor */
-  --ocre:      #d2ab94;
-  --pino:      #545f4e;
-  --rubor:     #dcd9d1;
-  --salvia:    #9a9c86;
-  --terracota: #b88b74;
+  --hueso:     #f3f1ec;
+  --tinta:     #1b1d21;
+  --cobalto:   #25282e;
+  --bermellon: #c24a1f;
+  --petroleo: #c24a1f;        /* botones principales */
+  --petroleo-hondo: #9e3d18;  /* botones al pasar el cursor */
+  --ocre:      #f2a577;
+  --pino:      #4a4d52;
+  --rubor:     #e3ded4;
+  --salvia:    #9c978b;
+  --terracota: #e07a4f;
 
   /* === UN COLOR POR CATEGORÍA === */
   --filamento-lampara:     var(--terracota);
@@ -75,8 +75,8 @@
   --transicion-lenta:  0.8s var(--curva-salida);
 
   /* === SOMBRAS TEÑIDAS CON LA TINTA === */
-  --sombra-md: 0 14px 40px rgba(31, 43, 42, 0.16);
-  --sombra-lg: 0 28px 80px rgba(31, 43, 42, 0.28);
+  --sombra-md: 0 14px 40px rgba(27, 29, 33, 0.16);
+  --sombra-lg: 0 28px 80px rgba(27, 29, 33, 0.28);
 
   /* === CAPAS === */
   --capa-header: 100;
@@ -100,9 +100,9 @@
   --color-negro:      var(--hueso);
   --color-grafito:    #f9f8f5;
   --color-grafito-2:  #e6e3dc;
-  --color-borde:      #c9c6bc;
+  --color-borde:      #cac6bd;
   --color-blanco:     var(--tinta);
-  --color-blanco-dim: #5a605d;
+  --color-blanco-dim: #5b5d61;
   --color-acento:        var(--petroleo);
   --color-acento-luz:    var(--petroleo-hondo);
   --color-acento-oscuro: var(--petroleo);
@@ -118,11 +118,11 @@
 #footer,
 .categoria-medida {
   --color-negro:      var(--tinta);
-  --color-grafito:    #1d2026;
-  --color-grafito-2:  #282b32;
-  --color-borde:      rgba(243, 242, 238, 0.3);
+  --color-grafito:    #1a1c20;
+  --color-grafito-2:  #2b2e34;
+  --color-borde:      rgba(243, 241, 236, 0.3);
   --color-blanco:     var(--hueso);
-  --color-blanco-dim: rgba(243, 242, 238, 0.86);
+  --color-blanco-dim: rgba(243, 241, 236, 0.86);
   --color-acento:     var(--hueso);
   --color-acento-luz: #ffffff;
   --acento-logo:      var(--ocre);
