@@ -1,5 +1,5 @@
 /**
- * acceso.js — Entrar (correo o Google), crear cuenta y recuperar contraseña (pages/acceso.html)
+ * acceso.js — Entrar (correo o Google), crear cuenta y recuperar contraseña (pages/acceso)
  * Toda la seguridad la pone Supabase Auth: contraseñas cifradas,
  * confirmación de correo y límites de intentos. Aquí solo armo la pantalla.
  */
@@ -17,10 +17,17 @@
     if (/^[a-z0-9_\-./#?=&]+$/i.test(v) && !v.startsWith('//') && !v.includes('..')) {
       return v.startsWith('/') ? v : `${location.pathname.replace(/[^/]*$/, '')}${v}`;
     }
-    return 'cuenta.html';
+    return 'cuenta';
   })();
 
-  const urlDe = (archivo) => new URL(archivo, location.href).href;
+  /* Supabase solo regresa a direcciones de su lista permitida, que puede tenerlas
+     con ".html". Así no depende de esa lista: Vercel redirige esas direcciones a la versión sin ".html". */
+  const conHtml = (url) => {
+    if (url.pathname.endsWith('/')) url.pathname += 'index.html';
+    else if (!/\.[a-z0-9]+$/i.test(url.pathname)) url.pathname += '.html';
+    return url;
+  };
+  const urlDe = (archivo) => conHtml(new URL(archivo, location.href)).href;
 
   // Al llegar a la siguiente página, sesion.js saluda con "¡Hola, nombre!"
   const entrarA = (url) => {
@@ -237,7 +244,7 @@
 
       if (modo === 'recuperar') {
         const { error } = await auth.resetPasswordForEmail(datos.email, {
-          redirectTo: urlDe('acceso.html?modo=nueva'),
+          redirectTo: urlDe('acceso?modo=nueva'),
         });
         if (error) throw error;
         mostrarListo('Revisa tu correo',
@@ -248,7 +255,7 @@
       if (modo === 'nueva') {
         const { error } = await auth.updateUser({ password: datos.pass });
         if (error) throw error;
-        location.replace('cuenta.html?aviso=contrasena');
+        location.replace('cuenta?aviso=contrasena');
       }
     } catch (error) {
       mostrarMensaje(traducirError(error));
@@ -265,7 +272,7 @@
     const boton = $('acceso-google-btn');
     boton.disabled = true;
     mostrarMensaje('');
-    const vuelta = new URL(location.pathname, location.origin);
+    const vuelta = conHtml(new URL(location.pathname, location.origin));
     if (params.get('volver')) vuelta.searchParams.set('volver', params.get('volver'));
     const { error } = await auth.signInWithOAuth({
       provider: 'google',

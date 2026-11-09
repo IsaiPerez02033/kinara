@@ -1,5 +1,5 @@
 /**
- * cotizar.js — Cotización a medida (pages/cotizar.html)
+ * cotizar.js — Cotización a medida (pages/cotizar)
  * Sube los archivos al bucket privado "cotizaciones" dentro de la
  * carpeta de la cuenta, guarda la solicitud y avisa a Kinara.
  * RLS solo deja crear solicitudes propias, sin precio y con
@@ -158,8 +158,8 @@
 
     if (!usuario) {
       const volver = encodeURIComponent(location.pathname + location.search);
-      $('cotizar-entrar').href = `acceso.html?volver=${volver}`;
-      $('cotizar-registro').href = `acceso.html?modo=registro&volver=${volver}`;
+      $('cotizar-entrar').href = `acceso?volver=${volver}`;
+      $('cotizar-registro').href = `acceso?modo=registro&volver=${volver}`;
       $('cotizar-sin-sesion').hidden = false;
       return;
     }

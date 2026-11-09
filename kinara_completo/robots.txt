@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /pages/admin.html
+Disallow: /pages/admin
 
 Sitemap: https://kinaramx.com/sitemap.xml

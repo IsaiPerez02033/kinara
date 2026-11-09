@@ -242,7 +242,7 @@ const ModuloCarrito = (() => {
     if (monEl) {
       const gana = items.length ? monederoGanado(sub) : 0;
       monEl.innerHTML = gana > 0
-        ? `Con esta compra ganas <strong>$${formatearPrecio(gana)}</strong> en tu <a href="pages/cuenta.html#monedero">Monedero Kinara</a>.`
+        ? `Con esta compra ganas <strong>$${formatearPrecio(gana)}</strong> en tu <a href="pages/cuenta#monedero">Monedero Kinara</a>.`
         : '';
       monEl.hidden = !gana;
     }
@@ -364,8 +364,8 @@ const ModuloCheckout = (() => {
     const usuario = window.ModuloSesion?.usuario();
 
     if (!usuario) {
-      const volver = encodeURIComponent('/index.html?carrito=abierto');
-      aviso.innerHTML = `¿Ya tienes cuenta? <a href="pages/acceso.html?volver=${volver}">Entra</a> para usar tus datos guardados y seguir tu pedido.`;
+      const volver = encodeURIComponent('/?carrito=abierto');
+      aviso.innerHTML = `¿Ya tienes cuenta? <a href="pages/acceso?volver=${volver}">Entra</a> para usar tus datos guardados y seguir tu pedido.`;
       email.readOnly = false;
       guardarCampo.hidden = true;
       monedero = null;
@@ -443,7 +443,7 @@ const ModuloCheckout = (() => {
   const abrirCotizacion = async (id) => {
     const usuario = await ModuloSesion.listo;
     if (!usuario) {
-      location.href = `pages/acceso.html?volver=${encodeURIComponent('/index.html?cotizacion=' + id)}`;
+      location.href = `pages/acceso?volver=${encodeURIComponent('/?cotizacion=' + id)}`;
       return;
     }
     const { data, error } = await SupabaseDB.cliente.from('cotizaciones')

@@ -304,7 +304,7 @@ const SupabaseDB = (() => {
   /* =====================================================
      FUNCIONES DEL PANEL ADMIN
      RLS las permite solo a usuarios de la tabla admins,
-     con su sesión de Supabase Auth. Las llamo desde admin.html.
+     con su sesión de Supabase Auth. Las llamo desde admin.
      ===================================================== */
 
   /**

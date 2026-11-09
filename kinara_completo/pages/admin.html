@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  admin.html — Panel de administración de Kinara
+  admin — Panel de administración de Kinara
   Productos (crear, editar, fotos, stock, ocultar), pedidos y mensajes.
   Esta pantalla solo decide qué se muestra: los permisos reales
   los aplica Supabase con RLS y la función es_admin().
@@ -46,7 +46,7 @@
       </div>
       <p class="a-acceso-error" id="acceso-error" role="alert"></p>
       <button class="a-btn a-btn-primario" id="acceso-btn" type="submit">Entrar</button>
-      <a class="a-btn a-btn-claro" href="acceso.html?modo=recuperar">Olvidé mi contraseña</a>
+      <a class="a-btn a-btn-claro" href="acceso?modo=recuperar">Olvidé mi contraseña</a>
     </form>
   </div>
 
@@ -54,7 +54,7 @@
   <div class="a-app" id="app" hidden>
     <aside class="a-lateral">
       <div class="a-lateral-dentro">
-      <a class="a-marca" href="../index.html" aria-label="Ir a la tienda">
+      <a class="a-marca" href="../" aria-label="Ir a la tienda">
         <img src="../assets/images/logo-kinara-marca-blanco.svg" alt="" width="28" height="28" />
         <strong>KINARA</strong>
         <span>Panel</span>
@@ -78,7 +78,7 @@
 
       <div class="a-lateral-pie">
         <span class="a-usuario" id="usuario-email"></span>
-        <a href="../index.html" target="_blank" rel="noopener">Ver tienda ↗</a>
+        <a href="../" target="_blank" rel="noopener">Ver tienda ↗</a>
         <button type="button" id="btn-salir">Cerrar sesión</button>
       </div>
       </div>

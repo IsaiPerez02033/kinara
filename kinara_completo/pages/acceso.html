@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  acceso.html — Entrar, crear cuenta y recuperar contraseña
+  acceso — Entrar, crear cuenta y recuperar contraseña
   Todo lo maneja Supabase Auth. Modos (?modo=):
     entrar    correo y contraseña, o Google (por defecto)
     registro  crear cuenta; Supabase manda un correo de confirmación
@@ -40,13 +40,13 @@
   <link rel="stylesheet" href="../css/cuenta.css?v=3" />
   <link rel="stylesheet" href="../css/movimiento.css?v=3" />
   <!-- Chrome, Edge y Brave descargan la página antes del clic; Safari lo ignora -->
-  <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/pages/admin.html*"}},{"not":{"selector_matches":"[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+  <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/pages/admin*"}},{"not":{"selector_matches":"[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
 </head>
 
 <body class="pagina-simple">
 
   <header class="pagina-simple-header">
-    <a href="../index.html" class="logo" aria-label="Kinara, volver al inicio">
+    <a href="../" class="logo" aria-label="Kinara, volver al inicio">
       <img class="logo-marca" src="../assets/images/logo-kinara-marca.svg" alt="" width="32" height="32" />
       <span class="logo-nombre">KINARA</span>
     </a>
@@ -74,7 +74,7 @@
           </svg>
           <span>Continuar con Google</span>
         </button>
-        <p class="acceso-google-nota" data-solo="registro">Al continuar con Google aceptas el <a href="privacidad.html" target="_blank" rel="noopener">aviso de privacidad</a>.</p>
+        <p class="acceso-google-nota" data-solo="registro">Al continuar con Google aceptas el <a href="privacidad" target="_blank" rel="noopener">aviso de privacidad</a>.</p>
         <p class="acceso-separador"><span>o con tu correo</span></p>
       </div>
 
@@ -103,7 +103,7 @@
 
         <label class="acceso-aviso" data-campo="aviso">
           <input type="checkbox" id="ac-aviso" />
-          <span>Acepto que Kinara use mis datos para gestionar mis pedidos y mi cuenta, según el <a href="privacidad.html" target="_blank" rel="noopener">aviso de privacidad</a>.</span>
+          <span>Acepto que Kinara use mis datos para gestionar mis pedidos y mi cuenta, según el <a href="privacidad" target="_blank" rel="noopener">aviso de privacidad</a>.</span>
         </label>
 
         <p class="acceso-mensaje" id="acceso-mensaje" role="alert" hidden></p>
@@ -126,11 +126,11 @@
         <button type="button" class="btn-secundario" id="listo-volver">Usar otro correo</button>
       </div>
 
-      <p class="acceso-invitado"><a href="../index.html#catalogo">Seguir sin cuenta</a>. También puedes comprar como invitado.</p>
+      <p class="acceso-invitado"><a href="../#catalogo">Seguir sin cuenta</a>. También puedes comprar como invitado.</p>
     </div>
   </main>
 
-  <footer class="pagina-simple-footer">© Kinara · Impresión 3D · México · <a href="envios.html" class="footer-legal">Envíos y devoluciones</a> · <a href="privacidad.html" class="footer-legal">Aviso de privacidad</a></footer>
+  <footer class="pagina-simple-footer">© Kinara · Impresión 3D · México · <a href="envios" class="footer-legal">Envíos y devoluciones</a> · <a href="privacidad" class="footer-legal">Aviso de privacidad</a></footer>
 
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
   <script defer src="../js/movimiento.js"></script>

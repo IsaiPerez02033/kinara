@@ -168,7 +168,7 @@ const ModuloCatalogo = (() => {
       grid.innerHTML = `<div class="catalogo-mensaje">
         <h3>Aún no hay piezas en esta categoría</h3>
         <p>Si ya sabes lo que necesitas, te lo cotizamos a la medida.</p>
-        <a href="pages/cotizar.html" class="btn-primario">Cotizar una pieza</a>
+        <a href="pages/cotizar" class="btn-primario">Cotizar una pieza</a>
       </div>`;
       return;
     }
@@ -330,7 +330,7 @@ const ModuloProducto = (() => {
     if (error) { caja.innerHTML = '<p class="detalle-resenas-vacio">No pudimos cargar las reseñas.</p>'; return; }
     const lista = data || [];
     if (!lista.length) {
-      caja.innerHTML = `<p class="detalle-resenas-vacio">Aún no hay reseñas. Si ya recibiste esta pieza, cuéntanos qué tal en <a href="pages/cuenta.html#pedidos">Mis pedidos</a>.</p>`;
+      caja.innerHTML = `<p class="detalle-resenas-vacio">Aún no hay reseñas. Si ya recibiste esta pieza, cuéntanos qué tal en <a href="pages/cuenta#pedidos">Mis pedidos</a>.</p>`;
       return;
     }
     const promedio = lista.reduce((s, r) => s + r.calificacion, 0) / lista.length;

@@ -1,5 +1,5 @@
 /**
- * cuenta.js — Mi cuenta (pages/cuenta.html)
+ * cuenta.js — Mi cuenta (pages/cuenta)
  * Pedidos, direcciones guardadas y datos de contacto.
  * Todo lo que se lee o escribe pasa por RLS o por funciones
  * que solo regresan los datos de la cuenta con sesión.
@@ -113,7 +113,7 @@
           </svg>
           <p class="cuenta-vacio-titulo">Todavía no tienes pedidos</p>
           <p class="cuenta-vacio-texto">Cuando compres algo lo vas a poder seguir aquí, desde el taller hasta tu puerta.</p>
-          <a href="../index.html#catalogo" class="btn-primario">Ver catálogo</a>
+          <a href="../#catalogo" class="btn-primario">Ver catálogo</a>
         </div>`;
       return;
     }
@@ -225,7 +225,7 @@
 
     localStorage.setItem('kinara_carrito_v1', JSON.stringify(carrito));
     const aviso = faltantes ? '&aviso=incompleto' : '';
-    location.href = `../index.html?carrito=abierto${aviso}`;
+    location.href = `../?carrito=abierto${aviso}`;
   };
 
   $('lista-pedidos').addEventListener('click', (e) => {
@@ -359,7 +359,7 @@
               ${q.estado === 'cotizada' && q.vence_at && !vencida ? `<span class="pedido-tarjeta-iva">Válida hasta el ${new Date(q.vence_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'long' })}</span>` : ''}</div>` : '<span></span>'}
             <div class="cotizacion-acciones">
               ${['nueva', 'cotizada'].includes(q.estado) ? `<button type="button" class="acceso-link acceso-link--peligro" data-cancelar-cot="${escHTML(q.id)}">Cancelar</button>` : ''}
-              ${q.estado === 'cotizada' && !vencida ? `<a class="btn-primario btn-chico" href="../index.html?cotizacion=${escHTML(q.id)}">Pagar cotización</a>` : ''}
+              ${q.estado === 'cotizada' && !vencida ? `<a class="btn-primario btn-chico" href="../?cotizacion=${escHTML(q.id)}">Pagar cotización</a>` : ''}
               ${vencida ? '<a class="btn-secundario btn-chico" href="mailto:hola@kinaramx.com">Pedir que la actualicen</a>' : ''}
               ${q.estado === 'pagada' ? '<a class="btn-secundario btn-chico" href="#pedidos" data-ir-pedidos>Ver el pedido</a>' : ''}
             </div>
@@ -615,7 +615,7 @@
 
   $('btn-salir').addEventListener('click', async () => {
     await ModuloSesion.cerrarSesion();
-    location.replace('../index.html');
+    location.replace('../');
   });
 
   /* =====================================================
@@ -624,7 +624,7 @@
   const iniciar = async () => {
     const usuario = await ModuloSesion.listo;
     if (!usuario) {
-      location.replace(`acceso.html?volver=${encodeURIComponent(location.pathname + location.hash)}`);
+      location.replace(`acceso?volver=${encodeURIComponent(location.pathname + location.hash)}`);
       return;
     }
 
@@ -673,7 +673,7 @@
 
   // Si cierra sesión en otra pestaña, salgo también aquí
   document.addEventListener('kinara:sesion', (e) => {
-    if (!e.detail) location.replace('acceso.html');
+    if (!e.detail) location.replace('acceso');
   });
 
   iniciar();

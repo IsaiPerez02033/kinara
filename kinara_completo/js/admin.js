@@ -1,5 +1,5 @@
 /**
- * admin.js — Panel de administración (pages/admin.html)
+ * admin.js — Panel de administración (pages/admin)
  * Resumen, productos (crear, editar, fotos, stock, ocultar, borrar),
  * pedidos y mensajes. Todo pasa por Supabase con la sesión del
  * admin; RLS y es_admin() deciden qué se puede leer y escribir.

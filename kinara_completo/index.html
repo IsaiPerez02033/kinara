@@ -57,7 +57,7 @@
   <link rel="stylesheet" href="css/cuenta.css?v=3" />
   <link rel="stylesheet" href="css/movimiento.css?v=3" />
   <!-- Chrome, Edge y Brave descargan la página antes del clic; Safari lo ignora -->
-  <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/pages/admin.html*"}},{"not":{"selector_matches":"[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+  <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/pages/admin*"}},{"not":{"selector_matches":"[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
 </head>
 
 <body>
@@ -112,7 +112,7 @@
       </nav>
 
       <div class="header-acciones">
-        <a id="btn-cuenta" href="pages/acceso.html" class="btn-icono" aria-label="Iniciar sesión">
+        <a id="btn-cuenta" href="pages/acceso" class="btn-icono" aria-label="Iniciar sesión">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>
           </svg>
@@ -124,7 +124,7 @@
           </svg>
           <span id="carrito-contador">0</span>
         </button>
-        <a href="pages/cotizar.html" class="btn-primario btn-chico">Cotizar pieza</a>
+        <a href="pages/cotizar" class="btn-primario btn-chico">Cotizar pieza</a>
         <button id="menu-movil-abrir" type="button" class="btn-icono btn-menu" aria-label="Abrir menú" aria-expanded="false" aria-controls="menu-movil">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg>
         </button>
@@ -141,8 +141,8 @@
     <a href="#materiales">Materiales</a>
     <a href="#catalogo">Catálogo</a>
     <a href="#contacto">Contacto</a>
-    <a href="pages/acceso.html" data-enlace-cuenta>Iniciar sesión</a>
-    <a href="pages/cotizar.html" class="btn-primario">Cotizar pieza</a>
+    <a href="pages/acceso" data-enlace-cuenta>Iniciar sesión</a>
+    <a href="pages/cotizar" class="btn-primario">Cotizar pieza</a>
   </div>
 
   <main id="contenido">
@@ -165,7 +165,7 @@
           </p>
           <div class="hero-acciones">
             <a href="#catalogo" class="btn-primario">Ver catálogo</a>
-            <a href="pages/cotizar.html" class="btn-secundario">Cotizar mi pieza</a>
+            <a href="pages/cotizar" class="btn-secundario">Cotizar mi pieza</a>
           </div>
         </div>
 
@@ -186,7 +186,7 @@
           <h2 class="hero-subtitulo">¿Qué quieres imprimir?</h2>
           <p class="hero-descripcion">Mándanos tu idea, una foto o tu archivo STL. Nosotros te decimos cómo hacerla realidad.</p>
           <div class="hero-acciones">
-            <a href="pages/cotizar.html" class="btn-primario">Cotizar mi pieza</a>
+            <a href="pages/cotizar" class="btn-primario">Cotizar mi pieza</a>
             <a href="#categorias" class="btn-secundario">Explorar categorías</a>
           </div>
         </div>
@@ -237,7 +237,7 @@
             <img class="pieza-foto" src="assets/categorias/figura.webp" alt="Mascota pixel de escritorio impresa en 3D" width="900" height="900" loading="lazy" decoding="async">
             <h3>Figuras</h3><p>Decorativas y de colección, para tu repisa.</p>
           </a>
-          <a href="pages/cotizar.html" class="categoria categoria-f categoria-medida reveal">
+          <a href="pages/cotizar" class="categoria categoria-f categoria-medida reveal">
             <div>
               <h3>¿No está en la lista? Lo hacemos a medida.</h3>
               <p>Refacciones, prototipos, piezas para tu negocio o cualquier idea que tengas.</p>
@@ -257,7 +257,7 @@
           <span class="etiqueta-seccion reveal">Cómo funciona</span>
           <h2 class="titulo-seccion reveal">De tu idea a tus <span>manos.</span></h2>
           <p class="reveal">No necesitas saber de modelado 3D. Hablas con quien hace tu pieza antes de imprimirla.</p>
-          <a href="pages/cotizar.html" class="btn-primario reveal">Empezar mi cotización</a>
+          <a href="pages/cotizar" class="btn-primario reveal">Empezar mi cotización</a>
         </div>
         <ol>
           <li class="paso reveal">
@@ -322,7 +322,7 @@
               <li><span>02</span>Aprueba el diseño antes de imprimir</li>
               <li><span>03</span>Recíbela lista para tu repisa</li>
             </ul>
-            <a href="pages/cotizar.html?tipo=figura" class="btn-primario">Cotizar mi figura</a>
+            <a href="pages/cotizar?tipo=figura" class="btn-primario">Cotizar mi figura</a>
             <p class="figuras-aviso">Solo reproducimos marcas o personajes registrados si cuentas con autorización de su titular.</p>
           </div>
           <div class="figuras-arte cama" data-categoria="Figuras" aria-hidden="true">
@@ -373,7 +373,7 @@
           <h2 class="titulo-seccion reveal">¿Qué quieres <span>imprimir?</span></h2>
           <p class="reveal">
             ¿Dudas antes de comprar? Escríbenos aquí. Si ya sabes qué pieza quieres y tienes una foto o un
-            archivo STL, <a href="pages/cotizar.html">pide tu cotización en línea</a>: la subes, te respondemos con
+            archivo STL, <a href="pages/cotizar">pide tu cotización en línea</a>: la subes, te respondemos con
             precio y la pagas desde tu cuenta.
           </p>
           <div class="contacto-datos reveal">
@@ -452,8 +452,8 @@
           <nav class="footer-links" aria-label="Contacto">
             <a href="#contacto" class="footer-link">Enviar mensaje</a>
             <a href="mailto:hola@kinaramx.com" class="footer-link">hola@kinaramx.com</a>
-            <a href="pages/envios.html" class="footer-link">Envíos y devoluciones</a>
-            <a href="pages/privacidad.html" class="footer-link">Aviso de privacidad</a>
+            <a href="pages/envios" class="footer-link">Envíos y devoluciones</a>
+            <a href="pages/privacidad" class="footer-link">Aviso de privacidad</a>
           </nav>
         </div>
       </div>
@@ -490,7 +490,7 @@
       </div>
       <p class="carrito-iva" id="carrito-iva" hidden></p>
       <p class="carrito-monedero" id="carrito-monedero" hidden></p>
-      <p class="carrito-nota-envio" id="carrito-nota-envio">Envío a todo México. <a href="pages/envios.html" target="_blank" rel="noopener">Envíos y devoluciones</a></p>
+      <p class="carrito-nota-envio" id="carrito-nota-envio">Envío a todo México. <a href="pages/envios" target="_blank" rel="noopener">Envíos y devoluciones</a></p>
       <button class="btn-checkout" id="btn-checkout" type="button" disabled>Proceder al pago</button>
     </div>
   </aside>
@@ -588,7 +588,7 @@
           </div>
           <p class="checkout-iva" id="checkout-iva" hidden></p>
         </div>
-        <p class="checkout-nota">Te llevaremos a Mercado Pago para completar el pago de forma segura. Al pagar aceptas nuestras <a href="pages/envios.html" target="_blank" rel="noopener">políticas de envío y devoluciones</a> y nuestro <a href="pages/privacidad.html" target="_blank" rel="noopener">aviso de privacidad</a>.</p>
+        <p class="checkout-nota">Te llevaremos a Mercado Pago para completar el pago de forma segura. Al pagar aceptas nuestras <a href="pages/envios" target="_blank" rel="noopener">políticas de envío y devoluciones</a> y nuestro <a href="pages/privacidad" target="_blank" rel="noopener">aviso de privacidad</a>.</p>
         <button id="btn-pagar" class="btn-checkout" type="button">Ir a pagar con Mercado Pago</button>
       </div>
     </div>

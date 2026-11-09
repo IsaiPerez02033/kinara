@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  cotizar.html — Cotización a medida
+  cotizar — Cotización a medida
   El cliente con cuenta describe su pieza y sube archivos (STL, fotos,
   PDF) al bucket privado "cotizaciones". Kinara responde con precio
   en el panel y el cliente la paga desde Mi cuenta.
@@ -11,7 +11,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Cotiza tu pieza — Kinara</title>
   <meta name="description" content="Sube tu archivo STL o fotos de la pieza que necesitas. Te respondemos con precio y tiempo, y la pagas en línea." />
-  <link rel="canonical" href="https://kinaramx.com/pages/cotizar.html" />
+  <link rel="canonical" href="https://kinaramx.com/pages/cotizar" />
 
   <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg" />
   <link rel="icon" type="image/png" sizes="32x32" href="../assets/images/favicon-32.png" />
@@ -37,17 +37,17 @@
   <link rel="stylesheet" href="../css/cuenta.css?v=3" />
   <link rel="stylesheet" href="../css/movimiento.css?v=3" />
   <!-- Chrome, Edge y Brave descargan la página antes del clic; Safari lo ignora -->
-  <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/pages/admin.html*"}},{"not":{"selector_matches":"[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+  <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/pages/admin*"}},{"not":{"selector_matches":"[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
 </head>
 
 <body class="pagina-simple">
 
   <header class="pagina-simple-header cuenta-header">
-    <a href="../index.html" class="logo" aria-label="Kinara, volver al inicio">
+    <a href="../" class="logo" aria-label="Kinara, volver al inicio">
       <img class="logo-marca" src="../assets/images/logo-kinara-marca.svg" alt="" width="32" height="32" />
       <span class="logo-nombre">KINARA</span>
     </a>
-    <a href="cuenta.html#cotizaciones" class="btn-secundario btn-chico">Mis cotizaciones</a>
+    <a href="cuenta#cotizaciones" class="btn-secundario btn-chico">Mis cotizaciones</a>
   </header>
 
   <main class="cuenta-page cotizar-page" id="contenido">
@@ -65,10 +65,10 @@
       <h2 class="cuenta-subtitulo">Entra para pedir tu cotización</h2>
       <p class="cuenta-vacio-texto">Así guardamos tus archivos de forma privada, te avisamos cuando esté lista y la pagas en un clic.</p>
       <div class="cuenta-form-acciones">
-        <a class="btn-primario" id="cotizar-entrar" href="acceso.html">Entrar</a>
-        <a class="btn-secundario" id="cotizar-registro" href="acceso.html?modo=registro">Crear cuenta</a>
+        <a class="btn-primario" id="cotizar-entrar" href="acceso">Entrar</a>
+        <a class="btn-secundario" id="cotizar-registro" href="acceso?modo=registro">Crear cuenta</a>
       </div>
-      <p class="acceso-ayuda">¿Solo tienes una duda? <a href="../index.html#contacto">Escríbenos sin cuenta</a>.</p>
+      <p class="acceso-ayuda">¿Solo tienes una duda? <a href="../#contacto">Escríbenos sin cuenta</a>.</p>
     </section>
 
     <form class="cuenta-form cotizar-form" id="form-cotizar" novalidate hidden>
@@ -144,13 +144,13 @@
       <h2 class="cuenta-subtitulo">Recibimos tu solicitud</h2>
       <p class="cuenta-vacio-texto">Te escribimos en 24 a 48 horas con el precio. También la vas a ver en tu cuenta, lista para pagar.</p>
       <div class="cuenta-form-acciones">
-        <a class="btn-primario" href="cuenta.html#cotizaciones">Ver mis cotizaciones</a>
-        <a class="btn-secundario" href="cotizar.html">Cotizar otra pieza</a>
+        <a class="btn-primario" href="cuenta#cotizaciones">Ver mis cotizaciones</a>
+        <a class="btn-secundario" href="cotizar">Cotizar otra pieza</a>
       </div>
     </section>
   </main>
 
-  <footer class="pagina-simple-footer">© Kinara · Impresión 3D · México · <a href="envios.html" class="footer-legal">Envíos y devoluciones</a> · <a href="privacidad.html" class="footer-legal">Aviso de privacidad</a></footer>
+  <footer class="pagina-simple-footer">© Kinara · Impresión 3D · México · <a href="envios" class="footer-legal">Envíos y devoluciones</a> · <a href="privacidad" class="footer-legal">Aviso de privacidad</a></footer>
 
   <div id="agregar-toast" role="status" aria-live="polite"></div>
 

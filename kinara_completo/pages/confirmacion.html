@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  confirmacion.html — Página de confirmación de pedido
+  confirmacion — Página de confirmación de pedido
   El cliente llega aquí después de pagar en Mercado Pago.
   Mercado Pago envía el resultado del pago en los parámetros
   de la URL (?status=success/failure/pending&pedido=UUID).
@@ -39,13 +39,13 @@
   <link rel="stylesheet" href="../css/cuenta.css?v=3" />
   <link rel="stylesheet" href="../css/movimiento.css?v=3" />
   <!-- Chrome, Edge y Brave descargan la página antes del clic; Safari lo ignora -->
-  <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/pages/admin.html*"}},{"not":{"selector_matches":"[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+  <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/pages/admin*"}},{"not":{"selector_matches":"[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
 </head>
 
 <body class="pagina-simple">
 
   <header class="pagina-simple-header">
-    <a href="../index.html" class="logo" aria-label="Kinara, volver al inicio">
+    <a href="../" class="logo" aria-label="Kinara, volver al inicio">
       <img class="logo-marca" src="../assets/images/logo-kinara-marca.svg" alt="" width="32" height="32" />
       <span class="logo-nombre">KINARA</span>
     </a>
@@ -61,7 +61,7 @@
     </div>
   </main>
 
-  <footer class="pagina-simple-footer">© Kinara · Impresión 3D · México · <a href="envios.html" class="footer-legal">Envíos y devoluciones</a> · <a href="privacidad.html" class="footer-legal">Aviso de privacidad</a></footer>
+  <footer class="pagina-simple-footer">© Kinara · Impresión 3D · México · <a href="envios" class="footer-legal">Envíos y devoluciones</a> · <a href="privacidad" class="footer-legal">Aviso de privacidad</a></footer>
 
   <!-- SDK de Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
@@ -132,10 +132,10 @@
       // Con cuenta: el pedido ya está en "Mis pedidos". Sin cuenta: la invito
       const { data: { session } } = await SupabaseDB.cliente.auth.getSession();
       const cuentaCTA = session
-        ? `<p class="confirmacion-nota">Sigue el avance de este pedido en <a href="cuenta.html#pedidos">Mis pedidos</a>.</p>`
+        ? `<p class="confirmacion-nota">Sigue el avance de este pedido en <a href="cuenta#pedidos">Mis pedidos</a>.</p>`
         : `<div class="confirmacion-cuenta">
              <p><strong>Sigue tu pedido desde tu cuenta.</strong> Crea una con el mismo correo de tu compra y este pedido aparecerá ahí.</p>
-             <a href="acceso.html?modo=registro" class="btn-secundario btn-chico">Crear cuenta</a>
+             <a href="acceso?modo=registro" class="btn-secundario btn-chico">Crear cuenta</a>
            </div>`;
 
       const numeroPedido = `<div class="confirmacion-id">Pedido #${escHTML(pedidoId?.substring(0,8).toUpperCase())}</div>`;
@@ -183,7 +183,7 @@
           </ol>
           ${cuentaCTA}
           <div class="confirmacion-acciones">
-            <a href="../index.html" class="btn-primario">Seguir explorando</a>
+            <a href="../" class="btn-primario">Seguir explorando</a>
             <a href="mailto:hola@kinaramx.com" class="btn-secundario">Contactar a Kinara</a>
           </div>`;
 
@@ -206,7 +206,7 @@
           </p>
           ${cuentaCTA}
           <div class="confirmacion-acciones">
-            <a href="../index.html" class="btn-primario">Volver al inicio</a>
+            <a href="../" class="btn-primario">Volver al inicio</a>
             <a href="mailto:hola@kinaramx.com" class="btn-secundario">¿Tienes dudas?</a>
           </div>`;
 
@@ -221,7 +221,7 @@
           <p class="confirmacion-subtitulo">No se hizo ningún cargo confirmado a tu pedido. Puedes intentarlo con otro método de pago.</p>
           <p class="confirmacion-nota">Tus piezas siguen en el carrito. Si necesitas ayuda, escríbenos.</p>
           <div class="confirmacion-acciones">
-            <a href="../index.html#catalogo" class="btn-primario">Volver al catálogo</a>
+            <a href="../#catalogo" class="btn-primario">Volver al catálogo</a>
             <a href="mailto:hola@kinaramx.com" class="btn-secundario">Pedir ayuda</a>
           </div>`;
       }

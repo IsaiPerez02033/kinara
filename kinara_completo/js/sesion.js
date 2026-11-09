@@ -105,14 +105,14 @@ const ModuloSesion = (() => {
     const conSesion = !!usuario;
     const btn = document.getElementById('btn-cuenta');
     if (btn) {
-      btn.href = ruta(conSesion ? 'cuenta.html' : 'acceso.html');
+      btn.href = ruta(conSesion ? 'cuenta' : 'acceso');
       btn.setAttribute('aria-label', conSesion ? 'Mi cuenta' : 'Iniciar sesión');
       btn.classList.toggle('con-sesion', conSesion);
       pintarFoto(btn);
       pintarHola(btn);
     }
     document.querySelectorAll('[data-enlace-cuenta]').forEach((a) => {
-      a.href = ruta(conSesion ? 'cuenta.html' : 'acceso.html');
+      a.href = ruta(conSesion ? 'cuenta' : 'acceso');
       a.textContent = conSesion ? 'Mi cuenta' : 'Iniciar sesión';
     });
   };
