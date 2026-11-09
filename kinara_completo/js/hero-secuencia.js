@@ -81,6 +81,10 @@
   const listas = new Array(TOTAL).fill(false);
   let pedidas = 0;
 
+  // Cada cuadro se guarda ya decodificado (ImageBitmap). Con <img> normal, Chrome en
+  // Android tira la imagen decodificada para ahorrar memoria y la vuelve a decodificar
+  // en pleno scroll: eso es lo que se sentía como tirón en celulares de gama media.
+  const usarBitmap = typeof createImageBitmap === 'function';
   const cargar = (i) => new Promise((resolver) => {
     if (imagenes[i]) { resolver(); return; }
     const img = new Image();
@@ -88,17 +92,24 @@
     img.src = `assets/hero/${carpeta}/p2s_${String(i).padStart(3, '0')}.webp`;
     imagenes[i] = img;
     pedidas += 1;
-    const fin = () => {
-      listas[i] = img.naturalWidth > 0;
-      if (listas[i] && Math.abs(i - cuadroActual) < 2) dibujar();
+    const listo = (fuente) => {
+      imagenes[i] = fuente;
+      listas[i] = true;
+      if (Math.abs(i - cuadroActual) < 2) { pintado = ''; dibujar(); }
       resolver();
+    };
+    const fin = () => {
+      if (!img.naturalWidth) { resolver(); return; }
+      if (!usarBitmap) { listo(img); return; }
+      createImageBitmap(img).then(listo, () => listo(img));
     };
     (img.decode ? img.decode() : Promise.reject()).then(fin, () => { if (img.complete) fin(); else img.onload = img.onerror = fin; });
   });
 
-  // Con ahorro de datos o red lenta bajo un cuadro sí y uno no (el fundido cubre el hueco)
+  // Con ahorro de datos, red lenta o poca memoria, un cuadro sí y uno no (el fundido cubre el hueco)
   const red = navigator.connection;
-  const salto = red && (red.saveData || /(^|-)2g|3g/.test(red.effectiveType || '')) ? 2 : 1;
+  const poca = (navigator.deviceMemory || 8) <= 4 || (navigator.hardwareConcurrency || 8) <= 4;
+  const salto = poca || (red && (red.saveData || /(^|-)2g|3g/.test(red.effectiveType || ''))) ? 2 : 1;
 
   // El resto, de lo más cercano al scroll hacia afuera, con pocas descargas a la vez
   let colaIniciada = false;
@@ -115,7 +126,7 @@
       if (mejor < 0) return;
       cargar(mejor).then(siguiente);
     };
-    for (let k = 0; k < 4; k++) siguiente();
+    for (let k = 0; k < 6; k++) siguiente();
   };
 
   // Cuadro listo más cercano, por si el que toca aún no llega
@@ -136,7 +147,7 @@
 
   const medirCaja = () => {
     const ref = imagenes.find((im, i) => listas[i]);
-    const proporcion = ref ? ref.naturalWidth / ref.naturalHeight : 0.9;
+    const proporcion = ref ? (ref.naturalWidth || ref.width) / (ref.naturalHeight || ref.height) : 0.9;
     const dpr = ancho / Math.max(1, canvas.clientWidth);
     if (consultaMovil.matches) {
       // Debajo del capítulo de texto más largo
@@ -162,40 +173,53 @@
   };
 
   const ajustar = () => {
-    const dpr = Math.min(devicePixelRatio, 2);
+    const dpr = Math.min(devicePixelRatio, consultaMovil.matches ? 1.5 : 2);
     const w = Math.round(canvas.clientWidth * dpr);
     const h = Math.round(canvas.clientHeight * dpr);
     if (!w || !h) return;
     if (w !== ancho || h !== alto) {
       ancho = canvas.width = w;
       alto = canvas.height = h;
+      pintado = '';
     }
     const nueva = juego();
     if (nueva !== carpeta && !pedidas) carpeta = nueva;
     medirCaja();
+    pintado = '';
     dibujar();
   };
 
   const lectura = { pieza: '', capa: '', avance: '' };
+  let pintado = '';
   const dibujar = () => {
     if (!ancho) return;
-    const base = Math.floor(cuadroActual);
-    const mezcla = cuadroActual - base;
+    // Con salto 2 solo hay cuadros pares: se funde de par en par
+    const base = Math.floor(cuadroActual / salto) * salto;
+    // La mezcla en 1/24 basta para el ojo y evita repintar por cambios mínimos
+    const mezcla = Math.round(((cuadroActual - base) / salto) * 24) / 24;
     const a = cercano(base);
     if (a < 0) return;
+    const clave = `${a}|${mezcla}`;
+    if (clave !== pintado) pintar(a, base, mezcla, clave);
+    leer();
+  };
+
+  const pintar = (a, base, mezcla, clave) => {
+    pintado = clave;
     ctx.clearRect(0, 0, ancho, alto);
-    ctx.imageSmoothingQuality = 'high';
     ctx.globalAlpha = 1;
     ctx.drawImage(imagenes[a], caja.x, caja.y, caja.w, caja.h);
-    const b = base + 1;
+    const b = base + salto;
     // Fundido con el siguiente solo dentro del mismo trabajo (al cambiar de pieza, corte limpio)
-    if (mezcla > 0.02 && b < TOTAL && listas[b] && a === base && CUADROS[b].t === CUADROS[base].t) {
+    if (mezcla > 0.04 && b < TOTAL && listas[b] && a === base && CUADROS[b].t === CUADROS[base].t) {
       ctx.globalAlpha = mezcla;
       ctx.drawImage(imagenes[b], caja.x, caja.y, caja.w, caja.h);
       ctx.globalAlpha = 1;
     }
-    canvas.classList.add('listo');
+    if (!canvas.classList.contains('listo')) canvas.classList.add('listo');
+  };
 
+  const leer = () => {
     const c = CUADROS[Math.round(cuadroActual)];
     const t = TRABAJOS[c.t];
     if (lecturaPieza) {
@@ -246,7 +270,12 @@
     };
 
     addEventListener('scroll', leerScroll, { passive: true });
-    addEventListener('resize', () => { medir(); ajustar(); leerScroll(); }, { passive: true });
+    let anchoVentana = innerWidth;
+    addEventListener('resize', () => {
+      medir();
+      if (innerWidth !== anchoVentana) { anchoVentana = innerWidth; ajustar(); }
+      leerScroll();
+    }, { passive: true });
     new ResizeObserver(() => { medir(); ajustar(); }).observe(canvas);
     if (document.fonts) document.fonts.ready.then(() => { medirCaja(); dibujar(); });
 
@@ -259,9 +288,9 @@
       if (!listas[primero]) { seccion.classList.add('hero--sin3d'); return; }
       ajustar();
       fijarAvance(actual);
-      // El resto, cuando la página ya cargó lo importante
-      if (document.readyState === 'complete') cargarResto();
-      else addEventListener('load', cargarResto, { once: true });
+      // El resto de inmediato: esperar a 'load' con datos móviles dejaba la impresora
+      // congelada en el primer cuadro mientras la persona ya iba bajando
+      cargarResto();
     });
   };
 
