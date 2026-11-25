@@ -1,8 +1,12 @@
-# Nuevo producto desde un .stl: instrucciones para Claude Code
+# Nuevo producto (link de MakerWorld o .stl): instrucciones para Claude Code
 
 Este documento es para la sesión de Claude Code que trabaja en el repo de Kinara.
-Cuando Aram te pase un `.stl` (o `.3mf`), tú haces el render, lo subes a la tienda
-y le dejas listo un paquete para que **Claude Cowork** actualice el catálogo PDF.
+Cuando Aram te pase un **link de MakerWorld** o un **`.stl`/`.3mf`**, tú revisas la licencia,
+haces el render, lo subes a la tienda y le dejas listo un paquete para que **Claude Cowork**
+actualice el catálogo PDF.
+
+- Si llega un link de MakerWorld, empieza en el **paso 0**.
+- Si llega directo el archivo, empieza en el **paso 1** (y si el diseño es de MakerWorld, haz también el 0).
 
 Rutas (todas bajo `~/Desktop/Xolum/Kinara/`):
 
@@ -18,6 +22,39 @@ Rutas (todas bajo `~/Desktop/Xolum/Kinara/`):
 
 ---
 
+## 0. Si te pasan un link de MakerWorld
+
+Ejemplo: `https://makerworld.com/es/models/1288081-...`. El número es el id del modelo.
+
+1. **Lee la página del modelo** en el navegador integrado (`get_page_text`). Saca:
+   nombre, diseñador, licencia, perfiles de impresión (gramos, horas, camas, colores)
+   y medidas si las da (suelen venir en la descripción). La licencia está en el bloque
+   **"Licencia"**, cortada: dale clic a "más" para leerla completa. Los perfiles de impresión
+   están en "Archivos de impresión" (nombre del perfil y horas).
+2. **Revisa la licencia antes que nada.** Kinara vende las piezas impresas, así que necesita uso comercial:
+
+   | Licencia en MakerWorld | ¿Se puede vender? |
+   |---|---|
+   | CC BY, CC BY-SA, CC0 | Sí, dando crédito al diseñador. |
+   | Cualquiera con **NC** (BY-NC, BY-NC-SA, BY-NC-ND) | **No.** Va a "Descartados". |
+   | Standard Digital File License (la de serie) | Solo si el diseñador ofrece licencia o membresía comercial y Aram la tiene. Si no, "requiere permiso del diseñador". |
+   | Dudosa o no dice | "Requiere permiso del diseñador": pregúntale a Aram, no lo publiques. |
+
+   Descarta también lo que use **marcas o personajes ajenos** (Funko, Anthropic/Claude, Pokémon, Disney…),
+   aunque la licencia lo permita.
+3. **Anótalo en `productos-nuevos.md`** (raíz del repo, archivo local fuera de git): una ficha con categoría, precio (si Aram lo dio),
+   diseño (`Diseñador (MakerWorld <id>)` + estado de la licencia), descripción, material, acabado e impresión.
+   Si se descarta, una fila en la tabla "Descartados" con el motivo. Ahí ya hay ejemplos.
+4. **No uses las fotos del diseñador** en la tienda ni en el catálogo sin su permiso por escrito:
+   las fotos salen del render (paso 3).
+5. **Pídele a Aram el archivo**, en un solo mensaje junto con lo que falte de la ficha del paso 1:
+   la descarga de MakerWorld pide sesión, así que la hace él. Pide de preferencia el **`.3mf`**
+   (trae las piezas separadas y sus colores); si no hay, los `.stl`. Que lo deje en `~/Downloads/`.
+6. Con el archivo en mano, sigue en el paso 2.
+
+Si la licencia no permite venderlo, detente después del punto 3 y díselo a Aram en una línea
+(modelo, licencia, por qué no). No hagas render de un modelo descartado.
+
 ## 1. Lo que Aram te pasa
 
 Como mínimo, el archivo `.stl`. Lo ideal es que venga con esta ficha (pídele lo que falte, **en una sola pregunta**):
@@ -25,7 +62,7 @@ Como mínimo, el archivo `.stl`. Lo ideal es que venga con esta ficha (pídele l
 ```
 Archivo:      ~/Downloads/lampara_luna.stl   (uno o varios .stl, o un .3mf)
 Nombre:       Lámpara Luna
-Categoría:    Lámparas | Herramientas | Moldes | Juguetes | Figuras
+Categoría:    una de las secciones de la tienda (Lámparas, Herramientas, Moldes, Juguetes, Figuras, Accesorios…)
 Precio:       $699
 Colores:      pieza principal blanco; base negra   (color de cada .stl si son varios)
 Material:     PLA mate + luz LED USB
@@ -91,7 +128,10 @@ Esto crea `kinara_completo/assets/productos/lampara_luna_dia.webp` (tienda) y
    patrón de `sql/12_catalogo_real.sql`:
    - `id`: el siguiente de la serie `55555555-0000-0000-0000-0000000000NN`. Revisa los
      que ya existen en los SQL y en la API (`productos_con_stock`).
-   - `coleccion_id` de la categoría:
+   - `coleccion_id` de la categoría. Las secciones se crean, renombran y ocultan desde el panel
+     (Productos → Secciones), así que la lista cambia: consulta las actuales en
+     `GET https://vrazcrtbdmwjahgrljag.supabase.co/rest/v1/colecciones?select=id,nombre&activa=eq.true&order=orden`
+     (con la llave pública de `kinara_completo/js/lib/supabase.js`). Las cinco de arranque son:
 
      | Categoría | coleccion_id |
      |---|---|
@@ -115,7 +155,8 @@ Esto crea `kinara_completo/assets/productos/lampara_luna_dia.webp` (tienda) y
 
    El push publica las fotos en kinaramx.com en menos de un minuto.
 3. Pídele a Aram que corra el SQL en Supabase (SQL Editor). Tú no lo corres ni le pides contraseñas.
-   Otra opción es que lo dé de alta desde el panel (`/pages/admin.html` → Productos → Nuevo) y suba ahí las fotos.
+   Otra opción es que lo dé de alta desde el panel (`kinaramx.com/pages/admin` → Productos → Nuevo) y suba ahí las fotos.
+   Si la categoría no existe todavía, se crea ahí mismo con "+ Crear otra sección".
 4. Cuando avise que ya lo corrió, verifica que aparezca:
    `GET https://vrazcrtbdmwjahgrljag.supabase.co/rest/v1/productos_con_stock?id=eq.<id>`
    con la llave pública que está en `kinara_completo/js/lib/supabase.js`.
@@ -162,6 +203,7 @@ nuevos/lampara-luna/
 Un mensaje corto con:
 
 1. Las fotos (envíalas con SendUserFile para que las vea).
+   Si vino de MakerWorld: diseñador, id del modelo y estado de la licencia.
 2. El SQL que tiene que correr: ruta y nombre del archivo.
 3. El paquete del catálogo: `catalogo/nuevos/<slug>/`.
 4. La frase para Cowork:
