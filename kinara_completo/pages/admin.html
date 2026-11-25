@@ -352,12 +352,12 @@
   <dialog class="a-dialogo" id="seccion-dialogo" aria-labelledby="seccion-titulo">
     <form id="seccion-form" novalidate>
       <h2 id="seccion-titulo">Nueva sección</h2>
-      <p class="a-ayuda">Se agrega sola al mosaico de categorías, a los filtros del catálogo y al pie de página. En la tienda aparece en cuanto tenga al menos un producto visible.</p>
+      <p class="a-ayuda" id="seccion-ayuda">Se agrega sola al mosaico de categorías, a los filtros del catálogo y al pie de página. En la tienda aparece en cuanto tenga al menos un producto visible.</p>
       <div class="a-campo">
         <label class="a-label" for="seccion-nombre">Nombre</label>
         <input id="seccion-nombre" class="a-input" maxlength="40" placeholder="Macetas" required autocomplete="off" />
       </div>
-      <div class="a-campo">
+      <div class="a-campo" id="seccion-campo-descripcion">
         <label class="a-label" for="seccion-descripcion">Frase corta <em>(opcional)</em></label>
         <input id="seccion-descripcion" class="a-input" maxlength="120" placeholder="Para interior y jardín." autocomplete="off" />
       </div>
@@ -378,6 +378,6 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
   <script defer src="../js/movimiento.js"></script>
   <script defer src="../js/lib/supabase.js"></script>
-  <script defer src="../js/admin.js?v=5"></script>
+  <script defer src="../js/admin.js?v=6"></script>
 </body>
 </html>

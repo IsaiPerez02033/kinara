@@ -1,6 +1,8 @@
 /**
  * secciones.js — Secciones del catálogo que se crean desde el admin
- * Las cinco de arranque vienen escritas en index.html (con su foto).
+ * Las cinco de arranque vienen escritas en index.html (con su foto y
+ * data-seccion-id); si en el admin les cambian nombre o color, aquí se
+ * actualizan.
  * Las que se agregan después se leen de la tabla colecciones y se
  * acomodan en el mosaico, en los filtros del catálogo y en el pie.
  * Una sección solo aparece cuando tiene al menos un producto visible,
@@ -11,17 +13,17 @@
 const ModuloSecciones = (() => {
   const COLORES = ['terracota', 'cobalto', 'salvia', 'bermellon', 'rubor', 'ocre', 'pino'];
   // Sobre estos colores el texto del bloque va claro
-  const OSCUROS = ['cobalto', 'bermellon', 'pino'];
+  const OSCUROS = ['cobalto', 'bermellon', 'pino', 'salvia'];
 
-  const yaEnPagina = (nombre) =>
-    [...document.querySelectorAll('.filtro-btn')].some((b) => b.dataset.coleccion === nombre);
+  const yaEnPagina = (s) =>
+    [...document.querySelectorAll('.filtro-btn')].some((b) => b.dataset.coleccion === s.nombre || b.dataset.seccionId === s.id);
 
-  // Color y tono de texto de cada sección nueva, para tarjetas, detalle y carrito
+  // Color y tono de texto de cada sección, para mosaico, tarjetas, detalle y carrito
   const pintarEstilos = (secciones) => {
-    const reglas = secciones.map((s) => {
+    const reglas = secciones.filter((s) => COLORES.includes(s.color)).map((s) => {
       const sel = `[data-categoria="${CSS.escape(s.nombre)}"]`;
       return `${sel} { --filamento: var(--${s.color}); }` +
-        (OSCUROS.includes(s.color) ? `\n.categoria${sel} { --tinta-bloque: var(--hueso); }` : '');
+        `\n.categoria${sel} { --tinta-bloque: var(--${OSCUROS.includes(s.color) ? 'hueso' : 'tinta'}); }`;
     });
     const estilo = document.createElement('style');
     estilo.id = 'estilo-secciones';
@@ -56,8 +58,6 @@ const ModuloSecciones = (() => {
   const filtrar = (nombre) => { if (typeof ModuloCatalogo !== 'undefined') ModuloCatalogo.activarFiltro(nombre); };
 
   const agregar = (secciones) => {
-    pintarEstilos(secciones);
-
     const mosaico = document.querySelector('.categorias-grid');
     const medida = mosaico?.querySelector('.categoria-medida');
     const filtros = document.querySelector('.filtros-coleccion');
@@ -98,10 +98,22 @@ const ModuloSecciones = (() => {
   };
 
   // Las secciones que el admin ocultó salen del mosaico, los filtros y el pie
-  const quitar = (nombres) => {
-    nombres.forEach((n) => {
-      const sel = `[data-filtro="${CSS.escape(n)}"], .filtro-btn[data-coleccion="${CSS.escape(n)}"]`;
-      document.querySelectorAll(sel).forEach((el) => el.remove());
+  const quitar = (ids) => {
+    ids.forEach((id) => {
+      document.querySelectorAll(`[data-seccion-id="${CSS.escape(id)}"]`).forEach((el) => {
+        if (el.matches('[data-filtro], .filtro-btn')) el.remove();
+      });
+    });
+  };
+
+  // Si el admin le cambió el nombre a una de las cinco del HTML
+  const renombrar = (s) => {
+    document.querySelectorAll(`[data-seccion-id="${CSS.escape(s.id)}"]`).forEach((el) => {
+      if (el.dataset.filtro) el.dataset.filtro = s.nombre;
+      if (el.dataset.coleccion) el.dataset.coleccion = s.nombre;
+      if (el.dataset.categoria) el.dataset.categoria = s.nombre;
+      const titulo = el.matches('.categoria') ? el.querySelector('h3') : el.matches('.filtro-btn, .footer-link') ? el : null;
+      if (titulo) titulo.textContent = s.nombre;
     });
   };
 
@@ -142,23 +154,26 @@ const ModuloSecciones = (() => {
     if (!window.SupabaseDB || !document.querySelector('.filtros-coleccion')) return;
     const db = SupabaseDB.cliente;
     const [secR, prodR] = await Promise.all([
-      db.from('colecciones').select('nombre, descripcion, color, orden').eq('activa', true).order('orden').order('nombre'),
+      db.from('colecciones').select('id, nombre, descripcion, color, orden').eq('activa', true).order('orden').order('nombre'),
       db.from('productos_con_stock').select('coleccion_nombre'),
     ]);
     if (secR.error || prodR.error) return;   // Si falla, se queda lo que trae el HTML
+    const secciones = secR.data || [];
 
-    const activas = new Set((secR.data || []).map((s) => s.nombre));
-    const ocultas = [...document.querySelectorAll('.filtro-btn')]
-      .map((b) => b.dataset.coleccion)
-      .filter((n) => n !== 'Todos' && !activas.has(n));
+    const activas = new Set(secciones.map((s) => s.id));
+    const ocultas = [...new Set([...document.querySelectorAll('[data-seccion-id]')].map((el) => el.dataset.seccionId))]
+      .filter((id) => !activas.has(id));
     if (ocultas.length) quitar(ocultas);
 
+    secciones.forEach(renombrar);
+
     const conProductos = new Set((prodR.data || []).map((p) => p.coleccion_nombre));
-    const nuevas = (secR.data || [])
-      .filter((s) => conProductos.has(s.nombre) && !yaEnPagina(s.nombre))
+    const nuevas = secciones
+      .filter((s) => conProductos.has(s.nombre) && !yaEnPagina(s))
       .map((s, i) => ({ ...s, color: COLORES.includes(s.color) ? s.color : COLORES[i % COLORES.length] }));
+    pintarEstilos([...secciones.filter((s) => !nuevas.some((n) => n.id === s.id)), ...nuevas]);
     if (nuevas.length) agregar(nuevas);
-    const cambioOrden = ordenar((secR.data || []).map((s) => s.nombre));
+    const cambioOrden = ordenar(secciones.map((s) => s.nombre));
     if (ocultas.length || cambioOrden) reacomodar();
   };
 

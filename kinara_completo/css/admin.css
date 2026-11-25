@@ -1086,6 +1086,7 @@ button.a-cifra:hover::after { background: var(--tinta); color: var(--hueso); tra
 .a-seccion-nombre strong { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .a-seccion-nombre span { color: var(--a-tenue); font-size: 0.8rem; }
 .a-orden { display: flex; gap: 0.25rem; }
+.a-seccion-acciones { display: flex; gap: 0.4rem; }
 .a-orden .a-btn-icono { width: 32px; height: 32px; }
 .a-orden .a-btn-icono:disabled { opacity: 0.3; pointer-events: none; }
 
@@ -1093,7 +1094,7 @@ button.a-cifra:hover::after { background: var(--tinta); color: var(--hueso); tra
   .a-seccion { grid-template-columns: auto minmax(0, 1fr) auto; row-gap: 0.5rem; }
   .a-seccion .a-orden { grid-column: 2; grid-row: 2; }
   .a-seccion .a-switch { grid-column: 3; grid-row: 1; justify-self: end; }
-  .a-seccion [data-seccion-borrar] { grid-column: 3; grid-row: 2; }
+  .a-seccion .a-seccion-acciones { grid-column: 3; grid-row: 2; }
 }
 
 /* Fotos */

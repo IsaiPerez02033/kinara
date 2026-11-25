@@ -180,8 +180,6 @@
   /* ---------- Productos ---------- */
   // Colores de la paleta que puede tomar una sección (variables de css/variables.css)
   const COLORES_SECCION = ['terracota', 'cobalto', 'salvia', 'bermellon', 'rubor', 'ocre', 'pino'];
-  // Estas cinco ya tienen su color escrito en admin.css
-  const CON_ESTILO_FIJO = ['Lámparas', 'Herramientas', 'Moldes', 'Juguetes', 'Figuras'];
 
   const pintarColoresCategorias = () => {
     let estilo = $('#estilo-secciones');
@@ -191,7 +189,7 @@
       document.head.append(estilo);
     }
     estilo.textContent = estado.categorias
-      .filter((c) => COLORES_SECCION.includes(c.color) && !CON_ESTILO_FIJO.includes(c.nombre))
+      .filter((c) => COLORES_SECCION.includes(c.color))
       .map((c) => `[data-cat="${CSS.escape(c.nombre)}"] { --color-cat: var(--${c.color}); }`)
       .join('\n');
   };
@@ -199,11 +197,11 @@
   const cargarCategorias = async (forzar = false) => {
     if (estado.categorias.length && !forzar) return;
     // Secciones visibles y ocultas; las archivadas (catálogo viejo) no salen
-    let { data, error } = await db.from('colecciones').select('id, nombre, color, orden, activa')
+    let { data, error } = await db.from('colecciones').select('id, nombre, descripcion, color, orden, activa')
       .eq('archivada', false).order('orden').order('nombre');
     estado.conOcultar = !error;
     // Sin sql/14 todavía no existe archivada; sin sql/13 tampoco orden ni color
-    if (error) ({ data, error } = await db.from('colecciones').select('id, nombre, color, orden, activa')
+    if (error) ({ data, error } = await db.from('colecciones').select('id, nombre, descripcion, color, orden, activa')
       .eq('activa', true).order('orden').order('nombre'));
     if (error) ({ data, error } = await db.from('colecciones').select('id, nombre, activa').eq('activa', true).order('nombre'));
     if (error) { toast('No pude cargar las categorías', 'error'); return; }
@@ -245,7 +243,10 @@
           <label class="a-switch" title="${c.activa ? 'Visible en la tienda' : 'Oculta'}">
             <input type="checkbox" data-seccion-visible="${escHTML(c.id)}" ${c.activa ? 'checked' : ''} ${estado.conOcultar ? '' : 'disabled'} aria-label="Mostrar ${escHTML(c.nombre)} en la tienda" />
           </label>
+          <div class="a-seccion-acciones">
+          <button type="button" class="a-btn a-btn-chico" data-seccion-editar="${escHTML(c.id)}" aria-label="Editar ${escHTML(c.nombre)}">Editar</button>
           <button type="button" class="a-btn a-btn-peligro a-btn-chico" data-seccion-borrar="${escHTML(c.id)}" ${prods.length ? `disabled title="${escHTML(motivo)}"` : ''} aria-label="Borrar ${escHTML(c.nombre)}">Borrar</button>
+          </div>
         </div>`;
     }).join('') || vacio('Aún no hay secciones.', '');
     if (!estado.conOcultar) {
@@ -335,17 +336,56 @@
   /* ---------- Nueva sección ---------- */
   let seccionDesdeEditor = false;
 
-  const abrirNuevaSeccion = (desdeEditor = false) => {
+  // Las cinco de arranque tienen foto y texto fijos en index.html: ahí solo cambian nombre y color
+  const esOriginal = (id) => /^33333333-0000-0000-0000-00000000000[1-5]$/.test(id || '');
+  let seccionEditando = null;
+
+  const abrirNuevaSeccion = (desdeEditor = false, id = null) => {
     seccionDesdeEditor = desdeEditor;
-    const usados = new Set(estado.categorias.map((c) => c.color));
-    const sugerido = COLORES_SECCION.find((c) => !usados.has(c)) || COLORES_SECCION[estado.categorias.length % COLORES_SECCION.length];
-    $('#seccion-colores').innerHTML = COLORES_SECCION.map((c) => `
-      <label title="${c}"><input type="radio" name="seccion-color" value="${c}" ${c === sugerido ? 'checked' : ''} aria-label="${c}" /><span style="--muestra: var(--${c})"></span></label>`).join('');
+    const c = id ? estado.categorias.find((x) => x.id === id) : null;
+    seccionEditando = c;
+    const usados = new Set(estado.categorias.map((x) => x.color));
+    const sugerido = c ? (COLORES_SECCION.includes(c.color) ? c.color : null)
+      : COLORES_SECCION.find((x) => !usados.has(x)) || COLORES_SECCION[estado.categorias.length % COLORES_SECCION.length];
+    $('#seccion-colores').innerHTML = COLORES_SECCION.map((x) => `
+      <label title="${x}"><input type="radio" name="seccion-color" value="${x}" aria-label="${x}" /><span style="--muestra: var(--${x})"></span></label>`).join('');
     $('#seccion-form').reset();
-    $(`#seccion-colores input[value="${sugerido}"]`).checked = true;
+    if (sugerido) $(`#seccion-colores input[value="${sugerido}"]`).checked = true;
+    $('#seccion-titulo').textContent = c ? `Editar ${c.nombre}` : 'Nueva sección';
+    $('#seccion-guardar').textContent = c ? 'Guardar' : 'Crear sección';
+    $('#seccion-ayuda').textContent = c
+      ? 'El cambio se ve en la tienda, en los productos de esta sección y en el panel.'
+      : 'Se agrega sola al mosaico de categorías, a los filtros del catálogo y al pie de página. En la tienda aparece en cuanto tenga al menos un producto visible.';
+    $('#seccion-campo-descripcion').hidden = !!c && esOriginal(c.id);
+    $('#seccion-nombre').value = c?.nombre || '';
+    $('#seccion-descripcion').value = c?.descripcion || '';
     $('#seccion-error').hidden = true;
     $('#seccion-dialogo').showModal();
     $('#seccion-nombre').focus();
+  };
+
+  const guardarEdicionSeccion = async (c, nombre, descripcion, color) => {
+    const cambios = { nombre, color };
+    if (!esOriginal(c.id)) cambios.descripcion = descripcion || null;
+    const boton = $('#seccion-guardar');
+    boton.disabled = true;
+    boton.textContent = 'Guardando…';
+    const { error } = await db.from('colecciones').update(cambios).eq('id', c.id);
+    boton.disabled = false;
+    boton.textContent = 'Guardar';
+    if (error) {
+      errorSeccion(error.code === '23505' ? `Ya existe otra sección llamada ${nombre}.`
+        : error.code === '23514' ? 'Ese color no es de la paleta.'
+        : 'No se pudo guardar. ' + (error.message || ''));
+      return;
+    }
+    $('#seccion-dialogo').close();
+    // Los productos traen el nombre de su sección: lo actualizo sin recargar
+    estado.productos.filter((p) => p.coleccion_id === c.id).forEach((p) => { if (p.colecciones) p.colecciones.nombre = nombre; });
+    await cargarCategorias(true);
+    if ($('#secciones-dialogo').open) pintarSecciones();
+    pintarProductos();
+    toast(`Sección ${nombre} guardada`);
   };
 
   const errorSeccion = (texto) => {
@@ -359,13 +399,15 @@
     const descripcion = $('#seccion-descripcion').value.trim();
     const color = $('#seccion-colores input:checked')?.value || null;
     if (nombre.length < 2) { errorSeccion('Escribe un nombre de al menos 2 letras.'); $('#seccion-nombre').focus(); return; }
-    const repetida = estado.categorias.find((c) => c.nombre.toLowerCase() === nombre.toLowerCase());
+    if (nombre.length > 40) { errorSeccion('El nombre es de máximo 40 letras.'); return; }
+    const repetida = estado.categorias.find((c) => c.nombre.toLowerCase() === nombre.toLowerCase() && c.id !== seccionEditando?.id);
     if (repetida) {
       errorSeccion(repetida.activa === false
         ? `Ya existe la sección ${repetida.nombre}, pero está oculta. Muéstrala desde Secciones.`
         : `Ya existe la sección ${repetida.nombre}.`);
       $('#seccion-nombre').focus(); return;
     }
+    if (seccionEditando) { await guardarEdicionSeccion(seccionEditando, nombre, descripcion, color); return; }
 
     const boton = $('#seccion-guardar');
     boton.disabled = true;
@@ -1301,6 +1343,8 @@
     $('#secciones-lista').addEventListener('click', (e) => {
       const b = e.target.closest('[data-seccion-borrar]');
       if (b) borrarSeccion(b.dataset.seccionBorrar);
+      const ed = e.target.closest('[data-seccion-editar]');
+      if (ed) abrirNuevaSeccion(false, ed.dataset.seccionEditar);
       const m = e.target.closest('[data-seccion-mover]');
       if (m) moverSeccion(m.dataset.id, Number(m.dataset.seccionMover));
     });
