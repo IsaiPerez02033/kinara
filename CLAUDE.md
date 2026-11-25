@@ -8,6 +8,8 @@ Responde siempre en español, en mensajes cortos.
 Sigue **[docs/NUEVO-PRODUCTO.md](docs/NUEVO-PRODUCTO.md)** de principio a fin:
 licencia (paso 0, solo MakerWorld) → modelo → render en Blender → alta en la tienda →
 paquete para el catálogo PDF de Cowork → resumen a Aram.
+Si quien te habla solo hace renders y sube desde el panel (sin git ni SQL), usa en su lugar
+**[docs/GUIA-RENDERS.md](docs/GUIA-RENDERS.md)** (Parte B).
 Las fichas y los modelos descartados por licencia se anotan en `productos-nuevos.md`
 (raíz del repo; es un archivo local que no se sube a git, porque el repo es público).
 

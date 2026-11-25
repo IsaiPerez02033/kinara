@@ -1,7 +1,10 @@
 """Convierte un render de estudio.py en las fotos finales de un producto.
 
-Uso: python3 foto_producto.py <render.png> <nombre_archivo_sin_extension>
+Uso: python3 foto_producto.py <render.png> <nombre_archivo_sin_extension> [carpeta_destino]
   Ej: python3 foto_producto.py <scratchpad>/renders/maceta.png maceta_dia
+
+Con carpeta_destino, deja ahí el .webp y el .jpg (para subirlos desde el panel)
+y no toca la tienda ni ../fotos.
 
 Genera (cuadrado 1000×1000, recorte centrado):
   kinara_completo/assets/productos/<nombre>.webp   → la que usa la tienda
@@ -17,11 +20,14 @@ TIENDA = os.path.join(REPO, 'kinara_completo', 'assets', 'productos')
 FOTOS = os.path.abspath(os.path.join(REPO, '..', 'fotos'))
 
 origen, nombre = sys.argv[1], sys.argv[2]
+if len(sys.argv) > 3:
+    TIENDA = FOTOS = os.path.abspath(os.path.expanduser(sys.argv[3]))
 im = Image.open(origen).convert('RGB')
 lado = min(im.size)
 x, y = (im.width - lado) // 2, (im.height - lado) // 2
 im = im.crop((x, y, x + lado, y + lado)).resize((1000, 1000), Image.LANCZOS)
 os.makedirs(FOTOS, exist_ok=True)
+os.makedirs(TIENDA, exist_ok=True)
 im.save(os.path.join(TIENDA, f'{nombre}.webp'), 'WEBP', quality=80, method=6)
 im.save(os.path.join(FOTOS, f'{nombre}.jpg'), quality=90)
 print('webp', os.path.getsize(os.path.join(TIENDA, f'{nombre}.webp')) // 1024, 'KB →', TIENDA)

@@ -32,6 +32,7 @@ def material_pla(nombre, color, rugosidad=0.5, sss=0.08, capa=0.2):
     m = bpy.data.materials.new(nombre)
     m.use_nodes = True
     nt = m.node_tree
+    m.diffuse_color = hexrgb(color)   # color en la prueba rápida (Workbench)
     p = tipo_nodo(nt,'BSDF_PRINCIPLED')
     p.inputs['Base Color'].default_value = hexrgb(color)
     p.inputs['Roughness'].default_value = rugosidad
@@ -110,6 +111,7 @@ def material_liso(nombre, color, rug=0.85):
     p = tipo_nodo(m.node_tree,'BSDF_PRINCIPLED')
     p.inputs['Base Color'].default_value = hexrgb(color)
     p.inputs['Roughness'].default_value = rug
+    m.diffuse_color = hexrgb(color)
     return m
 
 def material_luz(nombre, color, fuerza):

@@ -1,5 +1,7 @@
 # Nuevo producto (link de MakerWorld o .stl): instrucciones para Claude Code
 
+> Para alguien del equipo que solo hace renders y sube desde el panel, usa [GUIA-RENDERS.md](GUIA-RENDERS.md).
+
 Este documento es para la sesión de Claude Code que trabaja en el repo de Kinara.
 Cuando Aram te pase un **link de MakerWorld** o un **`.stl`/`.3mf`**, tú revisas la licencia,
 haces el render, lo subes a la tienda y le dejas listo un paquete para que **Claude Cowork**
