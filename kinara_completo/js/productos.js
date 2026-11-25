@@ -69,7 +69,7 @@ const ModuloCatalogo = (() => {
   const obtenerProductosFiltrados = () => {
     let filtrados = filtroActivo === 'Todos'
       ? [...todosLosProductos]
-      : todosLosProductos.filter(p => p.coleccion_nombre?.toLowerCase().includes(filtroActivo.toLowerCase()));
+      : todosLosProductos.filter(p => (p.coleccion_nombre || '').replace('Kinara ', '') === filtroActivo);
 
     switch (ordenActivo) {
       case 'precio-asc':  filtrados.sort((a,b) => parseFloat(a.precio) - parseFloat(b.precio)); break;

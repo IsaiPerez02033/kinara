@@ -119,7 +119,10 @@
             <h1 class="a-titulo">Productos</h1>
             <p class="a-subtitulo" id="productos-conteo"></p>
           </div>
-          <button type="button" class="a-btn a-btn-primario" id="btn-nuevo">+ Nuevo producto</button>
+          <div class="a-cabecera-acciones">
+            <button type="button" class="a-btn" id="btn-nueva-seccion">+ Nueva sección</button>
+            <button type="button" class="a-btn a-btn-primario" id="btn-nuevo">+ Nuevo producto</button>
+          </div>
         </header>
 
         <div class="a-barra">
@@ -278,6 +281,7 @@
           <div class="a-campo">
             <label class="a-label" for="ed-categoria">Categoría</label>
             <select id="ed-categoria" class="a-input" required></select>
+            <button type="button" class="a-enlace" id="ed-nueva-seccion">+ Crear otra sección</button>
           </div>
           <div class="a-campo">
             <label class="a-label" for="ed-precio">Precio <em>(MXN, con IVA)</em></label>
@@ -330,11 +334,36 @@
     </div>
   </form>
 
+  <!-- NUEVA SECCIÓN DEL CATÁLOGO -->
+  <dialog class="a-dialogo" id="seccion-dialogo" aria-labelledby="seccion-titulo">
+    <form id="seccion-form" novalidate>
+      <h2 id="seccion-titulo">Nueva sección</h2>
+      <p class="a-ayuda">Se agrega sola al mosaico de categorías, a los filtros del catálogo y al pie de página. En la tienda aparece en cuanto tenga al menos un producto visible.</p>
+      <div class="a-campo">
+        <label class="a-label" for="seccion-nombre">Nombre</label>
+        <input id="seccion-nombre" class="a-input" maxlength="40" placeholder="Macetas" required autocomplete="off" />
+      </div>
+      <div class="a-campo">
+        <label class="a-label" for="seccion-descripcion">Frase corta <em>(opcional)</em></label>
+        <input id="seccion-descripcion" class="a-input" maxlength="120" placeholder="Para interior y jardín." autocomplete="off" />
+      </div>
+      <fieldset class="a-campo a-colores">
+        <legend class="a-label">Color</legend>
+        <div class="a-colores-lista" id="seccion-colores"></div>
+      </fieldset>
+      <p class="a-error-form" id="seccion-error" role="alert" hidden></p>
+      <div class="a-dialogo-pie">
+        <button type="button" class="a-btn" data-cerrar-seccion>Cancelar</button>
+        <button type="submit" class="a-btn a-btn-primario" id="seccion-guardar">Crear sección</button>
+      </div>
+    </form>
+  </dialog>
+
   <div class="a-toasts" id="toasts" aria-live="polite"></div>
 
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
   <script defer src="../js/movimiento.js"></script>
   <script defer src="../js/lib/supabase.js"></script>
-  <script defer src="../js/admin.js?v=2"></script>
+  <script defer src="../js/admin.js?v=3"></script>
 </body>
 </html>

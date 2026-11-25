@@ -278,6 +278,10 @@
 .categoria-e { grid-column: span 4; }
 .categoria-f { grid-column: span 12; }
 
+/* Secciones creadas desde el admin: secciones.js les pone el ancho */
+.categoria-extra { grid-column: span var(--ancho, 4); }
+.categoria-extra .pieza-svg { top: 9%; right: 7%; height: 52%; }
+
 /* La categoría que se cotiza cierra el mosaico en tinta */
 .categoria-medida {
   flex-direction: row;
@@ -668,6 +672,8 @@
 
   .categoria-a { grid-column: span 2; }
   .categoria-f { grid-column: span 2; }
+  .categoria-extra { grid-column: span 1; }
+  .categoria-extra-completa { grid-column: span 2; }
   .categoria { padding: 1rem; }
   .categoria-a .pieza-svg { height: 58%; }
   .categoria-a .pieza-foto { height: 70%; }

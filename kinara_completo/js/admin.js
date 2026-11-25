@@ -178,14 +178,92 @@
   };
 
   /* ---------- Productos ---------- */
-  const cargarCategorias = async () => {
-    if (estado.categorias.length) return;
-    const { data, error } = await db.from('colecciones').select('id, nombre').eq('activa', true).order('nombre');
+  // Colores de la paleta que puede tomar una sección (variables de css/variables.css)
+  const COLORES_SECCION = ['terracota', 'cobalto', 'salvia', 'bermellon', 'rubor', 'ocre', 'pino'];
+  // Estas cinco ya tienen su color escrito en admin.css
+  const CON_ESTILO_FIJO = ['Lámparas', 'Herramientas', 'Moldes', 'Juguetes', 'Figuras'];
+
+  const pintarColoresCategorias = () => {
+    let estilo = $('#estilo-secciones');
+    if (!estilo) {
+      estilo = document.createElement('style');
+      estilo.id = 'estilo-secciones';
+      document.head.append(estilo);
+    }
+    estilo.textContent = estado.categorias
+      .filter((c) => COLORES_SECCION.includes(c.color) && !CON_ESTILO_FIJO.includes(c.nombre))
+      .map((c) => `[data-cat="${CSS.escape(c.nombre)}"] { --color-cat: var(--${c.color}); }`)
+      .join('\n');
+  };
+
+  const cargarCategorias = async (forzar = false) => {
+    if (estado.categorias.length && !forzar) return;
+    let { data, error } = await db.from('colecciones').select('id, nombre, color, orden')
+      .eq('activa', true).order('orden').order('nombre');
+    // Sin sql/13_secciones.sql todavía no existen orden ni color
+    if (error) ({ data, error } = await db.from('colecciones').select('id, nombre').eq('activa', true).order('nombre'));
     if (error) { toast('No pude cargar las categorías', 'error'); return; }
     estado.categorias = data;
     const opciones = data.map((c) => `<option value="${escHTML(c.id)}">${escHTML(c.nombre)}</option>`).join('');
-    $('#productos-categoria').insertAdjacentHTML('beforeend', opciones);
+    const filtro = $('#productos-categoria');
+    const elegida = filtro.value;
+    filtro.innerHTML = '<option value="">Todas las categorías</option>' + opciones;
+    filtro.value = elegida;
+    const enEditor = $('#ed-categoria').value;
     $('#ed-categoria').innerHTML = '<option value="">Elige una</option>' + opciones;
+    $('#ed-categoria').value = enEditor;
+    pintarColoresCategorias();
+  };
+
+  /* ---------- Nueva sección ---------- */
+  let seccionDesdeEditor = false;
+
+  const abrirNuevaSeccion = (desdeEditor = false) => {
+    seccionDesdeEditor = desdeEditor;
+    const usados = new Set(estado.categorias.map((c) => c.color));
+    const sugerido = COLORES_SECCION.find((c) => !usados.has(c)) || COLORES_SECCION[estado.categorias.length % COLORES_SECCION.length];
+    $('#seccion-colores').innerHTML = COLORES_SECCION.map((c) => `
+      <label title="${c}"><input type="radio" name="seccion-color" value="${c}" ${c === sugerido ? 'checked' : ''} aria-label="${c}" /><span style="--muestra: var(--${c})"></span></label>`).join('');
+    $('#seccion-form').reset();
+    $(`#seccion-colores input[value="${sugerido}"]`).checked = true;
+    $('#seccion-error').hidden = true;
+    $('#seccion-dialogo').showModal();
+    $('#seccion-nombre').focus();
+  };
+
+  const errorSeccion = (texto) => {
+    $('#seccion-error').textContent = texto;
+    $('#seccion-error').hidden = false;
+  };
+
+  const crearSeccion = async (e) => {
+    e.preventDefault();
+    const nombre = $('#seccion-nombre').value.trim().replace(/\s+/g, ' ');
+    const descripcion = $('#seccion-descripcion').value.trim();
+    const color = $('#seccion-colores input:checked')?.value || null;
+    if (nombre.length < 2) { errorSeccion('Escribe un nombre de al menos 2 letras.'); $('#seccion-nombre').focus(); return; }
+    if (estado.categorias.some((c) => c.nombre.toLowerCase() === nombre.toLowerCase())) {
+      errorSeccion(`Ya existe la sección ${nombre}.`); $('#seccion-nombre').focus(); return;
+    }
+
+    const boton = $('#seccion-guardar');
+    boton.disabled = true;
+    boton.textContent = 'Creando…';
+    const { data, error } = await db.rpc('crear_seccion', { p_nombre: nombre, p_descripcion: descripcion || null, p_color: color });
+    boton.disabled = false;
+    boton.textContent = 'Crear sección';
+    if (error) {
+      errorSeccion(error.code === '23505' ? `Ya existe la sección ${nombre}.`
+        : error.code === 'PGRST202' ? 'Falta correr sql/13_secciones.sql en Supabase.'
+        : error.message || 'No pude crear la sección. Intenta de nuevo.');
+      return;
+    }
+
+    $('#seccion-dialogo').close();
+    await cargarCategorias(true);
+    const nueva = Array.isArray(data) ? data[0] : data;
+    if (seccionDesdeEditor && nueva?.id) $('#ed-categoria').value = nueva.id;
+    toast(`Sección ${nombre} creada. Agrégale productos para que aparezca en la tienda.`);
   };
 
   const cargarProductos = async () => {
@@ -1087,9 +1165,13 @@
     editor.addEventListener('submit', guardarProducto);
     $('#ed-eliminar').addEventListener('click', eliminarProducto);
     $('#editor-velo').addEventListener('click', () => cerrarEditor());
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && estado.editor) cerrarEditor(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && estado.editor && !$('#seccion-dialogo').open) cerrarEditor(); });
 
     $('#btn-nuevo').addEventListener('click', () => abrirEditor());
+    $('#btn-nueva-seccion').addEventListener('click', async () => { await cargarCategorias(); abrirNuevaSeccion(); });
+    $('#ed-nueva-seccion').addEventListener('click', () => abrirNuevaSeccion(true));
+    $('#seccion-form').addEventListener('submit', crearSeccion);
+    $('[data-cerrar-seccion]').addEventListener('click', () => $('#seccion-dialogo').close());
     $('#productos-buscar').addEventListener('input', pintarProductos);
     $('#productos-categoria').addEventListener('change', pintarProductos);
     $$('[data-vis]').forEach((b) => b.addEventListener('click', () => {
