@@ -1082,6 +1082,26 @@ button.a-cifra:hover::after { background: var(--tinta); color: var(--hueso); tra
 }
 .a-seccion.oculta .a-seccion-nombre { opacity: 0.55; }
 .a-seccion-punto { width: 12px; height: 12px; border-radius: 50%; background: var(--color-cat, var(--a-linea-2)); }
+.a-seccion-punto.con-foto { width: 36px; height: 36px; border-radius: 10px; overflow: hidden; margin-block: -6px; }
+.a-seccion-punto.con-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.a-seccion-foto { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 0.9rem; align-items: center; }
+.a-seccion-foto-vista {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: var(--a-radio-in);
+  overflow: hidden;
+  background: color-mix(in srgb, var(--muestra, var(--a-linea-2)) 40%, var(--a-papel));
+  color: var(--a-tenue);
+  font-size: 0.75rem;
+  text-align: center;
+}
+.a-seccion-foto-vista img { width: 100%; height: 100%; object-fit: cover; }
+.a-seccion-foto-vista.recorte img { object-fit: contain; padding: 8%; }
+.a-seccion-foto-acciones { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.a-seccion-foto-acciones label { cursor: pointer; }
+.a-seccion-foto-acciones .a-ayuda { flex-basis: 100%; }
 .a-seccion-nombre { display: grid; gap: 0.1rem; min-width: 0; }
 .a-seccion-nombre strong { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .a-seccion-nombre span { color: var(--a-tenue); font-size: 0.8rem; }

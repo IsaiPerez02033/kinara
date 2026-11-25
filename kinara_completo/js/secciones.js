@@ -52,7 +52,24 @@ const ModuloSecciones = (() => {
       <h3></h3>${s.descripcion ? '<p></p>' : ''}`;
     a.querySelector('h3').textContent = s.nombre;
     if (s.descripcion) a.querySelector('p').textContent = s.descripcion;
+    ponerFoto(a, s);
     return a;
+  };
+
+  /* Foto subida desde el admin. Si tiene fondo transparente (lleva "-recorte"
+     en el nombre) va como las cinco originales; si no, llena el bloque. */
+  const ponerFoto = (bloque, s) => {
+    if (!bloque || !s.imagen_url) return;
+    const recorte = /-recorte\.\w+(\?|$)/.test(s.imagen_url);
+    bloque.querySelectorAll('.pieza-foto, .pieza-svg, .seccion-fondo').forEach((el) => el.remove());
+    const img = document.createElement('img');
+    img.className = recorte ? 'pieza-foto' : 'seccion-fondo';
+    img.src = s.imagen_url;
+    img.alt = s.nombre;
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    bloque.classList.toggle('categoria-con-fondo', !recorte);
+    bloque.prepend(img);
   };
 
   const filtrar = (nombre) => { if (typeof ModuloCatalogo !== 'undefined') ModuloCatalogo.activarFiltro(nombre); };
@@ -154,7 +171,7 @@ const ModuloSecciones = (() => {
     if (!window.SupabaseDB || !document.querySelector('.filtros-coleccion')) return;
     const db = SupabaseDB.cliente;
     const [secR, prodR] = await Promise.all([
-      db.from('colecciones').select('id, nombre, descripcion, color, orden').eq('activa', true).order('orden').order('nombre'),
+      db.from('colecciones').select('id, nombre, descripcion, color, orden, imagen_url').eq('activa', true).order('orden').order('nombre'),
       db.from('productos_con_stock').select('coleccion_nombre'),
     ]);
     if (secR.error || prodR.error) return;   // Si falla, se queda lo que trae el HTML
@@ -165,7 +182,10 @@ const ModuloSecciones = (() => {
       .filter((id) => !activas.has(id));
     if (ocultas.length) quitar(ocultas);
 
-    secciones.forEach(renombrar);
+    secciones.forEach((s) => {
+      renombrar(s);
+      ponerFoto(document.querySelector(`.categoria[data-seccion-id="${CSS.escape(s.id)}"]`), s);
+    });
 
     const conProductos = new Set((prodR.data || []).map((p) => p.coleccion_nombre));
     const nuevas = secciones

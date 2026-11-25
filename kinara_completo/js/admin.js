@@ -197,11 +197,11 @@
   const cargarCategorias = async (forzar = false) => {
     if (estado.categorias.length && !forzar) return;
     // Secciones visibles y ocultas; las archivadas (catálogo viejo) no salen
-    let { data, error } = await db.from('colecciones').select('id, nombre, descripcion, color, orden, activa')
+    let { data, error } = await db.from('colecciones').select('id, nombre, descripcion, color, orden, activa, imagen_url')
       .eq('archivada', false).order('orden').order('nombre');
     estado.conOcultar = !error;
     // Sin sql/14 todavía no existe archivada; sin sql/13 tampoco orden ni color
-    if (error) ({ data, error } = await db.from('colecciones').select('id, nombre, descripcion, color, orden, activa')
+    if (error) ({ data, error } = await db.from('colecciones').select('id, nombre, descripcion, color, orden, activa, imagen_url')
       .eq('activa', true).order('orden').order('nombre'));
     if (error) ({ data, error } = await db.from('colecciones').select('id, nombre, activa').eq('activa', true).order('nombre'));
     if (error) { toast('No pude cargar las categorías', 'error'); return; }
@@ -230,7 +230,8 @@
       const motivo = prods.length ? `Tiene ${prods.length} ${prods.length === 1 ? 'producto' : 'productos'}: muévelos a otra sección o bórralos primero` : '';
       return `
         <div class="a-seccion ${c.activa ? '' : 'oculta'}" data-cat="${escHTML(c.nombre)}">
-          <span class="a-seccion-punto" aria-hidden="true"></span>
+          ${c.imagen_url ? `<span class="a-seccion-punto con-foto" aria-hidden="true"><img src="${escHTML(c.imagen_url)}" alt="" loading="lazy" /></span>`
+            : '<span class="a-seccion-punto" aria-hidden="true"></span>'}
           <div class="a-seccion-nombre"><strong>${escHTML(c.nombre)}</strong><span>${c.activa ? resumen : 'Oculta · ' + resumen.toLowerCase()}</span></div>
           <div class="a-orden" role="group" aria-label="Mover ${escHTML(c.nombre)}">
             <button type="button" class="a-btn-icono" data-seccion-mover="-1" data-id="${escHTML(c.id)}" ${i === 0 ? 'disabled' : ''} aria-label="Subir ${escHTML(c.nombre)}">
@@ -326,6 +327,7 @@
         : 'No se pudo borrar. ' + (error.message || ''));
       return;
     }
+    if (c.imagen_url) borrarArchivos([rutaDeUrl(c.imagen_url)]);
     if ($('#productos-categoria').value === id) $('#productos-categoria').value = '';
     await cargarCategorias(true);
     pintarSecciones();
@@ -339,6 +341,82 @@
   // Las cinco de arranque tienen foto y texto fijos en index.html: ahí solo cambian nombre y color
   const esOriginal = (id) => /^33333333-0000-0000-0000-00000000000[1-5]$/.test(id || '');
   let seccionEditando = null;
+
+  /* Foto de sección: se sube al guardar. Las cinco originales usan, si no
+     tienen una propia, la foto recortada que trae el sitio. */
+  const FOTO_ORIGINAL = {
+    '33333333-0000-0000-0000-000000000001': '../assets/categorias/lampara.webp',
+    '33333333-0000-0000-0000-000000000002': '../assets/categorias/herramienta.webp',
+    '33333333-0000-0000-0000-000000000003': '../assets/categorias/molde.webp',
+    '33333333-0000-0000-0000-000000000004': '../assets/categorias/juguete.webp',
+    '33333333-0000-0000-0000-000000000005': '../assets/categorias/figura.webp'
+  };
+  // Las fotos con fondo transparente se guardan con "-recorte" en el nombre:
+  // la tienda las pone como las originales en vez de llenar el bloque
+  const esRecorte = (url) => /-recorte\.\w+(\?|$)/.test(url || '');
+  let fotoSeccion = { archivo: null, vista: null, quitar: false };
+
+  const pintarFotoSeccion = () => {
+    const c = seccionEditando;
+    const vista = $('#seccion-foto-vista');
+    const url = fotoSeccion.vista || (!fotoSeccion.quitar && c?.imagen_url) || null;
+    const deSitio = !url && c && FOTO_ORIGINAL[c.id];
+    const color = $('#seccion-colores input:checked')?.value;
+    vista.style.setProperty('--muestra', color ? `var(--${color})` : '');
+    vista.classList.toggle('recorte', !!deSitio || fotoSeccion.recorte || (!fotoSeccion.vista && esRecorte(url)));
+    vista.innerHTML = url || deSitio ? `<img src="${escHTML(url || deSitio)}" alt="" />` : 'Sin foto';
+    $('#seccion-foto-quitar').hidden = !url;
+    $('#seccion-foto-ayuda').textContent = deSitio && !url
+      ? 'Ahora usa la foto que trae el sitio. Si subes otra, la reemplaza.'
+      : 'Una foto cuadrada de la pieza. Si es PNG con fondo transparente, se ve recortada como las demás.';
+  };
+
+  const elegirFotoSeccion = async (archivo) => {
+    if (!archivo) return;
+    $('#seccion-error').hidden = true;
+    try {
+      const { blob, recorte } = await prepararFotoSeccion(archivo);
+      if (fotoSeccion.vista) URL.revokeObjectURL(fotoSeccion.vista);
+      fotoSeccion = { archivo: blob, vista: URL.createObjectURL(blob), quitar: false, recorte };
+      pintarFotoSeccion();
+    } catch (err) {
+      errorSeccion(err.message);
+    }
+  };
+
+  const prepararFotoSeccion = async (archivo) => {
+    let bitmap;
+    try { bitmap = await createImageBitmap(archivo); }
+    catch { throw new Error(`No pude leer “${archivo.name}”. Usa JPG, PNG o WebP.`); }
+    const escala = Math.min(1, 1200 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * escala);
+    canvas.height = Math.round(bitmap.height * escala);
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close?.();
+    // ¿Tiene fondo transparente? Reviso el borde de la imagen
+    const { width: w, height: h } = canvas;
+    const borde = [ctx.getImageData(0, 0, w, 1), ctx.getImageData(0, h - 1, w, 1), ctx.getImageData(0, 0, 1, h), ctx.getImageData(w - 1, 0, 1, h)];
+    let transparentes = 0, total = 0;
+    borde.forEach(({ data }) => { for (let i = 3; i < data.length; i += 4) { total++; if (data[i] < 200) transparentes++; } });
+    const recorte = transparentes / total > 0.5;
+    const aBlob = (tipo, q) => new Promise((ok) => canvas.toBlob(ok, tipo, q));
+    let blob = await aBlob('image/webp', 0.86);
+    if (!blob || blob.type !== 'image/webp') blob = await aBlob(recorte ? 'image/png' : 'image/jpeg', 0.86);
+    if (!blob) throw new Error(`No pude procesar “${archivo.name}”.`);
+    return { blob, recorte };
+  };
+
+  // Sube la foto elegida y regresa su dirección pública
+  const subirFotoSeccion = async (id) => {
+    const blob = fotoSeccion.archivo;
+    const ext = { 'image/webp': 'webp', 'image/png': 'png' }[blob.type] || 'jpg';
+    const ruta = `secciones/${id}/${Date.now()}${fotoSeccion.recorte ? '-recorte' : ''}.${ext}`;
+    const { error } = await db.storage.from(BUCKET).upload(ruta, blob, { contentType: blob.type, cacheControl: '31536000', upsert: false });
+    if (error) throw new Error('No se pudo subir la foto. ' + (error.message || ''));
+    return db.storage.from(BUCKET).getPublicUrl(ruta).data.publicUrl;
+  };
 
   const abrirNuevaSeccion = (desdeEditor = false, id = null) => {
     seccionDesdeEditor = desdeEditor;
@@ -360,6 +438,9 @@
     $('#seccion-nombre').value = c?.nombre || '';
     $('#seccion-descripcion').value = c?.descripcion || '';
     $('#seccion-error').hidden = true;
+    if (fotoSeccion.vista) URL.revokeObjectURL(fotoSeccion.vista);
+    fotoSeccion = { archivo: null, vista: null, quitar: false };
+    pintarFotoSeccion();
     $('#seccion-dialogo').showModal();
     $('#seccion-nombre').focus();
   };
@@ -370,9 +451,20 @@
     const boton = $('#seccion-guardar');
     boton.disabled = true;
     boton.textContent = 'Guardando…';
+    try {
+      if (fotoSeccion.archivo) cambios.imagen_url = await subirFotoSeccion(c.id);
+      else if (fotoSeccion.quitar) cambios.imagen_url = null;
+    } catch (err) {
+      boton.disabled = false;
+      boton.textContent = 'Guardar';
+      errorSeccion(err.message);
+      return;
+    }
     const { error } = await db.from('colecciones').update(cambios).eq('id', c.id);
     boton.disabled = false;
     boton.textContent = 'Guardar';
+    if (error && cambios.imagen_url) borrarArchivos([rutaDeUrl(cambios.imagen_url)]);
+    if (!error && 'imagen_url' in cambios && c.imagen_url) borrarArchivos([rutaDeUrl(c.imagen_url)]);
     if (error) {
       errorSeccion(error.code === '23505' ? `Ya existe otra sección llamada ${nombre}.`
         : error.code === '23514' ? 'Ese color no es de la paleta.'
@@ -422,9 +514,22 @@
       return;
     }
 
+    const nueva = Array.isArray(data) ? data[0] : data;
+    if (fotoSeccion.archivo && nueva?.id) {
+      boton.disabled = true;
+      boton.textContent = 'Subiendo foto…';
+      try {
+        const url = await subirFotoSeccion(nueva.id);
+        const { error: errFoto } = await db.from('colecciones').update({ imagen_url: url }).eq('id', nueva.id);
+        if (errFoto) { borrarArchivos([rutaDeUrl(url)]); throw new Error(errFoto.message); }
+      } catch (err) {
+        toast('La sección se creó, pero la foto no se guardó. Súbela con Editar.', 'error');
+      }
+      boton.disabled = false;
+      boton.textContent = 'Crear sección';
+    }
     $('#seccion-dialogo').close();
     await cargarCategorias(true);
-    const nueva = Array.isArray(data) ? data[0] : data;
     if (seccionDesdeEditor && nueva?.id) $('#ed-categoria').value = nueva.id;
     if ($('#secciones-dialogo').open) pintarSecciones();
     toast(`Sección ${nombre} creada. Agrégale productos para que aparezca en la tienda.`);
@@ -1350,6 +1455,13 @@
     });
     $('#ed-nueva-seccion').addEventListener('click', () => abrirNuevaSeccion(true));
     $('#seccion-form').addEventListener('submit', crearSeccion);
+    $('#seccion-foto').addEventListener('change', (e) => { elegirFotoSeccion(e.target.files[0]); e.target.value = ''; });
+    $('#seccion-foto-quitar').addEventListener('click', () => {
+      if (fotoSeccion.vista) URL.revokeObjectURL(fotoSeccion.vista);
+      fotoSeccion = { archivo: null, vista: null, quitar: true };
+      pintarFotoSeccion();
+    });
+    $('#seccion-colores').addEventListener('change', pintarFotoSeccion);
     $('[data-cerrar-seccion]').addEventListener('click', () => $('#seccion-dialogo').close());
     $('#productos-buscar').addEventListener('input', pintarProductos);
     $('#productos-categoria').addEventListener('change', pintarProductos);

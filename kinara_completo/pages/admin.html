@@ -361,6 +361,19 @@
         <label class="a-label" for="seccion-descripcion">Frase corta <em>(opcional)</em></label>
         <input id="seccion-descripcion" class="a-input" maxlength="120" placeholder="Para interior y jardín." autocomplete="off" />
       </div>
+      <div class="a-campo">
+        <span class="a-label" id="seccion-foto-etiqueta">Foto <em>(opcional)</em></span>
+        <div class="a-seccion-foto">
+          <div class="a-seccion-foto-vista" id="seccion-foto-vista" aria-labelledby="seccion-foto-etiqueta"></div>
+          <div class="a-seccion-foto-acciones">
+            <label class="a-btn a-btn-chico">Subir foto
+              <input type="file" id="seccion-foto" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" hidden />
+            </label>
+            <button type="button" class="a-btn a-btn-chico a-btn-peligro" id="seccion-foto-quitar" hidden>Quitar</button>
+            <p class="a-ayuda" id="seccion-foto-ayuda">Una foto cuadrada de la pieza. Si es PNG con fondo transparente, se ve recortada como las demás.</p>
+          </div>
+        </div>
+      </div>
       <fieldset class="a-campo a-colores">
         <legend class="a-label">Color</legend>
         <div class="a-colores-lista" id="seccion-colores"></div>
@@ -378,6 +391,6 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
   <script defer src="../js/movimiento.js"></script>
   <script defer src="../js/lib/supabase.js"></script>
-  <script defer src="../js/admin.js?v=6"></script>
+  <script defer src="../js/admin.js?v=7"></script>
 </body>
 </html>
