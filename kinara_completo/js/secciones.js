@@ -3,7 +3,8 @@
  * Las cinco de arranque vienen escritas en index.html (con su foto).
  * Las que se agregan después se leen de la tabla colecciones y se
  * acomodan en el mosaico, en los filtros del catálogo y en el pie.
- * Una sección solo aparece cuando tiene al menos un producto visible.
+ * Una sección solo aparece cuando tiene al menos un producto visible,
+ * y las que el admin oculta se quitan también de lo que trae el HTML.
  */
 'use strict';
 
@@ -96,6 +97,28 @@ const ModuloSecciones = (() => {
     else nuevos.forEach((el) => el.classList.add('visible'));
   };
 
+  // Las secciones que el admin ocultó salen del mosaico, los filtros y el pie
+  const quitar = (nombres) => {
+    nombres.forEach((n) => {
+      const sel = `[data-filtro="${CSS.escape(n)}"], .filtro-btn[data-coleccion="${CSS.escape(n)}"]`;
+      document.querySelectorAll(sel).forEach((el) => el.remove());
+    });
+  };
+
+  // Si falta alguna de las cinco del HTML, el mosaico fijo deja huecos:
+  // entonces todos los bloques se reparten en filas parejas
+  const reacomodar = () => {
+    const mosaico = document.querySelector('.categorias-grid');
+    if (!mosaico) return;
+    const bloques = [...mosaico.querySelectorAll('.categoria:not(.categoria-medida)')];
+    const lista = anchos(bloques.length);
+    mosaico.classList.add('reacomodado');
+    bloques.forEach((el, i) => {
+      el.style.setProperty('--ancho', lista[i]);
+      el.classList.toggle('categoria-extra-completa', bloques.length % 2 === 1 && i === bloques.length - 1);
+    });
+  };
+
   const iniciar = async () => {
     if (!window.SupabaseDB || !document.querySelector('.filtros-coleccion')) return;
     const db = SupabaseDB.cliente;
@@ -105,11 +128,18 @@ const ModuloSecciones = (() => {
     ]);
     if (secR.error || prodR.error) return;   // Si falla, se queda lo que trae el HTML
 
+    const activas = new Set((secR.data || []).map((s) => s.nombre));
+    const ocultas = [...document.querySelectorAll('.filtro-btn')]
+      .map((b) => b.dataset.coleccion)
+      .filter((n) => n !== 'Todos' && !activas.has(n));
+    if (ocultas.length) quitar(ocultas);
+
     const conProductos = new Set((prodR.data || []).map((p) => p.coleccion_nombre));
     const nuevas = (secR.data || [])
       .filter((s) => conProductos.has(s.nombre) && !yaEnPagina(s.nombre))
       .map((s, i) => ({ ...s, color: COLORES.includes(s.color) ? s.color : COLORES[i % COLORES.length] }));
     if (nuevas.length) agregar(nuevas);
+    if (ocultas.length) reacomodar();
   };
 
   return { iniciar };

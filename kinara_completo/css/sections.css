@@ -281,6 +281,9 @@
 /* Secciones creadas desde el admin: secciones.js les pone el ancho */
 .categoria-extra { grid-column: span var(--ancho, 4); }
 .categoria-extra .pieza-svg { top: 9%; right: 7%; height: 52%; }
+.categorias-grid.reacomodado .categoria:not(.categoria-medida) { grid-column: span var(--ancho, 4); grid-row: auto; }
+/* La lámpara ya no tiene dos filas de alto: se acomoda como las demás */
+.categorias-grid.reacomodado .categoria-a .pieza-foto { top: 2%; right: 4%; height: 62%; transform: none; }
 
 /* La categoría que se cotiza cierra el mosaico en tinta */
 .categoria-medida {
@@ -637,6 +640,7 @@
   .categoria:hover .pieza-svg { transform: translateY(-6px); }
   .categoria:hover .pieza-foto { transform: translateY(-8px) scale(1.02); }
   .categoria-a:hover .pieza-foto { transform: translateX(50%) translateY(-8px) scale(1.02); }
+  .categorias-grid.reacomodado .categoria-a:hover .pieza-foto { transform: translateY(-8px) scale(1.02); }
   .categoria-medida:hover .flecha-circulo { background-color: var(--hueso); color: var(--tinta); }
   .filtro-btn:hover { color: var(--color-blanco); }
   .contacto-datos a:hover { color: var(--ocre); }
@@ -674,6 +678,8 @@
   .categoria-f { grid-column: span 2; }
   .categoria-extra { grid-column: span 1; }
   .categoria-extra-completa { grid-column: span 2; }
+  .categorias-grid.reacomodado .categoria:not(.categoria-medida) { grid-column: span 1; }
+  .categorias-grid.reacomodado .categoria.categoria-extra-completa:not(.categoria-medida) { grid-column: span 2; }
   .categoria { padding: 1rem; }
   .categoria-a .pieza-svg { height: 58%; }
   .categoria-a .pieza-foto { height: 70%; }

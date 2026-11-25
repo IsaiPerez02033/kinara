@@ -198,13 +198,17 @@
 
   const cargarCategorias = async (forzar = false) => {
     if (estado.categorias.length && !forzar) return;
-    let { data, error } = await db.from('colecciones').select('id, nombre, color, orden')
-      .eq('activa', true).order('orden').order('nombre');
-    // Sin sql/13_secciones.sql todavía no existen orden ni color
-    if (error) ({ data, error } = await db.from('colecciones').select('id, nombre').eq('activa', true).order('nombre'));
+    // Secciones visibles y ocultas; las archivadas (catálogo viejo) no salen
+    let { data, error } = await db.from('colecciones').select('id, nombre, color, orden, activa')
+      .eq('archivada', false).order('orden').order('nombre');
+    estado.conOcultar = !error;
+    // Sin sql/14 todavía no existe archivada; sin sql/13 tampoco orden ni color
+    if (error) ({ data, error } = await db.from('colecciones').select('id, nombre, color, orden, activa')
+      .eq('activa', true).order('orden').order('nombre'));
+    if (error) ({ data, error } = await db.from('colecciones').select('id, nombre, activa').eq('activa', true).order('nombre'));
     if (error) { toast('No pude cargar las categorías', 'error'); return; }
     estado.categorias = data;
-    const opciones = data.map((c) => `<option value="${escHTML(c.id)}">${escHTML(c.nombre)}</option>`).join('');
+    const opciones = data.map((c) => `<option value="${escHTML(c.id)}">${escHTML(c.nombre)}${c.activa ? '' : ' (oculta)'}</option>`).join('');
     const filtro = $('#productos-categoria');
     const elegida = filtro.value;
     filtro.innerHTML = '<option value="">Todas las categorías</option>' + opciones;
@@ -213,6 +217,88 @@
     $('#ed-categoria').innerHTML = '<option value="">Elige una</option>' + opciones;
     $('#ed-categoria').value = enEditor;
     pintarColoresCategorias();
+  };
+
+  /* ---------- Lista de secciones: ocultar y borrar ---------- */
+  const productosDe = (id) => estado.productos.filter((p) => p.coleccion_id === id);
+
+  const pintarSecciones = () => {
+    $('#secciones-error').hidden = true;
+    $('#secciones-lista').innerHTML = estado.categorias.map((c) => {
+      const prods = productosDe(c.id);
+      const enTienda = prods.filter((p) => p.activo).length;
+      const resumen = !prods.length ? 'Sin productos'
+        : `${prods.length} ${prods.length === 1 ? 'producto' : 'productos'} · ${enTienda} en la tienda`;
+      const motivo = prods.length ? `Tiene ${prods.length} ${prods.length === 1 ? 'producto' : 'productos'}: muévelos a otra sección o bórralos primero` : '';
+      return `
+        <div class="a-seccion ${c.activa ? '' : 'oculta'}" data-cat="${escHTML(c.nombre)}">
+          <span class="a-seccion-punto" aria-hidden="true"></span>
+          <div class="a-seccion-nombre"><strong>${escHTML(c.nombre)}</strong><span>${c.activa ? resumen : 'Oculta · ' + resumen.toLowerCase()}</span></div>
+          <label class="a-switch" title="${c.activa ? 'Visible en la tienda' : 'Oculta'}">
+            <input type="checkbox" data-seccion-visible="${escHTML(c.id)}" ${c.activa ? 'checked' : ''} ${estado.conOcultar ? '' : 'disabled'} aria-label="Mostrar ${escHTML(c.nombre)} en la tienda" />
+          </label>
+          <button type="button" class="a-btn a-btn-peligro a-btn-chico" data-seccion-borrar="${escHTML(c.id)}" ${prods.length ? `disabled title="${escHTML(motivo)}"` : ''} aria-label="Borrar ${escHTML(c.nombre)}">Borrar</button>
+        </div>`;
+    }).join('') || vacio('Aún no hay secciones.', '');
+    if (!estado.conOcultar) {
+      $('#secciones-error').textContent = 'Para ocultar secciones falta correr sql/14_ocultar_borrar_secciones.sql en Supabase.';
+      $('#secciones-error').hidden = false;
+    }
+  };
+
+  const abrirSecciones = async () => {
+    await cargarCategorias(true);
+    if (!estado.productos.length) await cargarProductos();
+    pintarSecciones();
+    $('#secciones-dialogo').showModal();
+  };
+
+  const errorSecciones = (texto) => {
+    $('#secciones-error').textContent = texto;
+    $('#secciones-error').hidden = false;
+  };
+
+  const cambiarVisibilidadSeccion = async (input) => {
+    const c = estado.categorias.find((x) => x.id === input.dataset.seccionVisible);
+    if (!c) return;
+    const visible = input.checked;
+    const enTienda = productosDe(c.id).filter((p) => p.activo).length;
+    if (!visible && enTienda && !confirm(`¿Ocultar ${c.nombre}?\n\nSus ${enTienda} ${enTienda === 1 ? 'producto deja' : 'productos dejan'} de verse y de venderse en la tienda hasta que la vuelvas a mostrar.`)) {
+      input.checked = true;
+      return;
+    }
+    input.disabled = true;
+    const { error } = await db.from('colecciones').update({ activa: visible }).eq('id', c.id);
+    input.disabled = false;
+    if (error) {
+      input.checked = !visible;
+      errorSecciones(error.code === '23505' ? `Ya hay otra sección visible llamada ${c.nombre}.` : 'No se pudo cambiar. ' + (error.message || ''));
+      return;
+    }
+    c.activa = visible;
+    productosDe(c.id).forEach((p) => { if (p.colecciones) p.colecciones.activa = visible; });
+    await cargarCategorias(true);
+    pintarSecciones();
+    pintarProductos();
+    toast(visible ? `${c.nombre} ya se ve en la tienda` : `${c.nombre} quedó oculta`);
+  };
+
+  const borrarSeccion = async (id) => {
+    const c = estado.categorias.find((x) => x.id === id);
+    if (!c || productosDe(id).length) return;
+    if (!confirm(`¿Borrar la sección ${c.nombre} para siempre? Esto no se puede deshacer.`)) return;
+    const { error } = await db.from('colecciones').delete().eq('id', id);
+    if (error) {
+      errorSecciones(error.code === '23503'
+        ? `${c.nombre} todavía tiene productos guardados, así que no se puede borrar. Mejor ocúltala.`
+        : 'No se pudo borrar. ' + (error.message || ''));
+      return;
+    }
+    if ($('#productos-categoria').value === id) $('#productos-categoria').value = '';
+    await cargarCategorias(true);
+    pintarSecciones();
+    pintarProductos();
+    toast(`Sección ${c.nombre} borrada`);
   };
 
   /* ---------- Nueva sección ---------- */
@@ -242,8 +328,12 @@
     const descripcion = $('#seccion-descripcion').value.trim();
     const color = $('#seccion-colores input:checked')?.value || null;
     if (nombre.length < 2) { errorSeccion('Escribe un nombre de al menos 2 letras.'); $('#seccion-nombre').focus(); return; }
-    if (estado.categorias.some((c) => c.nombre.toLowerCase() === nombre.toLowerCase())) {
-      errorSeccion(`Ya existe la sección ${nombre}.`); $('#seccion-nombre').focus(); return;
+    const repetida = estado.categorias.find((c) => c.nombre.toLowerCase() === nombre.toLowerCase());
+    if (repetida) {
+      errorSeccion(repetida.activa === false
+        ? `Ya existe la sección ${repetida.nombre}, pero está oculta. Muéstrala desde Secciones.`
+        : `Ya existe la sección ${repetida.nombre}.`);
+      $('#seccion-nombre').focus(); return;
     }
 
     const boton = $('#seccion-guardar');
@@ -263,6 +353,7 @@
     await cargarCategorias(true);
     const nueva = Array.isArray(data) ? data[0] : data;
     if (seccionDesdeEditor && nueva?.id) $('#ed-categoria').value = nueva.id;
+    if ($('#secciones-dialogo').open) pintarSecciones();
     toast(`Sección ${nombre} creada. Agrégale productos para que aparezca en la tienda.`);
   };
 
@@ -278,8 +369,9 @@
       $('#productos-lista').innerHTML = vacio('No pude cargar los productos.', ' ¿Ya corriste sql/07_admin_productos.sql en Supabase?');
       return;
     }
-    // Los productos de categorías apagadas (el catálogo viejo) no se muestran
-    estado.productos = data.filter((p) => p.colecciones?.activa);
+    // Los productos del catálogo viejo (secciones archivadas) no se muestran
+    const secciones = new Set(estado.categorias.map((c) => c.id));
+    estado.productos = data.filter((p) => secciones.has(p.coleccion_id));
     pintarProductos();
   };
 
@@ -302,7 +394,7 @@
 
   const pintarProductos = () => {
     const lista = productosFiltrados();
-    const visibles = estado.productos.filter((p) => p.activo).length;
+    const visibles = estado.productos.filter((p) => p.activo && p.colecciones?.activa).length;
     $('#productos-conteo').textContent = `${estado.productos.length} productos · ${visibles} en la tienda`;
 
     if (!estado.productos.length) {
@@ -322,7 +414,8 @@
           <div class="a-producto-nombre">
             <button type="button" data-editar="${escHTML(p.id)}">${escHTML(p.nombre)}</button>
             <span>${escHTML(p.dimensiones || 'Sin medidas')}</span>
-            ${!p.activo ? '<span class="a-estado" data-estado="oculto">Oculto</span>'
+            ${!p.colecciones?.activa ? '<span class="a-estado" data-estado="oculto">Sección oculta</span>'
+              : !p.activo ? '<span class="a-estado" data-estado="oculto">Oculto</span>'
               : est !== 'disponible' ? `<span class="a-estado" data-estado="${est}">${est === 'agotado' ? 'Agotado' : 'Pocas piezas'}</span>` : ''}
           </div>
           <div><span class="a-cat" data-cat="${escHTML(p.colecciones?.nombre || '')}">${escHTML(p.colecciones?.nombre || '—')}</span></div>
@@ -1165,10 +1258,19 @@
     editor.addEventListener('submit', guardarProducto);
     $('#ed-eliminar').addEventListener('click', eliminarProducto);
     $('#editor-velo').addEventListener('click', () => cerrarEditor());
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && estado.editor && !$('#seccion-dialogo').open) cerrarEditor(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && estado.editor && !$('#seccion-dialogo').open && !$('#secciones-dialogo').open) cerrarEditor(); });
 
     $('#btn-nuevo').addEventListener('click', () => abrirEditor());
-    $('#btn-nueva-seccion').addEventListener('click', async () => { await cargarCategorias(); abrirNuevaSeccion(); });
+    $('#btn-secciones').addEventListener('click', abrirSecciones);
+    $('#btn-nueva-seccion').addEventListener('click', () => abrirNuevaSeccion());
+    $('[data-cerrar-secciones]').addEventListener('click', () => $('#secciones-dialogo').close());
+    $('#secciones-lista').addEventListener('change', (e) => {
+      if (e.target.matches('[data-seccion-visible]')) cambiarVisibilidadSeccion(e.target);
+    });
+    $('#secciones-lista').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-seccion-borrar]');
+      if (b) borrarSeccion(b.dataset.seccionBorrar);
+    });
     $('#ed-nueva-seccion').addEventListener('click', () => abrirNuevaSeccion(true));
     $('#seccion-form').addEventListener('submit', crearSeccion);
     $('[data-cerrar-seccion]').addEventListener('click', () => $('#seccion-dialogo').close());

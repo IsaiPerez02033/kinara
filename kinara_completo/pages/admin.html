@@ -120,7 +120,7 @@
             <p class="a-subtitulo" id="productos-conteo"></p>
           </div>
           <div class="a-cabecera-acciones">
-            <button type="button" class="a-btn" id="btn-nueva-seccion">+ Nueva sección</button>
+            <button type="button" class="a-btn" id="btn-secciones">Secciones</button>
             <button type="button" class="a-btn a-btn-primario" id="btn-nuevo">+ Nuevo producto</button>
           </div>
         </header>
@@ -334,6 +334,20 @@
     </div>
   </form>
 
+  <!-- SECCIONES DEL CATÁLOGO -->
+  <dialog class="a-dialogo a-dialogo-ancho" id="secciones-dialogo" aria-labelledby="secciones-titulo">
+    <div class="a-dialogo-caja">
+      <h2 id="secciones-titulo">Secciones</h2>
+      <p class="a-ayuda">Al ocultar una sección, sus productos dejan de verse y de venderse, pero siguen aquí en el panel. Solo se puede borrar una sección sin productos.</p>
+      <div class="a-secciones" id="secciones-lista"></div>
+      <p class="a-error-form" id="secciones-error" role="alert" hidden></p>
+      <div class="a-dialogo-pie">
+        <button type="button" class="a-btn a-empuja-der" id="btn-nueva-seccion">+ Nueva sección</button>
+        <button type="button" class="a-btn a-btn-primario" data-cerrar-secciones>Listo</button>
+      </div>
+    </div>
+  </dialog>
+
   <!-- NUEVA SECCIÓN DEL CATÁLOGO -->
   <dialog class="a-dialogo" id="seccion-dialogo" aria-labelledby="seccion-titulo">
     <form id="seccion-form" novalidate>
@@ -364,6 +378,6 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js"></script>
   <script defer src="../js/movimiento.js"></script>
   <script defer src="../js/lib/supabase.js"></script>
-  <script defer src="../js/admin.js?v=3"></script>
+  <script defer src="../js/admin.js?v=4"></script>
 </body>
 </html>

@@ -1064,6 +1064,27 @@ button.a-cifra:hover::after { background: var(--tinta); color: var(--hueso); tra
 .a-colores-lista label:hover span { transform: scale(1.08); }
 
 .a-dialogo-pie { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.25rem; }
+.a-dialogo-pie .a-empuja-der { margin-right: auto; }
+
+.a-dialogo-ancho { width: min(560px, calc(100% - 32px)); }
+.a-dialogo-caja { display: grid; gap: 1rem; padding: 1.4rem 1.4rem 1.2rem; }
+
+.a-secciones { display: grid; gap: 0.4rem; max-height: min(52dvh, 460px); overflow-y: auto; overscroll-behavior: contain; }
+.a-seccion {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem 0.65rem 0.9rem;
+  border-radius: var(--a-radio-in);
+  background: var(--a-papel);
+  box-shadow: inset 0 0 0 1px var(--a-linea);
+}
+.a-seccion.oculta .a-seccion-nombre { opacity: 0.55; }
+.a-seccion-punto { width: 12px; height: 12px; border-radius: 50%; background: var(--color-cat, var(--a-linea-2)); }
+.a-seccion-nombre { display: grid; gap: 0.1rem; min-width: 0; }
+.a-seccion-nombre strong { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.a-seccion-nombre span { color: var(--a-tenue); font-size: 0.8rem; }
 
 /* Fotos */
 .a-fotos {
