@@ -224,7 +224,7 @@
 
   const pintarSecciones = () => {
     $('#secciones-error').hidden = true;
-    $('#secciones-lista').innerHTML = estado.categorias.map((c) => {
+    $('#secciones-lista').innerHTML = estado.categorias.map((c, i) => {
       const prods = productosDe(c.id);
       const enTienda = prods.filter((p) => p.activo).length;
       const resumen = !prods.length ? 'Sin productos'
@@ -234,6 +234,14 @@
         <div class="a-seccion ${c.activa ? '' : 'oculta'}" data-cat="${escHTML(c.nombre)}">
           <span class="a-seccion-punto" aria-hidden="true"></span>
           <div class="a-seccion-nombre"><strong>${escHTML(c.nombre)}</strong><span>${c.activa ? resumen : 'Oculta · ' + resumen.toLowerCase()}</span></div>
+          <div class="a-orden" role="group" aria-label="Mover ${escHTML(c.nombre)}">
+            <button type="button" class="a-btn-icono" data-seccion-mover="-1" data-id="${escHTML(c.id)}" ${i === 0 ? 'disabled' : ''} aria-label="Subir ${escHTML(c.nombre)}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
+            </button>
+            <button type="button" class="a-btn-icono" data-seccion-mover="1" data-id="${escHTML(c.id)}" ${i === estado.categorias.length - 1 ? 'disabled' : ''} aria-label="Bajar ${escHTML(c.nombre)}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
           <label class="a-switch" title="${c.activa ? 'Visible en la tienda' : 'Oculta'}">
             <input type="checkbox" data-seccion-visible="${escHTML(c.id)}" ${c.activa ? 'checked' : ''} ${estado.conOcultar ? '' : 'disabled'} aria-label="Mostrar ${escHTML(c.nombre)} en la tienda" />
           </label>
@@ -281,6 +289,29 @@
     pintarSecciones();
     pintarProductos();
     toast(visible ? `${c.nombre} ya se ve en la tienda` : `${c.nombre} quedó oculta`);
+  };
+
+  // Sube o baja una sección y vuelve a numerar el orden 1, 2, 3…
+  const moverSeccion = async (id, paso) => {
+    const lista = [...estado.categorias];
+    const i = lista.findIndex((c) => c.id === id);
+    const j = i + paso;
+    if (i < 0 || j < 0 || j >= lista.length) return;
+    [lista[i], lista[j]] = [lista[j], lista[i]];
+    const cambios = lista.map((c, k) => ({ c, orden: k + 1 })).filter(({ c, orden }) => c.orden !== orden);
+
+    // Se ve al instante; si falla, se recarga lo que hay en la base
+    estado.categorias = lista.map((c, k) => ({ ...c, orden: k + 1 }));
+    pintarSecciones();
+    $(`[data-seccion-mover="${paso}"][data-id="${CSS.escape(id)}"]`)?.focus();
+
+    const resultados = await Promise.all(cambios.map(({ c, orden }) =>
+      db.from('colecciones').update({ orden }).eq('id', c.id)));
+    const fallo = resultados.find((r) => r.error);
+    await cargarCategorias(true);
+    pintarSecciones();
+    if (fallo) { errorSecciones('No se pudo guardar el orden. ' + (fallo.error.message || '')); return; }
+    $(`[data-seccion-mover="${paso}"][data-id="${CSS.escape(id)}"]:not(:disabled)`)?.focus();
   };
 
   const borrarSeccion = async (id) => {
@@ -1270,6 +1301,8 @@
     $('#secciones-lista').addEventListener('click', (e) => {
       const b = e.target.closest('[data-seccion-borrar]');
       if (b) borrarSeccion(b.dataset.seccionBorrar);
+      const m = e.target.closest('[data-seccion-mover]');
+      if (m) moverSeccion(m.dataset.id, Number(m.dataset.seccionMover));
     });
     $('#ed-nueva-seccion').addEventListener('click', () => abrirNuevaSeccion(true));
     $('#seccion-form').addEventListener('submit', crearSeccion);

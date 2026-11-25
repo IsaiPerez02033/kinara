@@ -119,6 +119,25 @@ const ModuloSecciones = (() => {
     });
   };
 
+  // Pone filtros, pie y mosaico en el orden elegido en el admin.
+  // Si el mosaico cambió de orden, sus bloques se reparten parejos.
+  const ordenar = (nombres) => {
+    const pos = new Map(nombres.map((n, i) => [n, i]));
+    const ordenarHijos = (padre, selector, clave, antesDe = null) => {
+      if (!padre) return false;
+      const hijos = [...padre.querySelectorAll(selector)];
+      const antes = hijos.map(clave).join('|');
+      hijos.sort((a, b) => (pos.get(clave(a)) ?? 99) - (pos.get(clave(b)) ?? 99));
+      if (hijos.map(clave).join('|') === antes) return false;
+      hijos.forEach((h) => padre.insertBefore(h, antesDe));
+      return true;
+    };
+    ordenarHijos(document.querySelector('.filtros-coleccion'), '.filtro-btn:not([data-coleccion="Todos"])', (b) => b.dataset.coleccion);
+    ordenarHijos(document.querySelector('.footer-links[aria-label="Categorías"]'), '[data-filtro]', (a) => a.dataset.filtro);
+    const mosaico = document.querySelector('.categorias-grid');
+    return ordenarHijos(mosaico, '.categoria[data-filtro]', (a) => a.dataset.filtro, mosaico?.querySelector('.categoria-medida'));
+  };
+
   const iniciar = async () => {
     if (!window.SupabaseDB || !document.querySelector('.filtros-coleccion')) return;
     const db = SupabaseDB.cliente;
@@ -139,7 +158,8 @@ const ModuloSecciones = (() => {
       .filter((s) => conProductos.has(s.nombre) && !yaEnPagina(s.nombre))
       .map((s, i) => ({ ...s, color: COLORES.includes(s.color) ? s.color : COLORES[i % COLORES.length] }));
     if (nuevas.length) agregar(nuevas);
-    if (ocultas.length) reacomodar();
+    const cambioOrden = ordenar((secR.data || []).map((s) => s.nombre));
+    if (ocultas.length || cambioOrden) reacomodar();
   };
 
   return { iniciar };

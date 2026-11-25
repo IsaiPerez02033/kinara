@@ -1072,7 +1072,7 @@ button.a-cifra:hover::after { background: var(--tinta); color: var(--hueso); tra
 .a-secciones { display: grid; gap: 0.4rem; max-height: min(52dvh, 460px); overflow-y: auto; overscroll-behavior: contain; }
 .a-seccion {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
   align-items: center;
   gap: 0.75rem;
   padding: 0.65rem 0.75rem 0.65rem 0.9rem;
@@ -1085,6 +1085,16 @@ button.a-cifra:hover::after { background: var(--tinta); color: var(--hueso); tra
 .a-seccion-nombre { display: grid; gap: 0.1rem; min-width: 0; }
 .a-seccion-nombre strong { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .a-seccion-nombre span { color: var(--a-tenue); font-size: 0.8rem; }
+.a-orden { display: flex; gap: 0.25rem; }
+.a-orden .a-btn-icono { width: 32px; height: 32px; }
+.a-orden .a-btn-icono:disabled { opacity: 0.3; pointer-events: none; }
+
+@media (max-width: 480px) {
+  .a-seccion { grid-template-columns: auto minmax(0, 1fr) auto; row-gap: 0.5rem; }
+  .a-seccion .a-orden { grid-column: 2; grid-row: 2; }
+  .a-seccion .a-switch { grid-column: 3; grid-row: 1; justify-self: end; }
+  .a-seccion [data-seccion-borrar] { grid-column: 3; grid-row: 2; }
+}
 
 /* Fotos */
 .a-fotos {
